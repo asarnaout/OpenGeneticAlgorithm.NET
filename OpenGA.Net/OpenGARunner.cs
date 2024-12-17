@@ -163,6 +163,16 @@ public class OpenGARunner<T>
         return this;
     }
 
+    /// <summary>
+    /// Similar to the traditional fitness-weighted roulette wheel selection mechanism, however, Rank Selection
+    /// aims to blunt any disproportionate advantage in fitness a chromosome has which will almost always guarantee
+    /// its selection over the mid/long term.
+    /// 
+    /// With Rank Selection, each chromosome's fitness is used to assign it a rank and the rank is used (instead of the absolute
+    /// fitness value) to determine the chromosome's advantage in the rouletee wheel. This guarantees that chromosomes with a
+    /// disproportionate advantage in fitness will have a (relatively) harder time (compared to the traditional fitness-weighted roulette wheel) 
+    /// dominating the selection mechanism.
+    /// </summary>
     public OpenGARunner<T> ApplyRankSelectionCrossoverSelector()
     {
         _crossoverSelectorStrategiesToApply.Add(new RankSelectionCrossoverSelector<T>());

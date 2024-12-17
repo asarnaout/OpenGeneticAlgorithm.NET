@@ -44,14 +44,23 @@ public class RankSelectionCrossoverSelectorTests
         }
     }
 
+    /// <summary>
+    /// A note on this test: Since Rank Selection significantly blunts any disproportionate advantage
+    /// in fitness, therefore, the test needs to output a much larger number of couples and operate on
+    /// a much smaller population compared to the same test run using the FitnessWeightedRouletteWheel.
+    /// 
+    /// This is intentional and by design. Rank Selection guarantees that disporportionately fit chromosomes
+    /// will dominate over a long run, BUT will have a harder time getting there compared to the unbridled 
+    /// FitnessWeightedRouletteWheel.
+    /// </summary>
     [Fact]
-    public void RouletteWheelWillPreferTheMostFitChromosomesOverALargeNumberOfRuns()
+    public void RankSelectionWillPreferTheMostFitChromosomesOverALargeNumberOfRuns()
     {
         var selector = new RankSelectionCrossoverSelector<int>();
 
         var random = new Random();
 
-        var population = Enumerable.Range(0, 500)
+        var population = Enumerable.Range(0, 50)
             .Select(x => new DummyChromosome(Enumerable.Range(0, 10).Select(y => random.Next(2, 11)).ToArray()))
             .ToArray();
 
@@ -67,7 +76,7 @@ public class RankSelectionCrossoverSelectorTests
 
         var config = new CrossoverConfiguration();
 
-        var numberOfCouples = 100000;
+        var numberOfCouples = 1000000;
 
         var result = selector.SelectParents(population, config, random, numberOfCouples).ToList();
 
