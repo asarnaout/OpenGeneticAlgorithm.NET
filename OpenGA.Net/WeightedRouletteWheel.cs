@@ -1,6 +1,6 @@
 namespace OpenGA.Net;
 
-public class WeightedRouletteWheel<T> where T : IEquatable<T>
+public struct WeightedRouletteWheel<T> where T : IEquatable<T>
 {
     private Func<T, double> _weightSelector = default!;
 
@@ -10,7 +10,7 @@ public class WeightedRouletteWheel<T> where T : IEquatable<T>
 
     private readonly Random _random = new();
 
-    private WeightedRouletteWheel()
+    public WeightedRouletteWheel()
     {
     }
 
@@ -20,16 +20,12 @@ public class WeightedRouletteWheel<T> where T : IEquatable<T>
         {
             _candidates = candidates,
             _weightSelector = weighBy
-        }.SetupProbabilities();
+        }.SetupProbabilities(weighBy);
     }
 
     public static WeightedRouletteWheel<T> InitWithUniformWeights(IList<T> candidates)
     {
-        return new WeightedRouletteWheel<T>
-        {
-            _candidates = candidates,
-            _weightSelector = d => 1.0
-        }.SetupProbabilities();
+        return Init(candidates, d => 1.0);
     }
 
     public T Spin()
@@ -53,22 +49,22 @@ public class WeightedRouletteWheel<T> where T : IEquatable<T>
 
         _candidates = _candidates.Where(x => !x.Equals(winner)).ToList();
 
-        SetupProbabilities();
+        SetupProbabilities(_weightSelector);
 
         return winner;
     }
 
-    private WeightedRouletteWheel<T> SetupProbabilities()
+    private WeightedRouletteWheel<T> SetupProbabilities(Func<T, double> weightSelector)
     {
         if (_candidates.Count == 0)
         {
             return this;
         }
 
-        var totalWeight = _candidates.Sum(x => _weightSelector(x));
+        var totalWeight = _candidates.Sum(x => weightSelector(x));
 
         var probabilities = _candidates
-            .Select(candidate => _weightSelector(candidate) / totalWeight)
+            .Select(candidate => weightSelector(candidate) / totalWeight)
             .ToArray();
 
         _cumulativeProbabilities = new double[_candidates.Count];
