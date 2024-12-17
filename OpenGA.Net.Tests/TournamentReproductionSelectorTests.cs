@@ -2,12 +2,12 @@ using OpenGA.Net.CrossoverSelectors;
 
 namespace OpenGA.Net.Tests;
 
-public class TournamentCrossoverSelectorTests
+public class TournamentReproductionSelectorTests
 {
     [Fact]
     public void WillFailIfThereThereIsLessThanTwoIndividuals()
     {
-        var selector = new TournamentCrossoverSelector<int>();
+        var selector = new TournamentReproductionSelector<int>();
 
         var random = new Random();
 
@@ -18,7 +18,7 @@ public class TournamentCrossoverSelectorTests
             TournamentSize = 5
         };
 
-        var result = selector.SelectParents(population, config, random, 100).ToList();
+        var result = selector.SelectMatingPairs(population, config, random, 100).ToList();
 
         Assert.Empty(result);
     }
@@ -26,7 +26,7 @@ public class TournamentCrossoverSelectorTests
     [Fact]
     public void WillProduceUniformCouplesIfOnlyTwoMembersExistInThePopulation()
     {
-        var selector = new TournamentCrossoverSelector<int>();
+        var selector = new TournamentReproductionSelector<int>();
 
         var random = new Random();
 
@@ -39,7 +39,7 @@ public class TournamentCrossoverSelectorTests
 
         var minimumNumberOfCouples = 100;
 
-        var result = selector.SelectParents(population, config, random, minimumNumberOfCouples).ToList();
+        var result = selector.SelectMatingPairs(population, config, random, minimumNumberOfCouples).ToList();
 
         Assert.Equal(minimumNumberOfCouples, result.Count);
 
@@ -53,7 +53,7 @@ public class TournamentCrossoverSelectorTests
     [Fact]
     public void WillRunIfTheTournamentSizeIsLargerThanThePopulationSize()
     {
-        var selector = new TournamentCrossoverSelector<int>();
+        var selector = new TournamentReproductionSelector<int>();
 
         var random = new Random();
 
@@ -66,7 +66,7 @@ public class TournamentCrossoverSelectorTests
 
         var minimumNumberOfCouples = 100;
 
-        var result = selector.SelectParents(population, config, random, minimumNumberOfCouples).ToList();
+        var result = selector.SelectMatingPairs(population, config, random, minimumNumberOfCouples).ToList();
 
         Assert.Equal(minimumNumberOfCouples, result.Count);
     }
@@ -74,7 +74,7 @@ public class TournamentCrossoverSelectorTests
     [Fact]
     public void WillRunOnNonStochasticTournaments()
     {
-        var selector = new TournamentCrossoverSelector<int>();
+        var selector = new TournamentReproductionSelector<int>();
 
         var random = new Random();
 
@@ -87,7 +87,7 @@ public class TournamentCrossoverSelectorTests
 
         var minimumNumberOfCouples = 100;
 
-        var result = selector.SelectParents(population, config, random, minimumNumberOfCouples).ToList();
+        var result = selector.SelectMatingPairs(population, config, random, minimumNumberOfCouples).ToList();
 
         Assert.Equal(minimumNumberOfCouples, result.Count);
 
@@ -103,7 +103,7 @@ public class TournamentCrossoverSelectorTests
     [Fact]
     public void WillRunWithStochasticTournaments()
     {
-        var selector = new TournamentCrossoverSelector<int>();
+        var selector = new TournamentReproductionSelector<int>();
 
         var random = new Random();
 
@@ -117,7 +117,7 @@ public class TournamentCrossoverSelectorTests
 
         var minimumNumberOfCouples = 100;
 
-        var result = selector.SelectParents(population, config, random, minimumNumberOfCouples).ToList();
+        var result = selector.SelectMatingPairs(population, config, random, minimumNumberOfCouples).ToList();
 
         Assert.Equal(minimumNumberOfCouples, result.Count);
     }

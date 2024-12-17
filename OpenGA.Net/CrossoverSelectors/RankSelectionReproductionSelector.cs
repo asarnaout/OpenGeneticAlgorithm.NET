@@ -1,9 +1,9 @@
 
 namespace OpenGA.Net.CrossoverSelectors;
 
-public class RankSelectionCrossoverSelector<T> : BaseCrossoverSelector<T>
+public class RankSelectionReproductionSelector<T> : BaseReproductionSelector<T>
 {
-    public override IEnumerable<Couple<T>> SelectParents(Chromosome<T>[] population, CrossoverConfiguration config, Random random, int minimumNumberOfCouples)
+    public override IEnumerable<Couple<T>> SelectMatingPairs(Chromosome<T>[] population, CrossoverConfiguration config, Random random, int minimumNumberOfCouples)
     {
         if (population.Length <= 1)
         {

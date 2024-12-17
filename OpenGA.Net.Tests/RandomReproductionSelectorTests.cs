@@ -2,12 +2,12 @@ using OpenGA.Net.CrossoverSelectors;
 
 namespace OpenGA.Net.Tests;
 
-public class RandomCrossoverSelectorTests
+public class RandomReproductionSelectorTests
 {
     [Fact]
     public void WillFailIfThereThereIsLessThanTwoIndividuals()
     {
-        var selector = new RandomCrossoverSelector<int>();
+        var selector = new RandomReproductionSelector<int>();
 
         var random = new Random();
 
@@ -15,7 +15,7 @@ public class RandomCrossoverSelectorTests
 
         var config = new CrossoverConfiguration();
 
-        var result = selector.SelectParents(population, config, random, 100).ToList();
+        var result = selector.SelectMatingPairs(population, config, random, 100).ToList();
 
         Assert.Empty(result);
     }
@@ -23,7 +23,7 @@ public class RandomCrossoverSelectorTests
     [Fact]
     public void WillProduceUniformCouplesIfOnlyTwoMembersExistInThePopulation()
     {
-        var selector = new RandomCrossoverSelector<int>();
+        var selector = new RandomReproductionSelector<int>();
 
         var random = new Random();
 
@@ -33,7 +33,7 @@ public class RandomCrossoverSelectorTests
 
         var minimumNumberOfCouples = 100;
 
-        var result = selector.SelectParents(population, config, random, minimumNumberOfCouples).ToList();
+        var result = selector.SelectMatingPairs(population, config, random, minimumNumberOfCouples).ToList();
 
         Assert.Equal(minimumNumberOfCouples, result.Count);
 
@@ -47,7 +47,7 @@ public class RandomCrossoverSelectorTests
     [Fact]
     public void WillSucceedOtherwise()
     {
-        var selector = new RandomCrossoverSelector<int>();
+        var selector = new RandomReproductionSelector<int>();
 
         var random = new Random();
 
@@ -57,7 +57,7 @@ public class RandomCrossoverSelectorTests
 
         var numberOfCouples = 100;
 
-        var result = selector.SelectParents(population, config, random, numberOfCouples).ToList();
+        var result = selector.SelectMatingPairs(population, config, random, numberOfCouples).ToList();
 
         Assert.Equal(numberOfCouples, result.Count);
 

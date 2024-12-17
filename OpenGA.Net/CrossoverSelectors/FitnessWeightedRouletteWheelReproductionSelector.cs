@@ -1,8 +1,8 @@
 namespace OpenGA.Net.CrossoverSelectors;
 
-public class FitnessWeightedRouletteWheelCrossoverSelector<T> : BaseCrossoverSelector<T>
+public class FitnessWeightedRouletteWheelReproductionSelector<T> : BaseReproductionSelector<T>
 {
-    public override IEnumerable<Couple<T>> SelectParents(Chromosome<T>[] population, CrossoverConfiguration config, Random random, int minimumNumberOfCouples)
+    public override IEnumerable<Couple<T>> SelectMatingPairs(Chromosome<T>[] population, CrossoverConfiguration config, Random random, int minimumNumberOfCouples)
     {
         if (population.Length <= 1)
         {

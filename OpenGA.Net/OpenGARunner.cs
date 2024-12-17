@@ -29,7 +29,7 @@ public class OpenGARunner<T>
     }
 
     //TODO: Validate the collection is not empty
-    public ICollection<BaseCrossoverSelector<T>> _crossoverSelectorStrategiesToApply = [];
+    public ICollection<BaseReproductionSelector<T>> _reproductionSelectorStrategiesToApply = [];
 
     private readonly Random _random = new();
 
@@ -112,9 +112,9 @@ public class OpenGARunner<T>
     /// <summary>
     /// Parents are chosen at random regardless of their fitness.
     /// </summary>
-    public OpenGARunner<T> ApplyRandomCrossoverSelector()
+    public OpenGARunner<T> ApplyRandomReproductionSelector()
     {
-        _crossoverSelectorStrategiesToApply.Add(new RandomCrossoverSelector<T>());
+        _reproductionSelectorStrategiesToApply.Add(new RandomReproductionSelector<T>());
 
         return this;
     }
@@ -122,9 +122,9 @@ public class OpenGARunner<T>
     /// <summary>
     /// The likelihood of an individual chromosome being chosen for mating is proportional to its fitness.
     /// </summary>
-    public OpenGARunner<T> ApplyFitnessWeightedRouletteWheelCrossoverSelector()
+    public OpenGARunner<T> ApplyFitnessWeightedRouletteWheelReproductionSelector()
     {
-        _crossoverSelectorStrategiesToApply.Add(new FitnessWeightedRouletteWheelCrossoverSelector<T>());
+        _reproductionSelectorStrategiesToApply.Add(new FitnessWeightedRouletteWheelReproductionSelector<T>());
 
         return this;
     }
@@ -136,9 +136,9 @@ public class OpenGARunner<T>
     /// <param name="stochasticTournament">Defaults to true. If set to true, then the 2 individuals chosen for mating in each 
     /// tournament are the fittest 2 individuals in the tournament, otherwise a roulette wheel is spun to choose the two winners 
     /// out of the n-individuals, where the probability of winning is proportional to each individual's fitness.</param>
-    public OpenGARunner<T> ApplyTournamentCrossoverSelector(bool stochasticTournament = true)
+    public OpenGARunner<T> ApplyTournamentReproductionSelector(bool stochasticTournament = true)
     {
-        _crossoverSelectorStrategiesToApply.Add(new TournamentCrossoverSelector<T>());
+        _reproductionSelectorStrategiesToApply.Add(new TournamentReproductionSelector<T>());
 
         _crossoverConfiguration.StochasticTournament = stochasticTournament;
 
@@ -149,16 +149,16 @@ public class OpenGARunner<T>
     /// Apply a custom strategy for choosing mating parents. Requires an instance of a subclass of <see cref="BaseCrossoverSelector<T>">BaseCrossoverSelector<T></see>
     /// to dictate which individuals will be chosen to take part in the crossover process.
     /// </summary>
-    public OpenGARunner<T> ApplyCustomCrossoverSelectorMethod(BaseCrossoverSelector<T> matingIndividualsSelector)
+    public OpenGARunner<T> ApplyCustomReproductionSelector(BaseReproductionSelector<T> reproductionSelector)
     {
-        _crossoverSelectorStrategiesToApply.Add(matingIndividualsSelector);
+        _reproductionSelectorStrategiesToApply.Add(reproductionSelector);
 
         return this;
     }
 
-    public OpenGARunner<T> ApplyBoltzmannCrossoverSelector()
+    public OpenGARunner<T> ApplyBoltzmannReproductionSelector()
     {
-        _crossoverSelectorStrategiesToApply.Add(new BoltzmannCrossoverSelector<T>());
+        _reproductionSelectorStrategiesToApply.Add(new BoltzmannReproductionSelector<T>());
 
         return this;
     }
@@ -173,9 +173,9 @@ public class OpenGARunner<T>
     /// disproportionate advantage in fitness will have a (relatively) harder time (compared to the traditional fitness-weighted roulette wheel) 
     /// dominating the selection mechanism.
     /// </summary>
-    public OpenGARunner<T> ApplyRankSelectionCrossoverSelector()
+    public OpenGARunner<T> ApplyRankSelectionReproductionSelector()
     {
-        _crossoverSelectorStrategiesToApply.Add(new RankSelectionCrossoverSelector<T>());
+        _reproductionSelectorStrategiesToApply.Add(new RankSelectionReproductionSelector<T>());
 
         return this;
     }
@@ -186,7 +186,7 @@ public class OpenGARunner<T>
     /// <param name="proportionOfElitesInPopulation">The proportion of elites in the population. Example, if the rate is 0.2 and the population size is 100, then we have 20 elites who are guaranteed to take part in the mating process.</param>
     /// <param name="proportionOfNonElitesAllowedToMate">The proportion of non-elites allowed to take part in the mating process. Non elites are chosen randomly regardless of fitness.</param>
     /// <param name="allowMatingElitesWithNonElites">Defaults to true. Setting this value to false would restrict couples made up of an elite and non-elite members</param>
-    public OpenGARunner<T> ApplyElitistCrossoverSelector(double proportionOfElitesInPopulation = 0.1d, double proportionOfNonElitesAllowedToMate = 0.01d, bool allowMatingElitesWithNonElites = true)
+    public OpenGARunner<T> ApplyElitistReproductionSelector(double proportionOfElitesInPopulation = 0.1d, double proportionOfNonElitesAllowedToMate = 0.01d, bool allowMatingElitesWithNonElites = true)
     {
         if (proportionOfElitesInPopulation <= 0 || proportionOfElitesInPopulation > 1)
         {
@@ -204,7 +204,7 @@ public class OpenGARunner<T>
 
         _crossoverConfiguration.AllowMatingElitesWithNonElites = proportionOfNonElitesAllowedToMate > 0d && allowMatingElitesWithNonElites;
 
-        _crossoverSelectorStrategiesToApply.Add(new ElitistCrossoverSelector<T>());
+        _reproductionSelectorStrategiesToApply.Add(new ElitistReproductionSelector<T>());
 
         return this;
     }
@@ -215,17 +215,17 @@ public class OpenGARunner<T>
         {
             List<Couple<T>> couples = [];
 
-            if (_crossoverSelectorStrategiesToApply.Count == 0)
+            if (_reproductionSelectorStrategiesToApply.Count == 0)
             {
                 //TODO: What to do here?
             }
 
-            foreach (var crossoverSelectorStrategy in _crossoverSelectorStrategiesToApply)
+            foreach (var crossoverSelectorStrategy in _reproductionSelectorStrategiesToApply)
             {
                 var minimumNumberOfCouples = 0; //TODO: MUST ADJUST THIS
                 //TODO: Must adjust tournament params as well
 
-                couples.AddRange(crossoverSelectorStrategy.SelectParents(_population, _crossoverConfiguration, _random, minimumNumberOfCouples));
+                couples.AddRange(crossoverSelectorStrategy.SelectMatingPairs(_population, _crossoverConfiguration, _random, minimumNumberOfCouples));
             }
 
             foreach (var chromosome in Population)

@@ -1,10 +1,10 @@
 namespace OpenGA.Net.CrossoverSelectors;
 
-public class ElitistCrossoverSelector<T> : BaseCrossoverSelector<T>
+public class ElitistReproductionSelector<T> : BaseReproductionSelector<T>
 {
     private int _requiredNumberOfCouples;
 
-    public override IEnumerable<Couple<T>> SelectParents(Chromosome<T>[] population, CrossoverConfiguration config, Random random, int minimumNumberOfCouples)
+    public override IEnumerable<Couple<T>> SelectMatingPairs(Chromosome<T>[] population, CrossoverConfiguration config, Random random, int minimumNumberOfCouples)
     {
         if (population.Length <= 1)
         {
@@ -55,7 +55,7 @@ public class ElitistCrossoverSelector<T> : BaseCrossoverSelector<T>
 
             var pool = eligibleCandidatesForPhase1.Where(x => x != parent1).ToList();
 
-            if (pool.Count == 0) //If elites can ONLY mate with other elites, then ensure that at least 2 elites are present
+            if (pool.Count == 0)
             {
                 break;
             }

@@ -2,7 +2,7 @@ using OpenGA.Net.CrossoverSelectors;
 
 namespace OpenGA.Net.Tests;
 
-public class ElitistCrossoverSelectorTests
+public class ElitistReproductionSelectorTests
 {
     [Theory]
     [InlineData(100, 0.2, 20, 100, 100)]
@@ -28,7 +28,7 @@ public class ElitistCrossoverSelectorTests
     [InlineData(1, 0.9, 1, 100, 0)] //Case of interest
     public void OnlyElitesAllowedToMate(int populationSize, double proportionOfElites, int exactNumberOfElites, int minimumNumberOfCouples, int expectedMinimumNumberOfCouples)
     {
-        var selector = new ElitistCrossoverSelector<int>();
+        var selector = new ElitistReproductionSelector<int>();
 
         var random = new Random();
 
@@ -40,7 +40,7 @@ public class ElitistCrossoverSelectorTests
             ProportionOfElitesInPopulation = proportionOfElites,
         };
 
-        var result = selector.SelectParents(population, config, random, minimumNumberOfCouples).ToList();
+        var result = selector.SelectMatingPairs(population, config, random, minimumNumberOfCouples).ToList();
 
         Assert.True(result.Count >= expectedMinimumNumberOfCouples);
 
@@ -84,7 +84,7 @@ public class ElitistCrossoverSelectorTests
     [InlineData(1, 0.9, 1, 0.1, 0, 0)] //Case of interest
     public void NonElitesAllowedToMateWithElites(int populationSize, double proportionOfElites, int exactNumberOfElites, double proportionOfNonElitesAllowedToMate, int minimumNumberOfCouples, int expectedMinimumNumberOfCouples)
     {
-        var selector = new ElitistCrossoverSelector<int>();
+        var selector = new ElitistReproductionSelector<int>();
 
         var random = new Random();
 
@@ -97,7 +97,7 @@ public class ElitistCrossoverSelectorTests
             AllowMatingElitesWithNonElites = true
         };
 
-        var result = selector.SelectParents(population, config, random, minimumNumberOfCouples).ToList();
+        var result = selector.SelectMatingPairs(population, config, random, minimumNumberOfCouples).ToList();
 
         Assert.True(result.Count >= expectedMinimumNumberOfCouples);
 
@@ -136,7 +136,7 @@ public class ElitistCrossoverSelectorTests
     [InlineData(1, 0.9, 1, 0.1, 0, 0)]
     public void NonElitesRestrictedFromMatingWithElites(int populationSize, double proportionOfElites, int exactNumberOfElites, double proportionOfNonElitesAllowedToMate, int minimumNumberOfCouples, int expectedMinimumNumberOfCouples)
     {
-        var selector = new ElitistCrossoverSelector<int>();
+        var selector = new ElitistReproductionSelector<int>();
 
         var random = new Random();
 
@@ -149,7 +149,7 @@ public class ElitistCrossoverSelectorTests
             AllowMatingElitesWithNonElites = false
         };
 
-        var result = selector.SelectParents(population, config, random, minimumNumberOfCouples).ToList();
+        var result = selector.SelectMatingPairs(population, config, random, minimumNumberOfCouples).ToList();
 
         Assert.True(result.Count >= expectedMinimumNumberOfCouples);
 
@@ -180,7 +180,7 @@ public class ElitistCrossoverSelectorTests
     [Fact]
     public void WillProduceUniformCouplesIfOnlyTwoMembersExistInThePopulation()
     {
-        var selector = new ElitistCrossoverSelector<int>();
+        var selector = new ElitistReproductionSelector<int>();
 
         var random = new Random();
 
@@ -193,7 +193,7 @@ public class ElitistCrossoverSelectorTests
 
         var minimumNumberOfCouples = 100;
 
-        var result = selector.SelectParents(population, config, random, minimumNumberOfCouples).ToList();
+        var result = selector.SelectMatingPairs(population, config, random, minimumNumberOfCouples).ToList();
 
         Assert.Equal(minimumNumberOfCouples, result.Count);
 

@@ -2,12 +2,12 @@ using OpenGA.Net.CrossoverSelectors;
 
 namespace OpenGA.Net.Tests;
 
-public class RankSelectionCrossoverSelectorTests
+public class RankSelectionReproductionSelectorTests
 {
     [Fact]
     public void WillFailIfThereThereIsLessThanTwoIndividuals()
     {
-        var selector = new RankSelectionCrossoverSelector<int>();
+        var selector = new RankSelectionReproductionSelector<int>();
 
         var random = new Random();
 
@@ -15,7 +15,7 @@ public class RankSelectionCrossoverSelectorTests
 
         var config = new CrossoverConfiguration();
 
-        var result = selector.SelectParents(population, config, random, 100).ToList();
+        var result = selector.SelectMatingPairs(population, config, random, 100).ToList();
 
         Assert.Empty(result);
     }
@@ -23,7 +23,7 @@ public class RankSelectionCrossoverSelectorTests
     [Fact]
     public void WillProduceUniformCouplesIfOnlyTwoMembersExistInThePopulation()
     {
-        var selector = new RankSelectionCrossoverSelector<int>();
+        var selector = new RankSelectionReproductionSelector<int>();
 
         var random = new Random();
 
@@ -33,7 +33,7 @@ public class RankSelectionCrossoverSelectorTests
 
         var minimumNumberOfCouples = 100;
 
-        var result = selector.SelectParents(population, config, random, minimumNumberOfCouples).ToList();
+        var result = selector.SelectMatingPairs(population, config, random, minimumNumberOfCouples).ToList();
 
         Assert.Equal(minimumNumberOfCouples, result.Count);
 
@@ -56,7 +56,7 @@ public class RankSelectionCrossoverSelectorTests
     [Fact]
     public void RankSelectionWillPreferTheMostFitChromosomesOverALargeNumberOfRuns()
     {
-        var selector = new RankSelectionCrossoverSelector<int>();
+        var selector = new RankSelectionReproductionSelector<int>();
 
         var random = new Random();
 
@@ -78,7 +78,7 @@ public class RankSelectionCrossoverSelectorTests
 
         var numberOfCouples = 1000000;
 
-        var result = selector.SelectParents(population, config, random, numberOfCouples).ToList();
+        var result = selector.SelectMatingPairs(population, config, random, numberOfCouples).ToList();
 
         Assert.Equal(numberOfCouples, result.Count);
 

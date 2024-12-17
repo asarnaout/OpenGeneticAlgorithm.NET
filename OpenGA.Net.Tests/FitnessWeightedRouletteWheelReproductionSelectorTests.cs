@@ -2,12 +2,12 @@ using OpenGA.Net.CrossoverSelectors;
 
 namespace OpenGA.Net.Tests;
 
-public class FitnessWeightedRouletteWheelCrossoverSelectorTests
+public class FitnessWeightedRouletteWheelReproductionSelectorTests
 {
     [Fact]
     public void WillFailIfThereThereIsLessThanTwoIndividuals()
     {
-        var selector = new FitnessWeightedRouletteWheelCrossoverSelector<int>();
+        var selector = new FitnessWeightedRouletteWheelReproductionSelector<int>();
 
         var random = new Random();
 
@@ -15,7 +15,7 @@ public class FitnessWeightedRouletteWheelCrossoverSelectorTests
 
         var config = new CrossoverConfiguration();
 
-        var result = selector.SelectParents(population, config, random, 100).ToList();
+        var result = selector.SelectMatingPairs(population, config, random, 100).ToList();
 
         Assert.Empty(result);
     }
@@ -23,7 +23,7 @@ public class FitnessWeightedRouletteWheelCrossoverSelectorTests
     [Fact]
     public void WillProduceUniformCouplesIfOnlyTwoMembersExistInThePopulation()
     {
-        var selector = new FitnessWeightedRouletteWheelCrossoverSelector<int>();
+        var selector = new FitnessWeightedRouletteWheelReproductionSelector<int>();
 
         var random = new Random();
 
@@ -33,7 +33,7 @@ public class FitnessWeightedRouletteWheelCrossoverSelectorTests
 
         var minimumNumberOfCouples = 100;
 
-        var result = selector.SelectParents(population, config, random, minimumNumberOfCouples).ToList();
+        var result = selector.SelectMatingPairs(population, config, random, minimumNumberOfCouples).ToList();
 
         Assert.Equal(minimumNumberOfCouples, result.Count);
 
@@ -47,7 +47,7 @@ public class FitnessWeightedRouletteWheelCrossoverSelectorTests
     [Fact]
     public void RouletteWheelWillPreferTheMostFitChromosomesOverALargeNumberOfRuns()
     {
-        var selector = new FitnessWeightedRouletteWheelCrossoverSelector<int>();
+        var selector = new FitnessWeightedRouletteWheelReproductionSelector<int>();
 
         var random = new Random();
 
@@ -69,7 +69,7 @@ public class FitnessWeightedRouletteWheelCrossoverSelectorTests
 
         var numberOfCouples = 100000;
 
-        var result = selector.SelectParents(population, config, random, numberOfCouples).ToList();
+        var result = selector.SelectMatingPairs(population, config, random, numberOfCouples).ToList();
 
         Assert.Equal(numberOfCouples, result.Count);
 
