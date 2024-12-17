@@ -163,6 +163,13 @@ public class OpenGARunner<T>
         return this;
     }
 
+    public OpenGARunner<T> ApplyRankSelectionCrossoverSelector()
+    {
+        _crossoverSelectorStrategiesToApply.Add(new RankSelectionCrossoverSelector<T>());
+
+        return this;
+    }
+
     /// <summary>
     /// The fittest individual chromosomes are guaranteed to participate in the mating process in the current epoch/generation. Non elites may participate as well.
     /// </summary>
@@ -197,6 +204,11 @@ public class OpenGARunner<T>
         for (var i = 0; i < _epochs; i++)
         {
             List<Couple<T>> couples = [];
+
+            if (_crossoverSelectorStrategiesToApply.Count == 0)
+            {
+                //TODO: What to do here?
+            }
 
             foreach (var crossoverSelectorStrategy in _crossoverSelectorStrategiesToApply)
             {

@@ -82,11 +82,11 @@ public class ElitistCrossoverSelector<T> : BaseCrossoverSelector<T>
     /// </summary>
     private IEnumerable<Couple<T>> GenerateAdditionalPairs(CrossoverConfiguration config, HashSet<Guid> eliteIdentifiers, IList<Chromosome<T>> eliteCandidates, IList<Chromosome<T>> nonEliteCandidates)
     {
-        if(_requiredNumberOfCouples <= 0)
+        if (_requiredNumberOfCouples <= 0)
         {
             yield break;
         }
-        
+
         List<Chromosome<T>> eligibleCandidatesForPhase2 = [];
 
         if (eliteCandidates.Count > 1 || (eliteCandidates.Count == 1 && nonEliteCandidates.Count >= 1 && config.AllowMatingElitesWithNonElites))
