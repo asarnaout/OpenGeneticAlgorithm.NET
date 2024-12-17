@@ -112,7 +112,7 @@ public class OpenGARunner<T>
     /// <summary>
     /// Parents are chosen at random regardless of their fitness.
     /// </summary>
-    public OpenGARunner<T> ApplyRandomCrossover()
+    public OpenGARunner<T> ApplyRandomCrossoverSelector()
     {
         _crossoverSelectorStrategiesToApply.Add(new RandomCrossoverSelector<T>());
 
@@ -122,7 +122,7 @@ public class OpenGARunner<T>
     /// <summary>
     /// The likelihood of an individual chromosome being chosen for mating is proportional to its fitness.
     /// </summary>
-    public OpenGARunner<T> ApplyFitnessWeightedRouletteWheelCrossover()
+    public OpenGARunner<T> ApplyFitnessWeightedRouletteWheelCrossoverSelector()
     {
         _crossoverSelectorStrategiesToApply.Add(new FitnessWeightedRouletteWheelCrossoverSelector<T>());
 
@@ -136,7 +136,7 @@ public class OpenGARunner<T>
     /// <param name="stochasticTournament">Defaults to true. If set to true, then the 2 individuals chosen for mating in each 
     /// tournament are the fittest 2 individuals in the tournament, otherwise a roulette wheel is spun to choose the two winners 
     /// out of the n-individuals, where the probability of winning is proportional to each individual's fitness.</param>
-    public OpenGARunner<T> ApplyTournamentSelectionCrossover(bool stochasticTournament = true)
+    public OpenGARunner<T> ApplyTournamentCrossoverSelector(bool stochasticTournament = true)
     {
         _crossoverSelectorStrategiesToApply.Add(new TournamentCrossoverSelector<T>());
 
@@ -149,9 +149,16 @@ public class OpenGARunner<T>
     /// Apply a custom strategy for choosing mating parents. Requires an instance of a subclass of <see cref="BaseCrossoverSelector<T>">BaseCrossoverSelector<T></see>
     /// to dictate which individuals will be chosen to take part in the crossover process.
     /// </summary>
-    public OpenGARunner<T> ApplyCustomCrossoverMethod(BaseCrossoverSelector<T> matingIndividualsSelector)
+    public OpenGARunner<T> ApplyCustomCrossoverSelectorMethod(BaseCrossoverSelector<T> matingIndividualsSelector)
     {
         _crossoverSelectorStrategiesToApply.Add(matingIndividualsSelector);
+
+        return this;
+    }
+
+    public OpenGARunner<T> ApplyBoltzmannCrossoverSelector()
+    {
+        _crossoverSelectorStrategiesToApply.Add(new BoltzmannCrossoverSelector<T>());
 
         return this;
     }
@@ -162,7 +169,7 @@ public class OpenGARunner<T>
     /// <param name="proportionOfElitesInPopulation">The proportion of elites in the population. Example, if the rate is 0.2 and the population size is 100, then we have 20 elites who are guaranteed to take part in the mating process.</param>
     /// <param name="proportionOfNonElitesAllowedToMate">The proportion of non-elites allowed to take part in the mating process. Non elites are chosen randomly regardless of fitness.</param>
     /// <param name="allowMatingElitesWithNonElites">Defaults to true. Setting this value to false would restrict couples made up of an elite and non-elite members</param>
-    public OpenGARunner<T> ApplyElitistCrossover(double proportionOfElitesInPopulation, double proportionOfNonElitesAllowedToMate = 0.01d, bool allowMatingElitesWithNonElites = true)
+    public OpenGARunner<T> ApplyElitistCrossoverSelector(double proportionOfElitesInPopulation = 0.1d, double proportionOfNonElitesAllowedToMate = 0.01d, bool allowMatingElitesWithNonElites = true)
     {
         if (proportionOfElitesInPopulation <= 0 || proportionOfElitesInPopulation > 1)
         {
@@ -178,7 +185,7 @@ public class OpenGARunner<T>
 
         _crossoverConfiguration.ProportionOfNonElitesAllowedToMate = proportionOfNonElitesAllowedToMate;
 
-        _crossoverConfiguration.AllowMatingElitesWithNonElites = allowMatingElitesWithNonElites;
+        _crossoverConfiguration.AllowMatingElitesWithNonElites = proportionOfNonElitesAllowedToMate > 0d && allowMatingElitesWithNonElites;
 
         _crossoverSelectorStrategiesToApply.Add(new ElitistCrossoverSelector<T>());
 

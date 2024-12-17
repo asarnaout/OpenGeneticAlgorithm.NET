@@ -15,50 +15,24 @@ public class ElitistCrossoverSelector<T> : BaseCrossoverSelector<T>
         {
             return GenerateCouplesFromATwoIndividualPopulation(population, minimumNumberOfCouples);
         }
-
-        var populationSortedByFitness = population.OrderByDescending(x => x.CalculateFitness());
-
-        var numberOfElitesInCurrentPopulation = (int)Math.Ceiling(config.ProportionOfElitesInPopulation * population.Length);
         
-        var eliteCandidates = populationSortedByFitness.Take(numberOfElitesInCurrentPopulation).ToList();
+        var eliteCandidates = population.OrderByDescending(x => x.CalculateFitness())
+                                        .Take((int)Math.Ceiling(config.ProportionOfElitesInPopulation * population.Length))
+                                        .ToList();
         
         var eliteIdentifiers = eliteCandidates.Select(x => x.InternalIdentifier).ToHashSet();
         
-        IList<Chromosome<T>> nonEliteCandidates = [];
-
-        var eligibleCandidatesForPhase1 = eliteCandidates;
-
-        if (config.ProportionOfNonElitesAllowedToMate > 0)
-        {
-            nonEliteCandidates = population
-                                    .Where(x => !eliteIdentifiers.Contains(x.InternalIdentifier))
-                                    .OrderBy(x => random.Next())
-                                    .Take((int)Math.Ceiling(config.ProportionOfNonElitesAllowedToMate * (population.Length - eliteCandidates.Count)))
-                                    .ToList();
-
-            if (config.AllowMatingElitesWithNonElites)
-            {
-                eligibleCandidatesForPhase1 = [.. eligibleCandidatesForPhase1, .. nonEliteCandidates];
-            }
-        }
+        var nonEliteCandidates = config.ProportionOfNonElitesAllowedToMate > 0? population
+                                        .Where(x => !eliteIdentifiers.Contains(x.InternalIdentifier))
+                                        .OrderBy(x => random.Next())
+                                        .Take((int)Math.Ceiling(config.ProportionOfNonElitesAllowedToMate * (population.Length - eliteCandidates.Count)))
+                                        .ToList() : [];
 
         _requiredNumberOfCouples = minimumNumberOfCouples;
 
-        var phase1Couples = SelectAllElitesForMating(random, eliteCandidates, eligibleCandidatesForPhase1, eliteIdentifiers);
+        var phase1Couples = SelectAllElitesForMating(config, eliteIdentifiers, eliteCandidates, nonEliteCandidates);
 
-        List<Chromosome<T>> eligibleCandidatesForPhase2 = [];
-
-        if (eliteCandidates.Count > 1 || (eliteCandidates.Count == 1 && nonEliteCandidates.Count >= 1 && config.AllowMatingElitesWithNonElites))
-        {
-            eligibleCandidatesForPhase2.AddRange(eliteCandidates);
-        }
-
-        if (nonEliteCandidates.Count > 1 || (nonEliteCandidates.Count == 1 && config.AllowMatingElitesWithNonElites))
-        {
-            eligibleCandidatesForPhase2.AddRange(nonEliteCandidates);
-        }
-
-        var phase2Couples = SupplementRequiredNumberOfCouplesWithExtraPairs(config, eligibleCandidatesForPhase2, eliteIdentifiers, eliteCandidates, nonEliteCandidates);
+        var phase2Couples = GenerateAdditionalPairs(config, eliteIdentifiers, eliteCandidates, nonEliteCandidates);
         
         return [.. phase1Couples, .. phase2Couples];
     }
@@ -67,13 +41,17 @@ public class ElitistCrossoverSelector<T> : BaseCrossoverSelector<T>
     /// Phase 1: Ensure that every elite has had a chance to mate (as long as there is at least one more eligible individual to mate with).
     /// The method allows mating elites with non elites if allowMatingElitesWithNonElites is set to true. 
     /// </summary>
-    private IEnumerable<Couple<T>> SelectAllElitesForMating(Random random, IList<Chromosome<T>> eliteCandidates, List<Chromosome<T>> eligibleCandidatesForPhase1, HashSet<Guid> eliteIdentifiers)
+    private IEnumerable<Couple<T>> SelectAllElitesForMating(CrossoverConfiguration config, HashSet<Guid> eliteIdentifiers, IList<Chromosome<T>> eliteCandidates, IList<Chromosome<T>> nonEliteCandidates)
     {
-        var singleElites = new List<Chromosome<T>>(eliteCandidates.OrderBy(x => random.Next()));
+        var eligibleCandidatesForPhase1 = config.AllowMatingElitesWithNonElites
+            ? [.. eliteCandidates, .. nonEliteCandidates]
+            : eliteCandidates.ToList();
+
+        var singleElites = new HashSet<Chromosome<T>>(eliteCandidates);
 
         while (singleElites.Count > 0)
         {
-            var parent1 = singleElites[0];
+            var parent1 = singleElites.First();
 
             var pool = eligibleCandidatesForPhase1.Where(x => x != parent1).ToList();
 
@@ -102,8 +80,25 @@ public class ElitistCrossoverSelector<T> : BaseCrossoverSelector<T>
     /// out of the existing population of elites (and non-elites, if any).
     /// The method allows mating elites with non elites if allowMatingElitesWithNonElites is set to true. 
     /// </summary>
-    private IEnumerable<Couple<T>> SupplementRequiredNumberOfCouplesWithExtraPairs(CrossoverConfiguration config, List<Chromosome<T>> eligibleCandidatesForPhase2, HashSet<Guid> eliteIdentifiers, IList<Chromosome<T>> eliteCandidates, IList<Chromosome<T>> nonEliteCandidates)
+    private IEnumerable<Couple<T>> GenerateAdditionalPairs(CrossoverConfiguration config, HashSet<Guid> eliteIdentifiers, IList<Chromosome<T>> eliteCandidates, IList<Chromosome<T>> nonEliteCandidates)
     {
+        if(_requiredNumberOfCouples <= 0)
+        {
+            yield break;
+        }
+        
+        List<Chromosome<T>> eligibleCandidatesForPhase2 = [];
+
+        if (eliteCandidates.Count > 1 || (eliteCandidates.Count == 1 && nonEliteCandidates.Count >= 1 && config.AllowMatingElitesWithNonElites))
+        {
+            eligibleCandidatesForPhase2.AddRange(eliteCandidates);
+        }
+
+        if (nonEliteCandidates.Count > 1 || (nonEliteCandidates.Count == 1 && config.AllowMatingElitesWithNonElites))
+        {
+            eligibleCandidatesForPhase2.AddRange(nonEliteCandidates);
+        }
+
         for (var i = 0; i < _requiredNumberOfCouples; i++)
         {
             if (eligibleCandidatesForPhase2.Count <= 1)
