@@ -1,10 +1,10 @@
-namespace OpenGA.Net.CrossoverSelectors;
+namespace OpenGA.Net.ReproductionSelectors;
 
 public class ElitistReproductionSelector<T> : BaseReproductionSelector<T>
 {
     private int _requiredNumberOfCouples;
 
-    public override IEnumerable<Couple<T>> SelectMatingPairs(Chromosome<T>[] population, CrossoverConfiguration config, Random random, int minimumNumberOfCouples)
+    public override IEnumerable<Couple<T>> SelectMatingPairs(Chromosome<T>[] population, ReproductionSelectorConfiguration config, Random random, int minimumNumberOfCouples)
     {
         if (population.Length <= 1)
         {
@@ -41,7 +41,7 @@ public class ElitistReproductionSelector<T> : BaseReproductionSelector<T>
     /// Phase 1: Ensure that every elite has had a chance to mate (as long as there is at least one more eligible individual to mate with).
     /// The method allows mating elites with non elites if allowMatingElitesWithNonElites is set to true. 
     /// </summary>
-    private IEnumerable<Couple<T>> SelectAllElitesForMating(CrossoverConfiguration config, HashSet<Guid> eliteIdentifiers, IList<Chromosome<T>> eliteCandidates, IList<Chromosome<T>> nonEliteCandidates)
+    private IEnumerable<Couple<T>> SelectAllElitesForMating(ReproductionSelectorConfiguration config, HashSet<Guid> eliteIdentifiers, IList<Chromosome<T>> eliteCandidates, IList<Chromosome<T>> nonEliteCandidates)
     {
         var eligibleCandidatesForPhase1 = config.AllowMatingElitesWithNonElites
             ? [.. eliteCandidates, .. nonEliteCandidates]
@@ -80,7 +80,7 @@ public class ElitistReproductionSelector<T> : BaseReproductionSelector<T>
     /// out of the existing population of elites (and non-elites, if any).
     /// The method allows mating elites with non elites if allowMatingElitesWithNonElites is set to true. 
     /// </summary>
-    private IEnumerable<Couple<T>> GenerateAdditionalPairs(CrossoverConfiguration config, HashSet<Guid> eliteIdentifiers, IList<Chromosome<T>> eliteCandidates, IList<Chromosome<T>> nonEliteCandidates)
+    private IEnumerable<Couple<T>> GenerateAdditionalPairs(ReproductionSelectorConfiguration config, HashSet<Guid> eliteIdentifiers, IList<Chromosome<T>> eliteCandidates, IList<Chromosome<T>> nonEliteCandidates)
     {
         if (_requiredNumberOfCouples <= 0)
         {

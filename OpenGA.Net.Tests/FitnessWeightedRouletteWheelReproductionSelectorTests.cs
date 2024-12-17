@@ -1,4 +1,4 @@
-using OpenGA.Net.CrossoverSelectors;
+using OpenGA.Net.ReproductionSelectors;
 
 namespace OpenGA.Net.Tests;
 
@@ -13,7 +13,7 @@ public class FitnessWeightedRouletteWheelReproductionSelectorTests
 
         var population = GenerateRandomPopulation(1, random);
 
-        var config = new CrossoverConfiguration();
+        var config = new ReproductionSelectorConfiguration();
 
         var result = selector.SelectMatingPairs(population, config, random, 100).ToList();
 
@@ -29,7 +29,7 @@ public class FitnessWeightedRouletteWheelReproductionSelectorTests
 
         var population = GenerateRandomPopulation(2, random);
 
-        var config = new CrossoverConfiguration();
+        var config = new ReproductionSelectorConfiguration();
 
         var minimumNumberOfCouples = 100;
 
@@ -65,7 +65,7 @@ public class FitnessWeightedRouletteWheelReproductionSelectorTests
 
         population = [.. population.OrderBy(x => random.Next())];
 
-        var config = new CrossoverConfiguration();
+        var config = new ReproductionSelectorConfiguration();
 
         var numberOfCouples = 100000;
 

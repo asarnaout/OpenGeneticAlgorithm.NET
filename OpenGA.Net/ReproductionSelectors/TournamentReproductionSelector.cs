@@ -1,8 +1,8 @@
-namespace OpenGA.Net.CrossoverSelectors;
+namespace OpenGA.Net.ReproductionSelectors;
 
 public class TournamentReproductionSelector<T> : BaseReproductionSelector<T>
 {
-    public override IEnumerable<Couple<T>> SelectMatingPairs(Chromosome<T>[] population, CrossoverConfiguration config, Random random, int minimumNumberOfCouples)
+    public override IEnumerable<Couple<T>> SelectMatingPairs(Chromosome<T>[] population, ReproductionSelectorConfiguration config, Random random, int minimumNumberOfCouples)
     {
         config.TournamentSize = Math.Min(population.Length, config.TournamentSize); //Tournament cannot be larger than the population size
 
@@ -19,7 +19,7 @@ public class TournamentReproductionSelector<T> : BaseReproductionSelector<T>
         return RunTournaments(population, config, random, minimumNumberOfCouples);
     }
 
-    private IEnumerable<Couple<T>> RunTournaments(Chromosome<T>[] population, CrossoverConfiguration config, Random random, int minimumNumberOfCouples)
+    private static IEnumerable<Couple<T>> RunTournaments(Chromosome<T>[] population, ReproductionSelectorConfiguration config, Random random, int minimumNumberOfCouples)
     {
         for (var i = 0; i < minimumNumberOfCouples; i++)
         {

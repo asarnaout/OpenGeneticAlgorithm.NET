@@ -1,4 +1,4 @@
-using OpenGA.Net.CrossoverSelectors;
+using OpenGA.Net.ReproductionSelectors;
 
 namespace OpenGA.Net.Tests;
 
@@ -34,7 +34,7 @@ public class ElitistReproductionSelectorTests
 
         var population = GenerateRandomPopulation(populationSize, random);
 
-        var config = new CrossoverConfiguration
+        var config = new ReproductionSelectorConfiguration
         {
             ProportionOfNonElitesAllowedToMate = 0.0d,
             ProportionOfElitesInPopulation = proportionOfElites,
@@ -90,7 +90,7 @@ public class ElitistReproductionSelectorTests
 
         var population = GenerateRandomPopulation(populationSize, random);
 
-        var config = new CrossoverConfiguration
+        var config = new ReproductionSelectorConfiguration
         {
             ProportionOfNonElitesAllowedToMate = proportionOfNonElitesAllowedToMate,
             ProportionOfElitesInPopulation = proportionOfElites,
@@ -142,7 +142,7 @@ public class ElitistReproductionSelectorTests
 
         var population = GenerateRandomPopulation(populationSize, random);
 
-        var config = new CrossoverConfiguration
+        var config = new ReproductionSelectorConfiguration
         {
             ProportionOfNonElitesAllowedToMate = proportionOfNonElitesAllowedToMate,
             ProportionOfElitesInPopulation = proportionOfElites,
@@ -186,7 +186,7 @@ public class ElitistReproductionSelectorTests
 
         var population = GenerateRandomPopulation(2, random);
 
-        var config = new CrossoverConfiguration
+        var config = new ReproductionSelectorConfiguration
         {
             ProportionOfElitesInPopulation = 0.3
         };

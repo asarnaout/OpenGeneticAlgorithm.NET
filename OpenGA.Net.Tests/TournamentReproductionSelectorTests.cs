@@ -1,4 +1,4 @@
-using OpenGA.Net.CrossoverSelectors;
+using OpenGA.Net.ReproductionSelectors;
 
 namespace OpenGA.Net.Tests;
 
@@ -13,7 +13,7 @@ public class TournamentReproductionSelectorTests
 
         var population = GenerateRandomPopulation(1, random);
 
-        var config = new CrossoverConfiguration
+        var config = new ReproductionSelectorConfiguration
         {
             TournamentSize = 5
         };
@@ -32,7 +32,7 @@ public class TournamentReproductionSelectorTests
 
         var population = GenerateRandomPopulation(2, random);
 
-        var config = new CrossoverConfiguration
+        var config = new ReproductionSelectorConfiguration
         {
             TournamentSize = 5
         };
@@ -59,7 +59,7 @@ public class TournamentReproductionSelectorTests
 
         var population = GenerateRandomPopulation(3, random);
 
-        var config = new CrossoverConfiguration
+        var config = new ReproductionSelectorConfiguration
         {
             TournamentSize = 5,
         };
@@ -80,7 +80,7 @@ public class TournamentReproductionSelectorTests
 
         var population = GenerateRandomPopulation(3, random);
 
-        var config = new CrossoverConfiguration
+        var config = new ReproductionSelectorConfiguration
         {
             TournamentSize = 3
         };
@@ -109,7 +109,7 @@ public class TournamentReproductionSelectorTests
 
         var population = GenerateRandomPopulation(3, random);
 
-        var config = new CrossoverConfiguration
+        var config = new ReproductionSelectorConfiguration
         {
             TournamentSize = 5,
             StochasticTournament = true

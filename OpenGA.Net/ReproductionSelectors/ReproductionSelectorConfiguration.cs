@@ -1,6 +1,6 @@
-namespace OpenGA.Net;
+namespace OpenGA.Net.ReproductionSelectors;
 
-public struct CrossoverConfiguration
+public struct ReproductionSelectorConfiguration
 {
     #region Elitism
 
@@ -20,7 +20,7 @@ public struct CrossoverConfiguration
     
     #endregion
 
-    public  CrossoverConfiguration()
+    public  ReproductionSelectorConfiguration()
     {
     }
 }

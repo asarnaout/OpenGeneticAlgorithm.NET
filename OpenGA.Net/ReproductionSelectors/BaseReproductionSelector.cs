@@ -1,8 +1,8 @@
-namespace OpenGA.Net.CrossoverSelectors;
+namespace OpenGA.Net.ReproductionSelectors;
 
 public abstract class BaseReproductionSelector<T>
 {
-    public abstract IEnumerable<Couple<T>> SelectMatingPairs(Chromosome<T>[] population, CrossoverConfiguration config, Random random, int minimumNumberOfCouples);
+    public abstract IEnumerable<Couple<T>> SelectMatingPairs(Chromosome<T>[] population, ReproductionSelectorConfiguration config, Random random, int minimumNumberOfCouples);
 
     protected virtual IEnumerable<Couple<T>> CreateStochasticCouples(IList<Chromosome<T>> candidates, Random random, int minimumNumberOfCouples, Func<WeightedRouletteWheel<Chromosome<T>>> rouletteWheelBuilder)
     {

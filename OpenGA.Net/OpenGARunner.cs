@@ -1,4 +1,4 @@
-using OpenGA.Net.CrossoverSelectors;
+using OpenGA.Net.ReproductionSelectors;
 
 namespace OpenGA.Net;
 
@@ -12,7 +12,7 @@ public class OpenGARunner<T>
 
     private double _crossoverRate = 0.9;
 
-    private CrossoverConfiguration _crossoverConfiguration = new();
+    private ReproductionSelectorConfiguration _reproductionSelectorConfiguration = new();
 
     private ReplacementConfiguration _replacementConfiguration = new();
 
@@ -140,7 +140,7 @@ public class OpenGARunner<T>
     {
         _reproductionSelectorStrategiesToApply.Add(new TournamentReproductionSelector<T>());
 
-        _crossoverConfiguration.StochasticTournament = stochasticTournament;
+        _reproductionSelectorConfiguration.StochasticTournament = stochasticTournament;
 
         return this;
     }
@@ -193,16 +193,16 @@ public class OpenGARunner<T>
             throw new ArgumentOutOfRangeException(nameof(proportionOfElitesInPopulation), "Value must be greater than 0 and less than or equal to 1.");
         }
 
-        _crossoverConfiguration.ProportionOfElitesInPopulation = proportionOfElitesInPopulation;
+        _reproductionSelectorConfiguration.ProportionOfElitesInPopulation = proportionOfElitesInPopulation;
 
         if (proportionOfNonElitesAllowedToMate < 0 || proportionOfNonElitesAllowedToMate > 1)
         {
             throw new ArgumentOutOfRangeException(nameof(proportionOfNonElitesAllowedToMate), "Value must be between 0 and 1.");
         }
 
-        _crossoverConfiguration.ProportionOfNonElitesAllowedToMate = proportionOfNonElitesAllowedToMate;
+        _reproductionSelectorConfiguration.ProportionOfNonElitesAllowedToMate = proportionOfNonElitesAllowedToMate;
 
-        _crossoverConfiguration.AllowMatingElitesWithNonElites = proportionOfNonElitesAllowedToMate > 0d && allowMatingElitesWithNonElites;
+        _reproductionSelectorConfiguration.AllowMatingElitesWithNonElites = proportionOfNonElitesAllowedToMate > 0d && allowMatingElitesWithNonElites;
 
         _reproductionSelectorStrategiesToApply.Add(new ElitistReproductionSelector<T>());
 
@@ -225,7 +225,7 @@ public class OpenGARunner<T>
                 var minimumNumberOfCouples = 0; //TODO: MUST ADJUST THIS
                 //TODO: Must adjust tournament params as well
 
-                couples.AddRange(crossoverSelectorStrategy.SelectMatingPairs(_population, _crossoverConfiguration, _random, minimumNumberOfCouples));
+                couples.AddRange(crossoverSelectorStrategy.SelectMatingPairs(_population, _reproductionSelectorConfiguration, _random, minimumNumberOfCouples));
             }
 
             foreach (var chromosome in Population)

@@ -1,4 +1,4 @@
-using OpenGA.Net.CrossoverSelectors;
+using OpenGA.Net.ReproductionSelectors;
 
 namespace OpenGA.Net.Tests;
 
@@ -13,7 +13,7 @@ public class RandomReproductionSelectorTests
 
         var population = GenerateRandomPopulation(1, random);
 
-        var config = new CrossoverConfiguration();
+        var config = new ReproductionSelectorConfiguration();
 
         var result = selector.SelectMatingPairs(population, config, random, 100).ToList();
 
@@ -29,7 +29,7 @@ public class RandomReproductionSelectorTests
 
         var population = GenerateRandomPopulation(2, random);
 
-        var config = new CrossoverConfiguration();
+        var config = new ReproductionSelectorConfiguration();
 
         var minimumNumberOfCouples = 100;
 
@@ -53,7 +53,7 @@ public class RandomReproductionSelectorTests
 
         var population = GenerateRandomPopulation(30, random);
 
-        var config = new CrossoverConfiguration();
+        var config = new ReproductionSelectorConfiguration();
 
         var numberOfCouples = 100;
 
