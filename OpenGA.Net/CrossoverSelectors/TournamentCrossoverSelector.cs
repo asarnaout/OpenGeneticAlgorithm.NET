@@ -8,19 +8,19 @@ public class TournamentCrossoverSelector<T> : BaseCrossoverSelector<T>
 
         if (config.TournamentSize <= 1)
         {
-            yield break;
+            return [];
         }
 
         if (config.TournamentSize == 2)
         {
-            for (var i = 0; i < minimumNumberOfCouples; i++)
-            {
-                yield return Couple<T>.Pair(population[0], population[1]);
-            }
-
-            yield break;
+            return GenerateCouplesFromATwoIndividualPopulation(population, minimumNumberOfCouples);
         }
+        
+        return RunTournaments(population, config, random, minimumNumberOfCouples);
+    }
 
+    private IEnumerable<Couple<T>> RunTournaments(Chromosome<T>[] population, CrossoverConfiguration config, Random random, int minimumNumberOfCouples)
+    {
         for (var i = 0; i < minimumNumberOfCouples; i++)
         {
             var tournament = population.OrderBy(x => random.Next()).Take(config.TournamentSize).ToList();
