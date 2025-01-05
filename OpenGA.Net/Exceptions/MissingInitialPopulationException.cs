@@ -1,4 +1,4 @@
-namespace OpenGA.Net;
+namespace OpenGA.Net.Exceptions;
 
 public class MissingInitialPopulationException : Exception
 {

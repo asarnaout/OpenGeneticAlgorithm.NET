@@ -2,7 +2,7 @@ namespace OpenGA.Net.ReproductionSelectors;
 
 public class RankSelectionReproductionSelector<T> : BaseReproductionSelector<T>
 {
-    public override IEnumerable<Couple<T>> SelectMatingPairs(Chromosome<T>[] population, ReproductionSelectorConfiguration config, Random random, int minimumNumberOfCouples)
+    protected internal override IEnumerable<Couple<T>> SelectMatingPairs(Chromosome<T>[] population, Random random, int minimumNumberOfCouples)
     {
         if (population.Length <= 1)
         {

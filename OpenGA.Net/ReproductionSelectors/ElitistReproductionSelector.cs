@@ -1,10 +1,16 @@
 namespace OpenGA.Net.ReproductionSelectors;
 
-public class ElitistReproductionSelector<T> : BaseReproductionSelector<T>
+public class ElitistReproductionSelector<T>(bool allowMatingElitesWithNonElites, float proportionOfElitesInPopulation, float proportionOfNonElitesAllowedToMate) : BaseReproductionSelector<T>
 {
     private int _requiredNumberOfCouples;
 
-    public override IEnumerable<Couple<T>> SelectMatingPairs(Chromosome<T>[] population, ReproductionSelectorConfiguration config, Random random, int minimumNumberOfCouples)
+    internal bool AllowMatingElitesWithNonElites { get; } = allowMatingElitesWithNonElites;
+
+    internal float ProportionOfNonElitesAllowedToMate { get; } = proportionOfNonElitesAllowedToMate;
+
+    internal float ProportionOfElitesInPopulation { get; } = proportionOfElitesInPopulation;
+
+    protected internal override IEnumerable<Couple<T>> SelectMatingPairs(Chromosome<T>[] population, Random random, int minimumNumberOfCouples)
     {
         if (population.Length <= 1)
         {
@@ -17,22 +23,22 @@ public class ElitistReproductionSelector<T> : BaseReproductionSelector<T>
         }
         
         var eliteCandidates = population.OrderByDescending(x => x.CalculateFitness())
-                                        .Take((int)Math.Ceiling(config.ProportionOfElitesInPopulation * population.Length))
+                                        .Take((int)Math.Ceiling(ProportionOfElitesInPopulation * population.Length))
                                         .ToList();
         
         var eliteIdentifiers = eliteCandidates.Select(x => x.InternalIdentifier).ToHashSet();
         
-        var nonEliteCandidates = config.ProportionOfNonElitesAllowedToMate > 0? population
+        var nonEliteCandidates = ProportionOfNonElitesAllowedToMate > 0? population
                                         .Where(x => !eliteIdentifiers.Contains(x.InternalIdentifier))
                                         .OrderBy(x => random.Next())
-                                        .Take((int)Math.Ceiling(config.ProportionOfNonElitesAllowedToMate * (population.Length - eliteCandidates.Count)))
+                                        .Take((int)Math.Ceiling(ProportionOfNonElitesAllowedToMate * (population.Length - eliteCandidates.Count)))
                                         .ToList() : [];
 
         _requiredNumberOfCouples = minimumNumberOfCouples;
 
-        var phase1Couples = SelectAllElitesForMating(config, eliteIdentifiers, eliteCandidates, nonEliteCandidates);
+        var phase1Couples = SelectAllElitesForMating(eliteIdentifiers, eliteCandidates, nonEliteCandidates);
 
-        var phase2Couples = GenerateAdditionalPairs(config, eliteIdentifiers, eliteCandidates, nonEliteCandidates);
+        var phase2Couples = GenerateAdditionalPairs(eliteIdentifiers, eliteCandidates, nonEliteCandidates);
         
         return [.. phase1Couples, .. phase2Couples];
     }
@@ -41,9 +47,9 @@ public class ElitistReproductionSelector<T> : BaseReproductionSelector<T>
     /// Phase 1: Ensure that every elite has had a chance to mate (as long as there is at least one more eligible individual to mate with).
     /// The method allows mating elites with non elites if allowMatingElitesWithNonElites is set to true. 
     /// </summary>
-    private IEnumerable<Couple<T>> SelectAllElitesForMating(ReproductionSelectorConfiguration config, HashSet<Guid> eliteIdentifiers, IList<Chromosome<T>> eliteCandidates, IList<Chromosome<T>> nonEliteCandidates)
+    private IEnumerable<Couple<T>> SelectAllElitesForMating(HashSet<Guid> eliteIdentifiers, IList<Chromosome<T>> eliteCandidates, IList<Chromosome<T>> nonEliteCandidates)
     {
-        var eligibleCandidatesForPhase1 = config.AllowMatingElitesWithNonElites
+        var eligibleCandidatesForPhase1 = AllowMatingElitesWithNonElites
             ? [.. eliteCandidates, .. nonEliteCandidates]
             : eliteCandidates.ToList();
 
@@ -80,7 +86,7 @@ public class ElitistReproductionSelector<T> : BaseReproductionSelector<T>
     /// out of the existing population of elites (and non-elites, if any).
     /// The method allows mating elites with non elites if allowMatingElitesWithNonElites is set to true. 
     /// </summary>
-    private IEnumerable<Couple<T>> GenerateAdditionalPairs(ReproductionSelectorConfiguration config, HashSet<Guid> eliteIdentifiers, IList<Chromosome<T>> eliteCandidates, IList<Chromosome<T>> nonEliteCandidates)
+    private IEnumerable<Couple<T>> GenerateAdditionalPairs(HashSet<Guid> eliteIdentifiers, IList<Chromosome<T>> eliteCandidates, IList<Chromosome<T>> nonEliteCandidates)
     {
         if (_requiredNumberOfCouples <= 0)
         {
@@ -89,12 +95,12 @@ public class ElitistReproductionSelector<T> : BaseReproductionSelector<T>
 
         List<Chromosome<T>> eligibleCandidatesForPhase2 = [];
 
-        if (eliteCandidates.Count > 1 || (eliteCandidates.Count == 1 && nonEliteCandidates.Count >= 1 && config.AllowMatingElitesWithNonElites))
+        if (eliteCandidates.Count > 1 || (eliteCandidates.Count == 1 && nonEliteCandidates.Count >= 1 && AllowMatingElitesWithNonElites))
         {
             eligibleCandidatesForPhase2.AddRange(eliteCandidates);
         }
 
-        if (nonEliteCandidates.Count > 1 || (nonEliteCandidates.Count == 1 && config.AllowMatingElitesWithNonElites))
+        if (nonEliteCandidates.Count > 1 || (nonEliteCandidates.Count == 1 && AllowMatingElitesWithNonElites))
         {
             eligibleCandidatesForPhase2.AddRange(nonEliteCandidates);
         }
@@ -110,7 +116,7 @@ public class ElitistReproductionSelector<T> : BaseReproductionSelector<T>
 
             var winner1 = rouletteWheel.SpinAndReadjustWheel();
 
-            if (config.ProportionOfNonElitesAllowedToMate > 0 && !config.AllowMatingElitesWithNonElites)
+            if (ProportionOfNonElitesAllowedToMate > 0 && !AllowMatingElitesWithNonElites)
             {
                 var isEliteWinner = eliteIdentifiers.Contains(winner1.InternalIdentifier);
 

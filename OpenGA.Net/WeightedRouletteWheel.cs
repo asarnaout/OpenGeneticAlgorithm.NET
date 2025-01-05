@@ -1,6 +1,6 @@
 namespace OpenGA.Net;
 
-public struct WeightedRouletteWheel<T> where T : IEquatable<T>
+internal struct WeightedRouletteWheel<T> where T : IEquatable<T>
 {
     private Func<T, double> _weightSelector = default!;
 
@@ -14,7 +14,7 @@ public struct WeightedRouletteWheel<T> where T : IEquatable<T>
     {
     }
 
-    public static WeightedRouletteWheel<T> Init(IList<T> candidates, Func<T, double> weighBy)
+    internal static WeightedRouletteWheel<T> Init(IList<T> candidates, Func<T, double> weighBy)
     {
         return new WeightedRouletteWheel<T>
         {
@@ -23,12 +23,12 @@ public struct WeightedRouletteWheel<T> where T : IEquatable<T>
         }.SetupProbabilities(weighBy);
     }
 
-    public static WeightedRouletteWheel<T> InitWithUniformWeights(IList<T> candidates)
+    internal static WeightedRouletteWheel<T> InitWithUniformWeights(IList<T> candidates)
     {
         return Init(candidates, d => 1.0);
     }
 
-    public T Spin()
+    internal T Spin()
     {
         var random = _random.NextDouble();
 
@@ -43,7 +43,7 @@ public struct WeightedRouletteWheel<T> where T : IEquatable<T>
         return _candidates[^1];
     }
 
-    public T SpinAndReadjustWheel()
+    internal T SpinAndReadjustWheel()
     {
         var winner = Spin();
 

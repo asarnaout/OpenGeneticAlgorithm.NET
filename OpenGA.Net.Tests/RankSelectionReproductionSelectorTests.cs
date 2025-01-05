@@ -13,9 +13,7 @@ public class RankSelectionReproductionSelectorTests
 
         var population = GenerateRandomPopulation(1, random);
 
-        var config = new ReproductionSelectorConfiguration();
-
-        var result = selector.SelectMatingPairs(population, config, random, 100).ToList();
+        var result = selector.SelectMatingPairs(population, random, 100).ToList();
 
         Assert.Empty(result);
     }
@@ -29,11 +27,9 @@ public class RankSelectionReproductionSelectorTests
 
         var population = GenerateRandomPopulation(2, random);
 
-        var config = new ReproductionSelectorConfiguration();
-
         var minimumNumberOfCouples = 100;
 
-        var result = selector.SelectMatingPairs(population, config, random, minimumNumberOfCouples).ToList();
+        var result = selector.SelectMatingPairs(population, random, minimumNumberOfCouples).ToList();
 
         Assert.Equal(minimumNumberOfCouples, result.Count);
 
@@ -74,11 +70,9 @@ public class RankSelectionReproductionSelectorTests
 
         population = [.. population.OrderBy(x => random.Next())];
 
-        var config = new ReproductionSelectorConfiguration();
-
         var numberOfCouples = 1000000;
 
-        var result = selector.SelectMatingPairs(population, config, random, numberOfCouples).ToList();
+        var result = selector.SelectMatingPairs(population, random, numberOfCouples).ToList();
 
         Assert.Equal(numberOfCouples, result.Count);
 

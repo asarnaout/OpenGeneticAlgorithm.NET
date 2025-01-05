@@ -7,18 +7,13 @@ public class TournamentReproductionSelectorTests
     [Fact]
     public void WillFailIfThereThereIsLessThanTwoIndividuals()
     {
-        var selector = new TournamentReproductionSelector<int>();
+        var selector = new TournamentReproductionSelector<int>(false);
 
         var random = new Random();
 
         var population = GenerateRandomPopulation(1, random);
 
-        var config = new ReproductionSelectorConfiguration
-        {
-            TournamentSize = 5
-        };
-
-        var result = selector.SelectMatingPairs(population, config, random, 100).ToList();
+        var result = selector.SelectMatingPairs(population, random, 100).ToList();
 
         Assert.Empty(result);
     }
@@ -26,20 +21,15 @@ public class TournamentReproductionSelectorTests
     [Fact]
     public void WillProduceUniformCouplesIfOnlyTwoMembersExistInThePopulation()
     {
-        var selector = new TournamentReproductionSelector<int>();
+        var selector = new TournamentReproductionSelector<int>(false);
 
         var random = new Random();
 
         var population = GenerateRandomPopulation(2, random);
 
-        var config = new ReproductionSelectorConfiguration
-        {
-            TournamentSize = 5
-        };
-
         var minimumNumberOfCouples = 100;
 
-        var result = selector.SelectMatingPairs(population, config, random, minimumNumberOfCouples).ToList();
+        var result = selector.SelectMatingPairs(population, random, minimumNumberOfCouples).ToList();
 
         Assert.Equal(minimumNumberOfCouples, result.Count);
 
@@ -53,20 +43,15 @@ public class TournamentReproductionSelectorTests
     [Fact]
     public void WillRunIfTheTournamentSizeIsLargerThanThePopulationSize()
     {
-        var selector = new TournamentReproductionSelector<int>();
+        var selector = new TournamentReproductionSelector<int>(true);
 
         var random = new Random();
 
         var population = GenerateRandomPopulation(3, random);
 
-        var config = new ReproductionSelectorConfiguration
-        {
-            TournamentSize = 5,
-        };
-
         var minimumNumberOfCouples = 100;
 
-        var result = selector.SelectMatingPairs(population, config, random, minimumNumberOfCouples).ToList();
+        var result = selector.SelectMatingPairs(population, random, minimumNumberOfCouples).ToList();
 
         Assert.Equal(minimumNumberOfCouples, result.Count);
     }
@@ -74,20 +59,15 @@ public class TournamentReproductionSelectorTests
     [Fact]
     public void WillRunOnNonStochasticTournaments()
     {
-        var selector = new TournamentReproductionSelector<int>();
+        var selector = new TournamentReproductionSelector<int>(false);
 
         var random = new Random();
 
         var population = GenerateRandomPopulation(3, random);
 
-        var config = new ReproductionSelectorConfiguration
-        {
-            TournamentSize = 3
-        };
-
         var minimumNumberOfCouples = 100;
 
-        var result = selector.SelectMatingPairs(population, config, random, minimumNumberOfCouples).ToList();
+        var result = selector.SelectMatingPairs(population, random, minimumNumberOfCouples).ToList();
 
         Assert.Equal(minimumNumberOfCouples, result.Count);
 
@@ -103,21 +83,15 @@ public class TournamentReproductionSelectorTests
     [Fact]
     public void WillRunWithStochasticTournaments()
     {
-        var selector = new TournamentReproductionSelector<int>();
+        var selector = new TournamentReproductionSelector<int>(true);
 
         var random = new Random();
 
         var population = GenerateRandomPopulation(3, random);
 
-        var config = new ReproductionSelectorConfiguration
-        {
-            TournamentSize = 5,
-            StochasticTournament = true
-        };
-
         var minimumNumberOfCouples = 100;
 
-        var result = selector.SelectMatingPairs(population, config, random, minimumNumberOfCouples).ToList();
+        var result = selector.SelectMatingPairs(population, random, minimumNumberOfCouples).ToList();
 
         Assert.Equal(minimumNumberOfCouples, result.Count);
     }

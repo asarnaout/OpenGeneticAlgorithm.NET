@@ -26,21 +26,15 @@ public class ElitistReproductionSelectorTests
     [InlineData(3, 0.9, 3, 3, 3)]
     [InlineData(1, 0.9, 1, 0, 0)] //Case of interest
     [InlineData(1, 0.9, 1, 100, 0)] //Case of interest
-    public void OnlyElitesAllowedToMate(int populationSize, double proportionOfElites, int exactNumberOfElites, int minimumNumberOfCouples, int expectedMinimumNumberOfCouples)
+    public void OnlyElitesAllowedToMate(int populationSize, float proportionOfElites, int exactNumberOfElites, int minimumNumberOfCouples, int expectedMinimumNumberOfCouples)
     {
-        var selector = new ElitistReproductionSelector<int>();
+        var selector = new ElitistReproductionSelector<int>(false, proportionOfElites, 0.0f);
 
         var random = new Random();
 
         var population = GenerateRandomPopulation(populationSize, random);
 
-        var config = new ReproductionSelectorConfiguration
-        {
-            ProportionOfNonElitesAllowedToMate = 0.0d,
-            ProportionOfElitesInPopulation = proportionOfElites,
-        };
-
-        var result = selector.SelectMatingPairs(population, config, random, minimumNumberOfCouples).ToList();
+        var result = selector.SelectMatingPairs(population, random, minimumNumberOfCouples).ToList();
 
         Assert.True(result.Count >= expectedMinimumNumberOfCouples);
 
@@ -82,22 +76,15 @@ public class ElitistReproductionSelectorTests
     [InlineData(3, 0.4, 2, 0.1, 3, 3)]
     [InlineData(3, 0.9, 3, 0.01, 3, 3)] //Case of interest
     [InlineData(1, 0.9, 1, 0.1, 0, 0)] //Case of interest
-    public void NonElitesAllowedToMateWithElites(int populationSize, double proportionOfElites, int exactNumberOfElites, double proportionOfNonElitesAllowedToMate, int minimumNumberOfCouples, int expectedMinimumNumberOfCouples)
+    public void NonElitesAllowedToMateWithElites(int populationSize, float proportionOfElites, int exactNumberOfElites, float proportionOfNonElitesAllowedToMate, int minimumNumberOfCouples, int expectedMinimumNumberOfCouples)
     {
-        var selector = new ElitistReproductionSelector<int>();
+        var selector = new ElitistReproductionSelector<int>(true, proportionOfElites, proportionOfNonElitesAllowedToMate);
 
         var random = new Random();
 
         var population = GenerateRandomPopulation(populationSize, random);
 
-        var config = new ReproductionSelectorConfiguration
-        {
-            ProportionOfNonElitesAllowedToMate = proportionOfNonElitesAllowedToMate,
-            ProportionOfElitesInPopulation = proportionOfElites,
-            AllowMatingElitesWithNonElites = true
-        };
-
-        var result = selector.SelectMatingPairs(population, config, random, minimumNumberOfCouples).ToList();
+        var result = selector.SelectMatingPairs(population, random, minimumNumberOfCouples).ToList();
 
         Assert.True(result.Count >= expectedMinimumNumberOfCouples);
 
@@ -134,22 +121,15 @@ public class ElitistReproductionSelectorTests
     [InlineData(3, 0.4, 2, 0.1, 3, 3)]
     [InlineData(3, 0.9, 3, 0.01, 3, 3)]
     [InlineData(1, 0.9, 1, 0.1, 0, 0)]
-    public void NonElitesRestrictedFromMatingWithElites(int populationSize, double proportionOfElites, int exactNumberOfElites, double proportionOfNonElitesAllowedToMate, int minimumNumberOfCouples, int expectedMinimumNumberOfCouples)
+    public void NonElitesRestrictedFromMatingWithElites(int populationSize, float proportionOfElites, int exactNumberOfElites, float proportionOfNonElitesAllowedToMate, int minimumNumberOfCouples, int expectedMinimumNumberOfCouples)
     {
-        var selector = new ElitistReproductionSelector<int>();
+        var selector = new ElitistReproductionSelector<int>(false, proportionOfElites, proportionOfNonElitesAllowedToMate);
 
         var random = new Random();
 
         var population = GenerateRandomPopulation(populationSize, random);
 
-        var config = new ReproductionSelectorConfiguration
-        {
-            ProportionOfNonElitesAllowedToMate = proportionOfNonElitesAllowedToMate,
-            ProportionOfElitesInPopulation = proportionOfElites,
-            AllowMatingElitesWithNonElites = false
-        };
-
-        var result = selector.SelectMatingPairs(population, config, random, minimumNumberOfCouples).ToList();
+        var result = selector.SelectMatingPairs(population, random, minimumNumberOfCouples).ToList();
 
         Assert.True(result.Count >= expectedMinimumNumberOfCouples);
 
@@ -180,20 +160,15 @@ public class ElitistReproductionSelectorTests
     [Fact]
     public void WillProduceUniformCouplesIfOnlyTwoMembersExistInThePopulation()
     {
-        var selector = new ElitistReproductionSelector<int>();
+        var selector = new ElitistReproductionSelector<int>(false, 0.3f, 0.2f);
 
         var random = new Random();
 
         var population = GenerateRandomPopulation(2, random);
 
-        var config = new ReproductionSelectorConfiguration
-        {
-            ProportionOfElitesInPopulation = 0.3
-        };
-
         var minimumNumberOfCouples = 100;
 
-        var result = selector.SelectMatingPairs(population, config, random, minimumNumberOfCouples).ToList();
+        var result = selector.SelectMatingPairs(population, random, minimumNumberOfCouples).ToList();
 
         Assert.Equal(minimumNumberOfCouples, result.Count);
 
