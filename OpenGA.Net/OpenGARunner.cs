@@ -13,7 +13,7 @@ public class OpenGARunner<T>
 
     private float _crossoverRate = 0.9f;
 
-    private readonly ReproductionSelectorConfiguration<T> _reproductionSelectorConfig = new();
+    public readonly ReproductionSelectorConfiguration<T> _reproductionSelectorConfig = new();
 
     private ReplacementConfiguration _replacementConfiguration = new();
 
@@ -108,11 +108,14 @@ public class OpenGARunner<T>
         return this;
     }
 
-    public OpenGARunner<T> ApplyReproductionSelectors(Action<ReproductionSelectorConfiguration<T>> selectorConfigurator)
+    public OpenGARunner<T> ApplyReproductionSelectors(params Action<ReproductionSelectorConfiguration<T>>[] selectorConfigurator)
     {
         ArgumentNullException.ThrowIfNull(selectorConfigurator, nameof(selectorConfigurator));
 
-        selectorConfigurator(_reproductionSelectorConfig);
+        foreach(var configurator in selectorConfigurator)
+        {
+            configurator(_reproductionSelectorConfig);
+        }
 
         return this;
     }

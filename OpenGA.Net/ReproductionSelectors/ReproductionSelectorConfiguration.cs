@@ -9,21 +9,21 @@ public class ReproductionSelectorConfiguration<T>
     /// <summary>
     /// Parents are chosen at random regardless of their fitness.
     /// </summary>
-    public ReproductionSelectorConfiguration<T> ApplyRandomReproductionSelector()
+    public BaseReproductionSelector<T> ApplyRandomReproductionSelector()
     {
         var result = new RandomReproductionSelector<T>();
         ChainOfSelectors.Add(result);
-        return this;
+        return result;
     }
 
     /// <summary>
     /// The likelihood of an individual chromosome being chosen for mating is proportional to its fitness.
     /// </summary>
-    public ReproductionSelectorConfiguration<T> ApplyFitnessWeightedRouletteWheelReproductionSelector()
+    public BaseReproductionSelector<T> ApplyFitnessWeightedRouletteWheelReproductionSelector()
     {
         var result = new FitnessWeightedRouletteWheelReproductionSelector<T>();
         ChainOfSelectors.Add(result);
-        return this;
+        return result;
     }
 
     /// <summary>
@@ -33,30 +33,30 @@ public class ReproductionSelectorConfiguration<T>
     /// <param name="stochasticTournament">Defaults to true. If set to true, then the 2 individuals chosen for mating in each 
     /// tournament are the fittest 2 individuals in the tournament, otherwise a roulette wheel is spun to choose the two winners 
     /// out of the n-individuals, where the probability of winning is proportional to each individual's fitness.</param>
-    public ReproductionSelectorConfiguration<T> ApplyTournamentReproductionSelector(bool stochasticTournament = true)
+    public BaseReproductionSelector<T> ApplyTournamentReproductionSelector(bool stochasticTournament = true)
     {
         var result = new TournamentReproductionSelector<T>(stochasticTournament);
         ChainOfSelectors.Add(result);
-        return this;
+        return result;
     }
 
     /// <summary>
     /// Apply a custom strategy for choosing mating parents. Requires an instance of a subclass of <see cref="BaseCrossoverSelector<T>">BaseCrossoverSelector<T></see>
     /// to dictate which individuals will be chosen to take part in the crossover process.
     /// </summary>
-    public ReproductionSelectorConfiguration<T> ApplyCustomReproductionSelector(BaseReproductionSelector<T> reproductionSelector)
+    public BaseReproductionSelector<T> ApplyCustomReproductionSelector(BaseReproductionSelector<T> reproductionSelector)
     {
         ArgumentNullException.ThrowIfNull(reproductionSelector, nameof(reproductionSelector));
         ChainOfSelectors.Add(reproductionSelector);
-        return this;
+        return reproductionSelector;
     }
 
-    public ReproductionSelectorConfiguration<T> ApplyBoltzmannReproductionSelector()
+    public BaseReproductionSelector<T> ApplyBoltzmannReproductionSelector()
     {
         //TODO: Implement strategy
         var result = new BoltzmannReproductionSelector<T>();
         ChainOfSelectors.Add(result);
-        return this;
+        return result;
     }
 
     /// <summary>
@@ -69,11 +69,11 @@ public class ReproductionSelectorConfiguration<T>
     /// disproportionate advantage in fitness will have a (relatively) harder time (compared to the traditional fitness-weighted roulette wheel) 
     /// dominating the selection mechanism.
     /// </summary>
-    public ReproductionSelectorConfiguration<T> ApplyRankSelectionReproductionSelector()
+    public BaseReproductionSelector<T> ApplyRankSelectionReproductionSelector()
     {
         var result = new RankSelectionReproductionSelector<T>();
         ChainOfSelectors.Add(result);
-        return this;
+        return result;
     }
 
     /// <summary>
@@ -82,7 +82,7 @@ public class ReproductionSelectorConfiguration<T>
     /// <param name="proportionOfElitesInPopulation">The proportion of elites in the population. Example, if the rate is 0.2 and the population size is 100, then we have 20 elites who are guaranteed to take part in the mating process.</param>
     /// <param name="proportionOfNonElitesAllowedToMate">The proportion of non-elites allowed to take part in the mating process. Non elites are chosen randomly regardless of fitness.</param>
     /// <param name="allowMatingElitesWithNonElites">Defaults to true. Setting this value to false would restrict couples made up of an elite and non-elite members</param>
-    public ReproductionSelectorConfiguration<T> ApplyElitistReproductionSelector(float proportionOfElitesInPopulation = 0.1f, float proportionOfNonElitesAllowedToMate = 0.01f, bool allowMatingElitesWithNonElites = true)
+    public BaseReproductionSelector<T> ApplyElitistReproductionSelector(float proportionOfElitesInPopulation = 0.1f, float proportionOfNonElitesAllowedToMate = 0.01f, bool allowMatingElitesWithNonElites = true)
     {
         if (proportionOfElitesInPopulation <= 0 || proportionOfElitesInPopulation > 1)
         {
@@ -96,20 +96,8 @@ public class ReproductionSelectorConfiguration<T>
 
         var result = new ElitistReproductionSelector<T>(proportionOfNonElitesAllowedToMate > 0d && allowMatingElitesWithNonElites, proportionOfElitesInPopulation, proportionOfNonElitesAllowedToMate);
         ChainOfSelectors.Add(result);
-        return this;
+        return result;
     }
-
-    /// <summary>
-    /// Adds another reproduction selector to the chain of selectors that will be used to generate mating chromosome couples.
-    /// </summary>
-    public ReproductionSelectorConfiguration<T> And(Action<ReproductionSelectorConfiguration<T>> selectorConfigurator)
-    {
-        ArgumentNullException.ThrowIfNull(selectorConfigurator, nameof(selectorConfigurator));
-
-        selectorConfigurator(this);
-        
-        return this;
-    } 
 
     internal void NormalizeWeightsToUnity()
     {
