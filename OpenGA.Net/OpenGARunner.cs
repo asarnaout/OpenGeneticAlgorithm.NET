@@ -13,7 +13,7 @@ public class OpenGARunner<T>
 
     private float _crossoverRate = 0.9f;
 
-    public readonly ReproductionSelectorConfiguration<T> _reproductionSelectorConfig = new();
+    private readonly ReproductionSelectorConfiguration<T> _reproductionSelectorConfig = new();
 
     private ReplacementConfiguration _replacementConfiguration = new();
 
