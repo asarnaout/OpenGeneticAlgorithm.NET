@@ -122,22 +122,38 @@ public class OpenGARunner<T>
 
     public async Task StartAsync()
     {
+        if (_reproductionSelectorConfig.ChainOfSelectors.Count == 0)
+        {
+            throw new MissingInitialPopulationException("No reproduction selectors are specified. Consider calling OpenGARunner<T>.ApplyReproductionSelectors(...) to specify at least one selector.");
+        }
+
         for (var i = 0; i < _epochs; i++)
         {
             List<Couple<T>> couples = [];
 
-            // if (_reproductionSelectorStrategiesToApply.Count == 0)
-            // {
-            //     //TODO: What to do here?
-            // }
+            List<Chromosome<T>> offspring = [];
 
-            // foreach (var crossoverSelectorStrategy in _reproductionSelectorStrategiesToApply)
-            // {
-            //     var minimumNumberOfCouples = 0; //TODO: MUST ADJUST THIS
-            //     //TODO: Must adjust tournament params as well
+            //TODO:The value below should affect how many chromosomes will be replaced
 
-            //     couples.AddRange(crossoverSelectorStrategy.SelectMatingPairs(_population, _reproductionSelectorConfiguration, _random, minimumNumberOfCouples));
-            // }
+            var requiredNumberOfOffspring = _random.Next(2, _maxNumberOfChromosomes);
+
+            foreach (var selector in _reproductionSelectorConfig.ChainOfSelectors)
+            {
+                //TODO: Double check this: Tying the number of couples to the max number of chromosomes
+                var minimumNumberOfCouples = (int)Math.Round(selector.SelectorWeight * requiredNumberOfOffspring);
+
+                couples.AddRange(selector.SelectMatingPairs(_population, _random, minimumNumberOfCouples));
+            }
+
+            foreach (var couple in couples)
+            {
+                if (_random.NextDouble() > _crossoverRate)
+                {
+                    offspring.AddRange(couple.Crossover());
+                }
+            }
+
+            //TODO: Cant generate more children than the population limit, must double check this here.
 
             foreach (var chromosome in Population)
             {
