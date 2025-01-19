@@ -5,7 +5,7 @@ public class KPointCrossoverStrategy<T>(int numberOfPoints) : BaseCrossoverStrat
 {
     internal int NumberOfPoints { get; set; } = numberOfPoints;
 
-    protected internal override IEnumerable<Chromosome<T>> Crossover(Couple<T> couple)
+    protected internal override IEnumerable<Chromosome<T>> Crossover(Couple<T> couple, Random random)
     {
         throw new NotImplementedException();
     }

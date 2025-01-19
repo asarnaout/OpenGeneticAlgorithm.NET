@@ -1,24 +1,29 @@
 
 namespace OpenGA.Net.Examples;
 
-public class ExampleChromosome : Chromosome<float>
+public class ExampleChromosome(float[] genes) : Chromosome<float>(genes)
 {
-    public ExampleChromosome(float[] genes) : base(genes)
-    {
-    }
-
     public override double CalculateFitness()
     {
         return Genes.Sum();
     }
 
-    public override Task MutateAsync()
+    public override void Mutate()
     {
         throw new NotImplementedException();
     }
 
-    public override Task PostCrossoverAsync()
+    public override void PostCrossover()
     {
         throw new NotImplementedException();
+    }
+
+    public override Chromosome<float> DeepCopy()
+    {
+        var copiedGenes = new float[Genes.Length];
+
+        Array.Copy(Genes, copiedGenes, Genes.Length);
+
+        return new ExampleChromosome(copiedGenes);
     }
 }

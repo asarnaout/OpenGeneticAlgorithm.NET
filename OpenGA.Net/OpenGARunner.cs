@@ -120,7 +120,7 @@ public class OpenGARunner<T>
         return this;
     }
 
-    public async Task StartAsync()
+    public void Start()
     {
         if (_reproductionSelectorConfig.ChainOfSelectors.Count == 0)
         {
@@ -145,13 +145,13 @@ public class OpenGARunner<T>
                 couples.AddRange(selector.SelectMatingPairs(_population, _random, minimumNumberOfCouples));
             }
 
-            foreach (var couple in couples)
-            {
-                if (_random.NextDouble() > _crossoverRate)
-                {
-                    offspring.AddRange(couple.Crossover());
-                }
-            }
+            // foreach (var couple in couples)
+            // {
+            //     if (_random.NextDouble() > _crossoverRate)
+            //     {
+            //         offspring.AddRange(couple.Crossover());
+            //     }
+            // }
 
             //TODO: Cant generate more children than the population limit, must double check this here.
 
@@ -159,7 +159,7 @@ public class OpenGARunner<T>
             {
                 if (_random.NextDouble() > 1 - _mutationRate)
                 {
-                    await chromosome.MutateAsync();
+                    chromosome.Mutate();
                 }
             }
         }

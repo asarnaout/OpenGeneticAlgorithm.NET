@@ -7,16 +7,23 @@ public class DummyChromosome(int[] genes) : Chromosome<int>(genes)
         return Genes.Average();
     }
 
-    public override Task MutateAsync()
+    public override Chromosome<int> DeepCopy()
+    {
+        var copiedGenes = new int[Genes.Length];
+
+        Array.Copy(Genes, copiedGenes, Genes.Length);
+
+        return new DummyChromosome(copiedGenes);
+    }
+
+    public override void Mutate()
     {
         var random = new Random();
 
         Genes[random.Next(0, Genes.Length)]++;
-
-        return Task.CompletedTask;
     }
 
-    public override Task PostCrossoverAsync()
+    public override void PostCrossover()
     {
         for(var i = 0; i < Genes.Length; i++)
         {
@@ -25,7 +32,6 @@ public class DummyChromosome(int[] genes) : Chromosome<int>(genes)
                 Genes[i]++;
             }
         }
-
-        return Task.CompletedTask;
     }
+
 }
