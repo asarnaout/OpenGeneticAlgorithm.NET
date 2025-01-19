@@ -26,7 +26,7 @@ public class OnePointCrossoverStrategy<T> : BaseCrossoverStrategy<T>
     /// Method decides the crossover point. Override to provide a custom implementation.
     /// </summary>
     protected internal virtual int GetCrossoverPoint(Couple<T> couple, Random random) 
-        => random.Next(1, Math.Min(couple.IndividualA.Genes.Count, couple.IndividualB.Genes.Count));
+        => random.Next(1, Math.Min(couple.IndividualA.Genes.Count, couple.IndividualB.Genes.Count) + 1);
 
     private static void SwapGenes(int crossoverPoint, Chromosome<T> offspring, Chromosome<T> parent)
     {
