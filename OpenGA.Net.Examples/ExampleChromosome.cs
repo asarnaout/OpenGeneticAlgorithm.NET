@@ -1,7 +1,7 @@
 
 namespace OpenGA.Net.Examples;
 
-public class ExampleChromosome(float[] genes) : Chromosome<float>(genes)
+public class ExampleChromosome(IList<float> genes) : Chromosome<float>(genes)
 {
     public override double CalculateFitness()
     {
@@ -20,10 +20,13 @@ public class ExampleChromosome(float[] genes) : Chromosome<float>(genes)
 
     public override Chromosome<float> DeepCopy()
     {
-        var copiedGenes = new float[Genes.Length];
+        var list = new List<float>();
 
-        Array.Copy(Genes, copiedGenes, Genes.Length);
+        foreach (var item in Genes)
+        {
+            list.Add(item);
+        }
 
-        return new ExampleChromosome(copiedGenes);
+        return new ExampleChromosome(list);
     }
 }

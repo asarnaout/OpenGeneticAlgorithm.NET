@@ -1,6 +1,6 @@
 namespace OpenGA.Net.Tests;
 
-public class DummyChromosome(int[] genes) : Chromosome<int>(genes)
+public class DummyChromosome(List<int> genes) : Chromosome<int>(genes)
 {
     public override double CalculateFitness()
     {
@@ -9,23 +9,26 @@ public class DummyChromosome(int[] genes) : Chromosome<int>(genes)
 
     public override Chromosome<int> DeepCopy()
     {
-        var copiedGenes = new int[Genes.Length];
+        var list = new List<int>();
 
-        Array.Copy(Genes, copiedGenes, Genes.Length);
+        foreach (var item in Genes)
+        {
+            list.Add(item);
+        }
 
-        return new DummyChromosome(copiedGenes);
+        return new DummyChromosome(list);
     }
 
     public override void Mutate()
     {
         var random = new Random();
 
-        Genes[random.Next(0, Genes.Length)]++;
+        Genes[random.Next(0, Genes.Count)]++;
     }
 
     public override void PostCrossover()
     {
-        for(var i = 0; i < Genes.Length; i++)
+        for(var i = 0; i < Genes.Count; i++)
         {
             if(Genes[i] % 2 != 0)
             {

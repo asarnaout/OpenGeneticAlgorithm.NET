@@ -64,6 +64,6 @@ public class RandomReproductionSelectorTests
 
     private static DummyChromosome[] GenerateRandomPopulation(int size, Random random) =>
         Enumerable.Range(0, size)
-            .Select(x => new DummyChromosome(Enumerable.Range(0, 10).Select(y => random.Next()).ToArray()))
+            .Select(x => new DummyChromosome(Enumerable.Range(0, 10).Select(y => random.Next()).ToList()))
             .ToArray();
 }

@@ -8,9 +8,9 @@ namespace OpenGA.Net;
 ///  Salesman Problem, a Gene could be an integer representing the city while the chromosome would hold an array
 ///  of the latter genes representing the sequence of cities to be traversed in order.
 /// </summary>
-public abstract class Chromosome<T>(T[] genes) : IEquatable<Chromosome<T>>
+public abstract class Chromosome<T>(IList<T> genes) : IEquatable<Chromosome<T>>
 {
-    public T[] Genes { get; internal set; } = genes;
+    public IList<T> Genes { get; internal set; } = genes;
 
     internal Guid InternalIdentifier { get; } = Guid.NewGuid();
 

@@ -57,14 +57,14 @@ public class RankSelectionReproductionSelectorTests
         var random = new Random();
 
         var population = Enumerable.Range(0, 50)
-            .Select(x => new DummyChromosome(Enumerable.Range(0, 10).Select(y => random.Next(2, 11)).ToArray()))
+            .Select(x => new DummyChromosome(Enumerable.Range(0, 10).Select(y => random.Next(2, 11)).ToList()))
             .ToArray();
 
-        var highestFitnessChromosome = new DummyChromosome(Enumerable.Range(0, 10).Select(x => random.Next(101, 201)).ToArray());
-        var secondHighestFitnessChromosome = new DummyChromosome(Enumerable.Range(0, 10).Select(x => random.Next(51, 101)).ToArray());
-        var thirdHighestFitnessChromosome = new DummyChromosome(Enumerable.Range(0, 10).Select(x => random.Next(26, 51)).ToArray());
-        var fourthHighestFitnessChromosome = new DummyChromosome(Enumerable.Range(0, 10).Select(x => random.Next(11, 26)).ToArray());
-        var leastFitChromosome = new DummyChromosome(Enumerable.Range(0, 10).Select(x => 1).ToArray());
+        var highestFitnessChromosome = new DummyChromosome(Enumerable.Range(0, 10).Select(x => random.Next(101, 201)).ToList());
+        var secondHighestFitnessChromosome = new DummyChromosome(Enumerable.Range(0, 10).Select(x => random.Next(51, 101)).ToList());
+        var thirdHighestFitnessChromosome = new DummyChromosome(Enumerable.Range(0, 10).Select(x => random.Next(26, 51)).ToList());
+        var fourthHighestFitnessChromosome = new DummyChromosome(Enumerable.Range(0, 10).Select(x => random.Next(11, 26)).ToList());
+        var leastFitChromosome = new DummyChromosome(Enumerable.Range(0, 10).Select(x => 1).ToList());
 
         population = [.. population, highestFitnessChromosome, secondHighestFitnessChromosome, thirdHighestFitnessChromosome, fourthHighestFitnessChromosome, leastFitChromosome];
 
@@ -100,6 +100,6 @@ public class RankSelectionReproductionSelectorTests
 
     private static DummyChromosome[] GenerateRandomPopulation(int size, Random random) =>
         Enumerable.Range(0, size)
-            .Select(x => new DummyChromosome(Enumerable.Range(0, 10).Select(y => random.Next()).ToArray()))
+            .Select(x => new DummyChromosome(Enumerable.Range(0, 10).Select(y => random.Next()).ToList()))
             .ToArray();
 }

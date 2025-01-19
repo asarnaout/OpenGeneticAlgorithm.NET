@@ -41,7 +41,7 @@ public class OnePointCrossoverStrategyTests
     }
 
     [Fact]
-    public void CrossoverVariableLengthGenesSwapsGenesCorrectly()
+    public void CrossoverVariableLengthGenesSwapsGenesCorrectlyCaseA()
     {
         var parentA = new DummyChromosome([1, 2, 3, 4, 5] );
         var parentB = new DummyChromosome([6, 7] );
@@ -59,7 +59,29 @@ public class OnePointCrossoverStrategyTests
         var offspringB = offspring[1];
 
         Assert.Equal([ 1, 2 ], offspringA.Genes);
-        Assert.Equal([6, 7, 3, 4, 5 ], offspringB.Genes);
+        Assert.Equal([ 6, 7, 3, 4, 5 ], offspringB.Genes);
+    }
+
+    [Fact]
+    public void CrossoverVariableLengthGenesSwapsGenesCorrectlyCaseB()
+    {
+        var parentA = new DummyChromosome([1, 2, 3, 4, 5] );
+        var parentB = new DummyChromosome([6, 7] );
+
+        var couple = Couple<int>.Pair(parentA, parentB);
+        
+        var strategy = new TestCrossoverStrategy(1);
+        var random = new Random();
+
+        var offspring = strategy.Crossover(couple, random).ToList();
+
+        Assert.Equal(2, offspring.Count);
+
+        var offspringA = offspring[0];
+        var offspringB = offspring[1];
+
+        Assert.Equal([ 1, 7 ], offspringA.Genes);
+        Assert.Equal([ 6, 2, 3, 4, 5 ], offspringB.Genes);
     }
     
     private class TestCrossoverStrategy(int fixedCrossoverPoint) : OnePointCrossoverStrategy<int>
