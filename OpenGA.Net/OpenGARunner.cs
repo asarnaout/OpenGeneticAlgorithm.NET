@@ -15,8 +15,6 @@ public class OpenGARunner<T>
 
     private readonly ReproductionSelectorConfiguration<T> _reproductionSelectorConfig = new();
 
-    private ReplacementConfiguration _replacementConfiguration = new();
-
     private Chromosome<T>[] _population = [];
 
     private Chromosome<T>[] Population 
