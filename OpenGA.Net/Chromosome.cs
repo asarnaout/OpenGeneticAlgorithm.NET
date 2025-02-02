@@ -4,9 +4,9 @@ namespace OpenGA.Net;
 
 /// <summary>
 /// A Chromosome represents a potential solution to the given optimization problem. Chromosomes are made of 
-///  <see cref="Genes">Genes</see> which represent components of the solution. For example, in the Travelling
-///  Salesman Problem, a Gene could be an integer representing the city while the chromosome would hold an array
-///  of the latter genes representing the sequence of cities to be traversed in order.
+/// <see cref="Genes">Genes</see> which represent components of the solution. For example, in the Traveling
+/// Salesman Problem, a Gene could be an integer representing the city while the chromosome would hold an array
+/// of the latter genes representing the sequence of cities to be traversed in order.
 /// </summary>
 public abstract class Chromosome<T>(IList<T> genes) : IEquatable<Chromosome<T>>
 {
@@ -52,12 +52,13 @@ public abstract class Chromosome<T>(IList<T> genes) : IEquatable<Chromosome<T>>
     public abstract Chromosome<T> DeepCopy();
 
     /// <summary>
-    /// This method is a No-Op by default and will be called on each newly generated chromosome after a crossover operation.
-    /// Override to introduce a custom operation to run right on the new chromosome right after its inception. An example of
-    /// such an operation is to eliminate any duplicates (if necessary) from the <see cref="Genes">Genes</see> array after
-    /// crossover is completed.
+    /// This method is No-Op by default and will be called on all chromosomes at the end of an epoch (after crossover 
+    /// and mutation take place). Override to introduce a custom operation to run on a chromosome to ensure that it 
+    /// conforms to any  rules that might dictate what a valid solution is. 
+    /// An example of such an operation is to eliminate any duplicates (if necessary) from the <see cref="Genes">Genes</see> 
+    /// array.
     /// </summary>
-    public virtual void PostCrossover() => Expression.Empty();
+    public virtual void GeneticRepair() => Expression.Empty();
 
     public override bool Equals(object? obj)
     {
