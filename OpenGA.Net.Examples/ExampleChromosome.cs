@@ -13,7 +13,7 @@ public class ExampleChromosome(IList<float> genes) : Chromosome<float>(genes)
         throw new NotImplementedException();
     }
 
-    public override void PostCrossover()
+    public override void GeneticRepair()
     {
         throw new NotImplementedException();
     }

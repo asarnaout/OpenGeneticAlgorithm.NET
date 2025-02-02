@@ -26,7 +26,7 @@ public class DummyChromosome(List<int> genes) : Chromosome<int>(genes)
         Genes[random.Next(0, Genes.Count)]++;
     }
 
-    public override void PostCrossover()
+    public override void GeneticRepair()
     {
         for(var i = 0; i < Genes.Count; i++)
         {
