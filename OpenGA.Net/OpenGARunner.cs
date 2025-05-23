@@ -139,7 +139,7 @@ public class OpenGARunner<T>
 
         if (_crossoverStrategyConfig.CrossoverStrategy is null)
         {
-            throw new MissingCrossoverStrategyException("No crossover strategy has been specified. Consider calling OpenGARunner<T>.ApplyCrossoverStrategy(...) to specify a crossover strategy.")
+            throw new MissingCrossoverStrategyException("No crossover strategy has been specified. Consider calling OpenGARunner<T>.ApplyCrossoverStrategy(...) to specify a crossover strategy.");
         }
 
         for (var i = 0; i < _epochs; i++)

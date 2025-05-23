@@ -23,4 +23,15 @@ public class CrossoverStrategyConfiguration<T>
         CrossoverStrategy = result;
         return result;
     }
+
+    /// <summary>
+    /// Apply a custom strategy for crossing over chromosomes. Requires an instance of a subclass of <see cref="BaseCrossoverStrategy<T>">BaseCrossoverStrategy<T></see>
+    /// to dictate which how a Couple of Chromosomes can reproduce a new set of Chromosomes.
+    /// </summary>
+    public BaseCrossoverStrategy<T> ApplyCustomCrossoverStrategy(BaseCrossoverStrategy<T> crossoverStrategy)
+    {
+        ArgumentNullException.ThrowIfNull(crossoverStrategy, nameof(crossoverStrategy));
+        CrossoverStrategy = crossoverStrategy;
+        return crossoverStrategy;
+    }
 }

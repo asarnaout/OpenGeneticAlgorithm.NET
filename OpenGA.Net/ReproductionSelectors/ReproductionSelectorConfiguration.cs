@@ -41,7 +41,7 @@ public class ReproductionSelectorConfiguration<T>
     }
 
     /// <summary>
-    /// Apply a custom strategy for choosing mating parents. Requires an instance of a subclass of <see cref="BaseCrossoverSelector<T>">BaseCrossoverSelector<T></see>
+    /// Apply a custom strategy for choosing mating parents. Requires an instance of a subclass of <see cref="BaseReproductionSelector<T>">BaseReproductionSelector<T></see>
     /// to dictate which individuals will be chosen to take part in the crossover process.
     /// </summary>
     public BaseReproductionSelector<T> ApplyCustomReproductionSelector(BaseReproductionSelector<T> reproductionSelector)
