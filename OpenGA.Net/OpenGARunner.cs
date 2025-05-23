@@ -134,7 +134,12 @@ public class OpenGARunner<T>
     {
         if (_reproductionSelectorConfig.ChainOfSelectors.Count == 0)
         {
-            throw new MissingInitialPopulationException("No reproduction selectors are specified. Consider calling OpenGARunner<T>.ApplyReproductionSelectors(...) to specify at least one selector.");
+            throw new MissingReproductionSelectorsException("No reproduction selectors are specified. Consider calling OpenGARunner<T>.ApplyReproductionSelectors(...) to specify at least one selector.");
+        }
+
+        if (_crossoverStrategyConfig.CrossoverStrategy is null)
+        {
+            throw new MissingCrossoverStrategyException("No crossover strategy has been specified. Consider calling OpenGARunner<T>.ApplyCrossoverStrategy(...) to specify a crossover strategy.")
         }
 
         for (var i = 0; i < _epochs; i++)
@@ -159,7 +164,7 @@ public class OpenGARunner<T>
             {
                 foreach (var couple in couples)
                 {
-                    if (offsprint.Count >= requiredNumberOfOffspring)
+                    if (offspring.Count >= requiredNumberOfOffspring)
                     {
                         break;
                     }
