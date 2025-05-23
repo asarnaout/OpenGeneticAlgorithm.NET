@@ -6,7 +6,7 @@ public class OnePointCrossoverStrategy<T> : BaseCrossoverStrategy<T>
 {
     protected internal override IEnumerable<Chromosome<T>> Crossover(Couple<T> couple, Random random)
     {
-        if (couple.IndividualA.Genes.Count == 0 || couple.IndividualB.Genes.Count == 0)
+        if (couple.IndividualA.Genes.Count <= 1 || couple.IndividualB.Genes.Count <= 1)
         {
             throw new InvalidChromosomeException("Attempting One Point Crossover on an invalid chromosome. All chromosomes must have at least one gene for one point crossover.");
         }

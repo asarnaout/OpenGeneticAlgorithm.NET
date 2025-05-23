@@ -52,11 +52,11 @@ public abstract class Chromosome<T>(IList<T> genes) : IEquatable<Chromosome<T>>
     public abstract Chromosome<T> DeepCopy();
 
     /// <summary>
-    /// This method is No-Op by default and will be called on all chromosomes at the end of an epoch (after crossover 
-    /// and mutation take place). Override to introduce a custom operation to run on a chromosome to ensure that it 
-    /// conforms to any  rules that might dictate what a valid solution is. 
+    /// This method is No-Op by default and will be called on all chromosomes (after crossover and mutation take place) 
+    /// to ensure that no illegal chromosomes exist within the population. Override to introduce a custom operation to 
+    /// run on a chromosome to ensure that it conforms to any  rules that might dictate what a valid solution is. 
     /// An example of such an operation is to eliminate any duplicates (if necessary) from the <see cref="Genes">Genes</see> 
-    /// array.
+    /// array in the case of the TSP.
     /// </summary>
     public virtual void GeneticRepair() => Expression.Empty();
 

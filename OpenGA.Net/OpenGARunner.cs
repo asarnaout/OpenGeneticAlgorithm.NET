@@ -1,5 +1,6 @@
 using OpenGA.Net.Exceptions;
 using OpenGA.Net.ReproductionSelectors;
+using OpenGA.Net.CrossoverStrategies;
 
 namespace OpenGA.Net;
 
@@ -14,6 +15,8 @@ public class OpenGARunner<T>
     private float _crossoverRate = 0.9f;
 
     private readonly ReproductionSelectorConfiguration<T> _reproductionSelectorConfig = new();
+
+    private readonly CrossoverStrategyConfiguration<T> _crossoverStrategyConfig = new();
 
     private Chromosome<T>[] _population = [];
 
@@ -118,6 +121,15 @@ public class OpenGARunner<T>
         return this;
     }
 
+    public OpenGARunner<T> ApplyCrossoverStrategy(Action<CrossoverStrategyConfiguration<T>> crossoverStrategyConfigurator)
+    {
+        ArgumentNullException.ThrowIfNull(crossoverStrategyConfigurator, nameof(crossoverStrategyConfigurator));
+
+        crossoverStrategyConfigurator(_crossoverStrategyConfig);
+
+        return this;
+    }
+
     public void Start()
     {
         if (_reproductionSelectorConfig.ChainOfSelectors.Count == 0)
@@ -143,13 +155,22 @@ public class OpenGARunner<T>
                 couples.AddRange(selector.SelectMatingPairs(_population, _random, minimumNumberOfCouples));
             }
 
-            // foreach (var couple in couples)
-            // {
-            //     if (_random.NextDouble() > _crossoverRate)
-            //     {
-            //         offspring.AddRange(couple.Crossover());
-            //     }
-            // }
+            while (offspring.Count < requiredNumberOfOffspring)
+            {
+                foreach (var couple in couples)
+                {
+                    if (offsprint.Count >= requiredNumberOfOffspring)
+                    {
+                        break;
+                    }
+
+                    if (_random.NextDouble() > _crossoverRate)
+                    {
+                        offspring.AddRange(_crossoverStrategyConfig.CrossoverStrategy.Crossover(couple, _random));
+                    }
+                }
+            }
+            
 
             //TODO: Cant generate more children than the population limit, must double check this here.
 

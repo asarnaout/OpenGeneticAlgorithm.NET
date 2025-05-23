@@ -10,4 +10,5 @@ var runner = OpenGARunner<float>
                 .ApplyReproductionSelectors(c => c.ApplyRandomReproductionSelector().Weight(0.6f),
                                             c => c.ApplyElitistReproductionSelector().Weight(0.3f),
                                             c => c.ApplyRankSelectionReproductionSelector().Weight(0.4f)
-                );
+                )
+                .ApplyCrossoverStrategy(c => c.ApplyOnePointCrossoverStrategy());
