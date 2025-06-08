@@ -1,6 +1,7 @@
 using OpenGA.Net.Exceptions;
 using OpenGA.Net.ReproductionSelectors;
 using OpenGA.Net.CrossoverStrategies;
+using OpenGA.Net.EliminationMechanisms;
 
 namespace OpenGA.Net;
 
@@ -17,6 +18,8 @@ public class OpenGARunner<T>
     private readonly ReproductionSelectorConfiguration<T> _reproductionSelectorConfig = new();
 
     private readonly CrossoverStrategyConfiguration<T> _crossoverStrategyConfig = new();
+
+    private readonly EliminationMechanismConfiguration<T> _eliminationMechanismConfig = new();
 
     private Chromosome<T>[] _population = [];
 
@@ -70,7 +73,7 @@ public class OpenGARunner<T>
 
     /// <summary>
     /// The maximum number of chromosomes that can ever exist in the population. Defaults to the initial number of chromosomes provided when creating the runner. 
-    /// When the limit is reached, the specified <see cref="ReplacementStrategy">ReplacementStrategy</see> is used to keep the population within limits.
+    /// When the limit is reached, the specified ReplacementStrategy is used to keep the population within limits.
     /// </summary>
     public OpenGARunner<T> MaxPopulationSize(int maximumNumberOfChromosomes)
     {
@@ -109,14 +112,11 @@ public class OpenGARunner<T>
         return this;
     }
 
-    public OpenGARunner<T> ApplyReproductionSelectors(params Action<ReproductionSelectorConfiguration<T>>[] selectorConfigurator)
+    public OpenGARunner<T> ApplyReproductionSelector(Action<ReproductionSelectorConfiguration<T>> selectorConfigurator)
     {
         ArgumentNullException.ThrowIfNull(selectorConfigurator, nameof(selectorConfigurator));
 
-        foreach(var configurator in selectorConfigurator)
-        {
-            configurator(_reproductionSelectorConfig);
-        }
+        selectorConfigurator(_reproductionSelectorConfig);
 
         return this;
     }
@@ -130,11 +130,20 @@ public class OpenGARunner<T>
         return this;
     }
 
+    public OpenGARunner<T> ApplyEliminationMechanism(Action<EliminationMechanismConfiguration<T>> eliminationMechanismConfigurator)
+    {
+        ArgumentNullException.ThrowIfNull(eliminationMechanismConfigurator, nameof(eliminationMechanismConfigurator));
+
+        eliminationMechanismConfigurator(_eliminationMechanismConfig);
+
+        return this;
+    }
+
     public void Start()
     {
-        if (_reproductionSelectorConfig.ChainOfSelectors.Count == 0)
+        if (_reproductionSelectorConfig.ReproductionSelector is null)
         {
-            throw new MissingReproductionSelectorsException("No reproduction selectors are specified. Consider calling OpenGARunner<T>.ApplyReproductionSelectors(...) to specify at least one selector.");
+            throw new MissingReproductionSelectorsException("No reproduction selector has been specified. Consider calling OpenGARunner<T>.ApplyReproductionSelector(...) to specify a reproduction selector.");
         }
 
         if (_crossoverStrategyConfig.CrossoverStrategy is null)
@@ -152,13 +161,8 @@ public class OpenGARunner<T>
 
             var requiredNumberOfOffspring = _random.Next(2, _maxNumberOfChromosomes);
 
-            foreach (var selector in _reproductionSelectorConfig.ChainOfSelectors)
-            {
-                //TODO: Double check this: Tying the number of couples to the max number of chromosomes
-                var minimumNumberOfCouples = (int)Math.Round(selector.SelectorWeight * requiredNumberOfOffspring);
-
-                couples.AddRange(selector.SelectMatingPairs(_population, _random, minimumNumberOfCouples));
-            }
+            //TODO: Double check this: Tying the number of couples to the max number of chromosomes
+            couples.AddRange(_reproductionSelectorConfig.ReproductionSelector.SelectMatingPairs(_population, _random, requiredNumberOfOffspring));
 
             while (offspring.Count < requiredNumberOfOffspring)
             {
