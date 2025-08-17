@@ -185,6 +185,8 @@ public class OpenGARunner<T>
                 {
                     chromosome.Mutate();
                 }
+
+                chromosome.GeneticRepair();
             }
         }
     }
