@@ -23,13 +23,6 @@ namespace OpenGA.Net.ReplacementStrategies;
 public class RandomEliminationReplacementStrategy<T> : BaseReplacementStrategy<T>
 {
     /// <summary>
-    /// Initializes a new instance of the RandomEliminationReplacementStrategy.
-    /// </summary>
-    public RandomEliminationReplacementStrategy()
-    {
-    }
-
-    /// <summary>
     /// Selects chromosomes from the population for elimination using random selection.
     /// Exactly the number of chromosomes needed to accommodate the offspring will be eliminated,
     /// but the selection of which chromosomes is completely random.

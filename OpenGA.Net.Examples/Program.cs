@@ -13,5 +13,8 @@ var runner = OpenGARunner<float>
                 )
                 .ApplyCrossoverStrategy(c => c.ApplyOnePointCrossoverStrategy())
                 // Replacement strategy options:
+                // c.ApplyRandomEliminationReplacementStrategy() - Randomly eliminates chromosomes
+                // c.ApplyTournamentReplacementStrategy() - Tournament-based elimination
+                // c.ApplyGenerationalReplacementStrategy() - Complete population replacement with offspring
                 .ApplyReplacementStrategy(c => c.ApplyTournamentReplacementStrategy());
                 

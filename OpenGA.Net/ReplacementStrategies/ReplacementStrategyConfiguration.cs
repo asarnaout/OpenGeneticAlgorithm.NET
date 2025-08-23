@@ -17,6 +17,18 @@ public class ReplacementStrategyConfiguration<T>
     }
 
     /// <summary>
+    /// Apply generational replacement strategy. Completely replaces the entire parent population with offspring.
+    /// In this strategy, no parent chromosomes survive to the next generation - the entire population
+    /// is renewed with the offspring generation.
+    /// </summary>
+    public BaseReplacementStrategy<T> ApplyGenerationalReplacementStrategy()
+    {
+        var result = new GenerationalReplacementStrategy<T>();
+        ReplacementStrategy = result;
+        return result;
+    }
+
+    /// <summary>
     /// Apply tournament-based replacement strategy. Eliminates chromosomes through competitive tournaments
     /// where the least fit individuals are more likely to be eliminated.
     /// </summary>
