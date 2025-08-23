@@ -1,3 +1,5 @@
+using OpenGA.Net.Extensions;
+
 namespace OpenGA.Net.ReplacementStrategies;
 
 /// <summary>
@@ -74,15 +76,13 @@ public class ElitistReplacementStrategy<T> (float elitePercentage = 0.1f): BaseR
 
         // Select chromosomes for elimination from the non-elite pool
         // Use random selection among non-elites (could be enhanced with fitness-based selection)
-        var shuffledEligible = eligibleForElimination.ToArray();
-        
-        // Fisher-Yates shuffle for random selection
-        for (int i = shuffledEligible.Length - 1; i > 0; i--)
-        {
-            int j = random.Next(i + 1);
-            (shuffledEligible[i], shuffledEligible[j]) = (shuffledEligible[j], shuffledEligible[i]);
-        }
+        var shuffledEligible = eligibleForElimination.FisherYatesShuffled(random);
 
         return shuffledEligible.Take(eliminationsNeeded);
     }
+
+    /// <summary>
+    /// Gets the percentage of the population protected as elites.
+    /// </summary>
+    public float ElitePercentage => _elitePercentage;
 }

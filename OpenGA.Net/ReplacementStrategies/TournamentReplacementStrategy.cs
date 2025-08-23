@@ -1,3 +1,5 @@
+using OpenGA.Net.Extensions;
+
 namespace OpenGA.Net.ReplacementStrategies;
 
 /// <summary>
@@ -66,16 +68,8 @@ public class TournamentReplacementStrategy<T> : BaseReplacementStrategy<T>
         // Use HashSet for O(1) lookups instead of List.Contains which is O(n)
         var eliminatedChromosomes = new HashSet<Chromosome<T>>();
         
-        // Pre-shuffle the population once instead of calling OrderBy(random.Next()) repeatedly
-        var shuffledPopulation = new Chromosome<T>[population.Length];
-        Array.Copy(population, shuffledPopulation, population.Length);
-        
-        // Fisher-Yates shuffle - more efficient than LINQ OrderBy
-        for (int i = shuffledPopulation.Length - 1; i > 0; i--)
-        {
-            int j = random.Next(i + 1);
-            (shuffledPopulation[i], shuffledPopulation[j]) = (shuffledPopulation[j], shuffledPopulation[i]);
-        }
+        // Pre-shuffle the population once using extension method instead of calling OrderBy(random.Next()) repeatedly
+        var shuffledPopulation = population.FisherYatesShuffled(random);
 
         int currentIndex = 0;
 

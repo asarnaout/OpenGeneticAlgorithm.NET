@@ -1,3 +1,5 @@
+using OpenGA.Net.Extensions;
+
 namespace OpenGA.Net.ReplacementStrategies;
 
 /// <summary>
@@ -52,16 +54,8 @@ public class RandomEliminationReplacementStrategy<T> : BaseReplacementStrategy<T
 
         var candidatesForElimination = new List<Chromosome<T>>(eliminationsNeeded);
 
-        // Create a shuffled copy of the population for random selection
-        var shuffledPopulation = new Chromosome<T>[population.Length];
-        Array.Copy(population, shuffledPopulation, population.Length);
-        
-        // Fisher-Yates shuffle for truly random ordering
-        for (int i = shuffledPopulation.Length - 1; i > 0; i--)
-        {
-            int j = random.Next(i + 1);
-            (shuffledPopulation[i], shuffledPopulation[j]) = (shuffledPopulation[j], shuffledPopulation[i]);
-        }
+        // Create a shuffled copy of the population for random selection using extension method
+        var shuffledPopulation = population.FisherYatesShuffled(random);
 
         // Select exactly eliminationsNeeded chromosomes from the shuffled population
         for (int i = 0; i < eliminationsNeeded; i++)
