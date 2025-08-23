@@ -8,6 +8,12 @@ namespace OpenGA.Net;
 
 public class OpenGARunner<T>
 {
+    internal int MaxEpochs = 80;
+
+    internal int CurrentEpoch = 0;
+
+    internal TimeSpan CurrentDuration = TimeSpan.Zero;
+
     private int _maxNumberOfChromosomes;
 
     private float _mutationRate = 0.2f;
@@ -34,10 +40,12 @@ public class OpenGARunner<T>
         } 
     }
 
+    internal double HighestFitness => Population.Max(c => c.Fitness);
+
     /// <summary>
     /// Gets the current state of the genetic algorithm including epoch, duration, and fitness metrics.
     /// </summary>
-    internal GeneticAlgorithmState CurrentState = new();
+    internal GeneticAlgorithmState CurrentState => new(CurrentEpoch, MaxEpochs, CurrentDuration, HighestFitness);
 
     private readonly Random _random = new();
 
@@ -71,7 +79,7 @@ public class OpenGARunner<T>
             throw new ArgumentOutOfRangeException(nameof(maxNumberOfEpochs), "Value must be greater than 0.");
         }
 
-        CurrentState.MaxEpochs = maxNumberOfEpochs;
+        MaxEpochs = maxNumberOfEpochs;
         _terminationStrategyConfig.ApplyMaximumEpochsTerminationStrategy();
         return this;
     }
@@ -174,11 +182,10 @@ public class OpenGARunner<T>
 
         var startTime = DateTime.UtcNow;
 
-        for (; CurrentState.CurrentEpoch < CurrentState.MaxEpochs; CurrentState.CurrentEpoch++)
+        for (; CurrentEpoch < MaxEpochs; CurrentEpoch++)
         {
-            CurrentState.HighestFitness = Population.Max(c => c.Fitness);
-            CurrentState.CurrentDuration = DateTime.UtcNow - startTime;
-
+            CurrentDuration = DateTime.UtcNow - startTime;
+            
             if (_terminationStrategyConfig.ShouldTerminate(CurrentState))
             {
                 break;
@@ -204,7 +211,7 @@ public class OpenGARunner<T>
                     _ => (int)Math.Ceiling(remainingOffspringNeeded / 2.0)
                 };
 
-                var couples = _reproductionSelectorConfig.ReproductionSelector.SelectMatingPairs(_population, _random, requiredNumberOfCouples, CurrentState.CurrentEpoch);
+                var couples = _reproductionSelectorConfig.ReproductionSelector.SelectMatingPairs(_population, _random, requiredNumberOfCouples, CurrentEpoch);
 
                 var noCouples = true;
 
@@ -234,7 +241,7 @@ public class OpenGARunner<T>
                 }
             }
 
-            Population = _replacementStrategyConfig.ReplacementStrategy.ApplyReplacement(Population, [.. offspring], _random, CurrentState.CurrentEpoch);
+            Population = _replacementStrategyConfig.ReplacementStrategy.ApplyReplacement(Population, [.. offspring], _random, CurrentEpoch);
 
             foreach (var chromosome in Population)
             {
