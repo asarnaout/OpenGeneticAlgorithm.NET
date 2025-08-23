@@ -78,21 +78,15 @@ public class BoltzmannReplacementStrategy<T>(double temperatureDecayRate, double
         }
 
         var candidatesForElimination = new List<Chromosome<T>>(eliminationsNeeded);
-        var eliminatedChromosomes = new HashSet<Chromosome<T>>();
         
         // Create weighted roulette wheel with inverse fitness for elimination
-        var availablePopulation = population.ToList();
+        var rouletteWheel = WeightedRouletteWheel<Chromosome<T>>.Init(population.ToList(), 
+            chromosome => Math.Exp((maxFitness - chromosome.Fitness) / currentTemperature));
 
-        for (int i = 0; i < eliminationsNeeded && availablePopulation.Count > 0; i++)
+        for (int i = 0; i < eliminationsNeeded; i++)
         {
-            // Create roulette wheel with current available population
-            var rouletteWheel = WeightedRouletteWheel<Chromosome<T>>.Init(availablePopulation, 
-                chromosome => Math.Exp((maxFitness - chromosome.Fitness) / currentTemperature));
-            
-            var selected = rouletteWheel.Spin();
+            var selected = rouletteWheel.SpinAndReadjustWheel();
             candidatesForElimination.Add(selected);
-            eliminatedChromosomes.Add(selected);
-            availablePopulation.Remove(selected);
         }
 
         return candidatesForElimination;
