@@ -1,21 +1,9 @@
 namespace OpenGA.Net.Termination;
 
-public class MaximumEpochsTerminationStrategy
+internal class MaximumEpochsTerminationStrategy<T> : BaseTerminationStrategy<T>
 {
-    private readonly int _maxEpochs;
-
-    public MaximumEpochsTerminationStrategy(int maxEpochs)
+    public override bool Terminate(OpenGARunner<T> gaRunner)
     {
-        if (maxEpochs <= 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(maxEpochs), "Maximum epochs must be greater than 0.");
-        }
-
-        _maxEpochs = maxEpochs;
-    }
-
-    public bool Terminate(int epoch)
-    {
-        return epoch >= _maxEpochs;
+        return gaRunner.CurrentEpoch >= gaRunner.MaxEpochs;
     }
 }

@@ -7,7 +7,11 @@ namespace OpenGA.Net;
 
 public class OpenGARunner<T>
 {
-    private int _epochs = 80;
+    internal int MaxEpochs = 80;
+
+    internal int CurrentEpoch = 0;
+
+    internal TimeSpan CurrentDuration = TimeSpan.Zero;
 
     private int _maxNumberOfChromosomes;
 
@@ -32,6 +36,8 @@ public class OpenGARunner<T>
             _maxNumberOfChromosomes = _population.Length;
         } 
     }
+
+    internal double HighestFitness => Population.Max(c => c.Fitness);
 
     private readonly Random _random = new();
 
@@ -60,14 +66,14 @@ public class OpenGARunner<T>
     /// Specifies how many epochs/generations/iterations the genetic algorithm will run for. Defaults to 80.
     /// Higher values will allow the GA to find better results at a performance penalty and vice versa.
     /// </summary>
-    public OpenGARunner<T> Epochs(int numberOfEpochs)
+    public OpenGARunner<T> Epochs(int maxNumberOfEpochs)
     {
-        if (numberOfEpochs <= 0)
+        if (maxNumberOfEpochs <= 0)
         {
-            throw new ArgumentOutOfRangeException(nameof(numberOfEpochs), "Value must be greater than 0.");
+            throw new ArgumentOutOfRangeException(nameof(maxNumberOfEpochs), "Value must be greater than 0.");
         }
 
-        _epochs = numberOfEpochs;
+        MaxEpochs = maxNumberOfEpochs;
         return this;
     }
 
@@ -159,7 +165,7 @@ public class OpenGARunner<T>
             throw new MissingReplacementStrategyException("No replacement strategy has been specified. Consider calling OpenGARunner<T>.ApplyReplacementStrategy(...) to specify a replacement strategy.");
         }
 
-        for (var i = 0; i < _epochs; i++)
+        for (; CurrentEpoch < MaxEpochs; CurrentEpoch++)
         {
             // Fitness is now calculated lazily when accessed
             
