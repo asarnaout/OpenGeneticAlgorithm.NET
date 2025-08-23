@@ -178,8 +178,6 @@ public class OpenGARunner<T>
             throw new MissingReplacementStrategyException("No replacement strategy has been specified. Consider calling OpenGARunner<T>.ApplyReplacementStrategy(...) to specify a replacement strategy.");
         }
 
-        // Reset duration and start tracking time
-        CurrentDuration = TimeSpan.Zero;
         var startTime = DateTime.UtcNow;
 
         for (; CurrentEpoch < MaxEpochs; CurrentEpoch++)
