@@ -26,7 +26,17 @@ public class KPointCrossoverStrategy<T>(int numberOfPoints) : BaseCrossoverStrat
             crossoverPoints.Add(random.Next(1, Math.Min(couple.IndividualA.Genes.Count, couple.IndividualB.Genes.Count) + 1));
         }
 
-        // TODO: WIP
-        return null;
+        // Create two offspring by alternating gene segments between parents
+        var offspringA = couple.IndividualA.DeepCopy();
+        var offspringB = couple.IndividualB.DeepCopy();
+        
+        // Reset age for both offspring chromosomes
+        offspringA.ResetAge();
+        offspringB.ResetAge();
+
+        // TODO: Complete the k-point crossover implementation
+        // For now, return the copied parents with reset ages
+        yield return offspringA;
+        yield return offspringB;
     }
 }

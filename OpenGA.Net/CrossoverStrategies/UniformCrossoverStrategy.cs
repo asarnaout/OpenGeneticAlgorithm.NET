@@ -40,6 +40,9 @@ public class UniformCrossoverStrategy<T> : BaseCrossoverStrategy<T>
             ? couple.IndividualA.DeepCopy() 
             : couple.IndividualB.DeepCopy();
         
+        // Reset age for the new offspring chromosome
+        offspring.ResetAge();
+        
         // Perform uniform crossover for overlapping gene positions
         PerformUniformCrossoverInOverlapRegion(offspring, couple, random, minLength);
         

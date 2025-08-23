@@ -73,6 +73,9 @@ public class OnePointCrossoverStrategy<T> : BaseCrossoverStrategy<T>
     {
         var offspring = primaryParent.DeepCopy();
         
+        // Reset age for the new offspring chromosome
+        offspring.ResetAge();
+        
         // Calculate the target length for the offspring
         // Take genes up to crossoverPoint from primary, remainder from secondary
         var primaryGeneCount = Math.Min(crossoverPoint, primaryParent.Genes.Count);

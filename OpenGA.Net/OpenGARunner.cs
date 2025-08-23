@@ -181,7 +181,8 @@ public class OpenGARunner<T>
 
                     if (_random.NextDouble() > _crossoverRate)
                     {
-                        offspring.AddRange(_crossoverStrategyConfig.CrossoverStrategy.Crossover(couple, _random));
+                        var newOffspring = _crossoverStrategyConfig.CrossoverStrategy.Crossover(couple, _random);
+                        offspring.AddRange(newOffspring);
                     }
                 }
             }
@@ -196,6 +197,9 @@ public class OpenGARunner<T>
                 }
 
                 chromosome.GeneticRepair();
+                
+                // Increment age for all chromosomes that survived to this generation
+                chromosome.IncrementAge();
             }
         }
     }

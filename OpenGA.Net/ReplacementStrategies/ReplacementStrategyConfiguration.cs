@@ -86,6 +86,18 @@ public class ReplacementStrategyConfiguration<T>
     }
 
     /// <summary>
+    /// Apply age-based replacement strategy. Eliminates chromosomes based on their age using a weighted
+    /// roulette wheel where older chromosomes have higher probability of being eliminated.
+    /// This encourages population turnover while maintaining some genetic diversity.
+    /// </summary>
+    public BaseReplacementStrategy<T> ApplyAgeBasedReplacementStrategy()
+    {
+        var result = new AgeBasedReplacementStrategy<T>();
+        ReplacementStrategy = result;
+        return result;
+    }
+
+    /// <summary>
     /// Apply a custom replacement strategy. Requires an instance of a subclass of <see cref="BaseReplacementStrategy<T>">BaseReplacementStrategy<T></see>
     /// to dictate how chromosomes are eliminated from the population to make room for offspring.
     /// </summary>

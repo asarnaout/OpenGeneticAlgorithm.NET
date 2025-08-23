@@ -14,6 +14,12 @@ public abstract class Chromosome<T>(IList<T> genes) : IEquatable<Chromosome<T>>
 
     internal Guid InternalIdentifier { get; } = Guid.NewGuid();
 
+    /// <summary>
+    /// The age of the chromosome, representing how many epochs/generations it has survived.
+    /// This starts at 0 when the chromosome is created and increments each generation it survives.
+    /// </summary>
+    public int Age { get; internal set; } = 0;
+
     public bool Equals(Chromosome<T>? other)
     {
         if (other is null)
@@ -50,6 +56,23 @@ public abstract class Chromosome<T>(IList<T> genes) : IEquatable<Chromosome<T>>
     /// the mating chromosome(s). Override the DeepCopy method to provide such an implementation.
     /// </summary>
     public abstract Chromosome<T> DeepCopy();
+
+    /// <summary>
+    /// Increments the age of the chromosome by 1. This should be called at the end of each generation
+    /// for chromosomes that survive to the next generation.
+    /// </summary>
+    internal void IncrementAge()
+    {
+        Age++;
+    }
+
+    /// <summary>
+    /// Resets the age of the chromosome to 0. This should be called for newly created offspring chromosomes.
+    /// </summary>
+    internal void ResetAge()
+    {
+        Age = 0;
+    }
 
     /// <summary>
     /// This method is No-Op by default and will be called on all chromosomes (after crossover and mutation take place) 
