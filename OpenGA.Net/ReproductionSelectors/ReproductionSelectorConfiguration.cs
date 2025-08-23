@@ -51,14 +51,6 @@ public class ReproductionSelectorConfiguration<T>
         return reproductionSelector;
     }
 
-    public BaseReproductionSelector<T> ApplyBoltzmannReproductionSelector()
-    {
-        //TODO: Implement strategy
-        var result = new BoltzmannReproductionSelector<T>();
-        ReproductionSelector = result;
-        return result;
-    }
-
     /// <summary>
     /// Similar to the traditional fitness-weighted roulette wheel selection mechanism, however, Rank Selection
     /// aims to blunt any disproportionate advantage in fitness a chromosome has which will almost always guarantee

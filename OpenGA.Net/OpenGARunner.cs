@@ -161,8 +161,6 @@ public class OpenGARunner<T>
 
         for (var i = 0; i < _epochs; i++)
         {
-            List<Couple<T>> couples = [];
-
             List<Chromosome<T>> offspring = [];
 
             //TODO:The value below should affect how many chromosomes will be replaced
@@ -170,7 +168,7 @@ public class OpenGARunner<T>
             var requiredNumberOfOffspring = _random.Next(2, _maxNumberOfChromosomes);
 
             //TODO: Double check this: Tying the number of couples to the max number of chromosomes
-            couples.AddRange(_reproductionSelectorConfig.ReproductionSelector.SelectMatingPairs(_population, _random, requiredNumberOfOffspring));
+            var couples = _reproductionSelectorConfig.ReproductionSelector.SelectMatingPairs(_population, _random, requiredNumberOfOffspring);
 
             while (offspring.Count < requiredNumberOfOffspring)
             {
@@ -188,8 +186,7 @@ public class OpenGARunner<T>
                 }
             }
 
-
-            //TODO: Cant generate more children than the population limit, must double check this here.
+            Population = _replacementStrategyConfig.ReplacementStrategy.ApplyReplacement(Population, [.. offspring], _random);
 
             foreach (var chromosome in Population)
             {
