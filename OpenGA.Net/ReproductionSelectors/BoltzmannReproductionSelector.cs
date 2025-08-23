@@ -9,15 +9,16 @@ namespace OpenGA.Net.ReproductionSelectors;
 /// 1. Selection probability is calculated using exp(fitness / temperature)
 /// 2. Higher temperature leads to more uniform selection (exploration)
 /// 3. Lower temperature leads to more elitist selection (exploitation)
-/// 4. Temperature starts at 1.0 and decays over time using the specified decay rate
-/// 5. Temperature never goes below 0
+/// 4. Temperature starts at the specified initial value and decays over time using the specified decay rate
+/// 5. Temperature never goes below 0 (for linear decay) or approaches 0 asymptotically (for exponential decay)
 /// 
 /// This approach provides a smooth transition from exploration to exploitation over time.
 /// </summary>
-public class BoltzmannReproductionSelector<T>(double temperatureDecayRate) : BaseReproductionSelector<T>
+public class BoltzmannReproductionSelector<T>(double temperatureDecayRate, double initialTemperature = 1.0, bool useExponentialDecay = true) : BaseReproductionSelector<T>
 {
     private readonly double _temperatureDecayRate = temperatureDecayRate;
-    private const double InitialTemperature = 1.0;
+    private readonly double _initialTemperature = initialTemperature;
+    private readonly bool _useExponentialDecay = useExponentialDecay;
 
     protected internal override IEnumerable<Couple<T>> SelectMatingPairs(Chromosome<T>[] population, Random random, int minimumNumberOfCouples)
     {
@@ -37,10 +38,12 @@ public class BoltzmannReproductionSelector<T>(double temperatureDecayRate) : Bas
             return GenerateCouplesFromATwoIndividualPopulation(population, minimumNumberOfCouples);
         }
 
-        // Calculate current temperature with decay, ensuring it never goes below 0
-        var currentTemperature = Math.Max(0, InitialTemperature - (_temperatureDecayRate * currentEpoch));
+        // Calculate current temperature with decay
+        var currentTemperature = _useExponentialDecay 
+            ? _initialTemperature * Math.Exp(-_temperatureDecayRate * currentEpoch)
+            : Math.Max(0, _initialTemperature - (_temperatureDecayRate * currentEpoch));
         
-        // If temperature reaches 0, use a very small positive value to avoid division by zero
+        // If temperature reaches 0 (only possible with linear decay), use a very small positive value to avoid division by zero
         if (currentTemperature == 0)
         {
             currentTemperature = double.Epsilon;

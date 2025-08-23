@@ -19,6 +19,27 @@ public class BoltzmannReproductionSelectorTests
     }
 
     [Fact]
+    public void Constructor_WithCustomInitialTemperature_ShouldCreateInstance()
+    {
+        var selector = new BoltzmannReproductionSelector<int>(0.01, 2.0);
+        Assert.NotNull(selector);
+    }
+
+    [Fact]
+    public void Constructor_WithLinearDecay_ShouldCreateInstance()
+    {
+        var selector = new BoltzmannReproductionSelector<int>(0.01, 1.0, useExponentialDecay: false);
+        Assert.NotNull(selector);
+    }
+
+    [Fact]
+    public void Constructor_WithExponentialDecay_ShouldCreateInstance()
+    {
+        var selector = new BoltzmannReproductionSelector<int>(0.01, 1.0, useExponentialDecay: true);
+        Assert.NotNull(selector);
+    }
+
+    [Fact]
     public void SelectMatingPairs_WithEmptyPopulation_ShouldReturnEmptyResult()
     {
         var selector = new BoltzmannReproductionSelector<int>(0.01);
@@ -220,6 +241,40 @@ public class BoltzmannReproductionSelectorTests
     }
 
     [Fact]
+    public void SelectMatingPairs_ExponentialDecayVsLinearDecay_ShouldShowDifferentBehavior()
+    {
+        var exponentialSelector = new BoltzmannReproductionSelector<int>(0.1, 1.0, useExponentialDecay: true);
+        var linearSelector = new BoltzmannReproductionSelector<int>(0.1, 1.0, useExponentialDecay: false);
+        var random = new Random(42);
+        
+        // Create population with clear fitness hierarchy
+        var population = new List<DummyChromosome>();
+        for (int i = 0; i < 50; i++)
+        {
+            population.Add(new DummyChromosome(Enumerable.Range(0, 10).Select(x => 1).ToList())); // Fitness ≈ 1
+        }
+        
+        var highFitnessChromosome = new DummyChromosome(Enumerable.Range(0, 10).Select(x => 100).ToList()); // Fitness = 100
+        population.Add(highFitnessChromosome);
+
+        var populationArray = population.ToArray();
+        var numberOfCouples = 5000;
+
+        // Test at epoch 10 where difference should be more pronounced
+        var exponentialResult = exponentialSelector.SelectMatingPairs(populationArray, random, numberOfCouples, 10).ToList();
+        var exponentialHighFitnessSelections = CountChromosomeSelections(exponentialResult, highFitnessChromosome);
+
+        var linearResult = linearSelector.SelectMatingPairs(populationArray, random, numberOfCouples, 10).ToList();
+        var linearHighFitnessSelections = CountChromosomeSelections(linearResult, highFitnessChromosome);
+
+        // Exponential decay should maintain higher temperature at epoch 10 (1.0 * e^(-0.1*10) ≈ 0.368)
+        // Linear decay would be at 0 temperature (1.0 - 0.1*10 = 0, clamped to epsilon)
+        // So linear should show stronger selection pressure (more high-fitness selections)
+        Assert.True(linearHighFitnessSelections >= exponentialHighFitnessSelections,
+            $"Linear decay should show stronger selection pressure than exponential at epoch 10. Linear: {linearHighFitnessSelections}, Exponential: {exponentialHighFitnessSelections}");
+    }
+
+    [Fact]
     public void SelectMatingPairs_WithZeroFitnessChromosomes_ShouldHandleGracefully()
     {
         var selector = new BoltzmannReproductionSelector<int>(0.01);
@@ -271,6 +326,35 @@ public class BoltzmannReproductionSelectorTests
         // Both should have the same number of couples
         Assert.Equal(numberOfCouples, resultWithoutEpoch.Count);
         Assert.Equal(numberOfCouples, resultWithEpoch0.Count);
+    }
+
+    [Fact]
+    public void Configuration_WithInvalidInitialTemperature_ShouldThrowException()
+    {
+        var config = new ReproductionSelectorConfiguration<int>();
+        
+        Assert.Throws<ArgumentException>(() => config.ApplyBoltzmannReproductionSelector(0.01, -1.0));
+        Assert.Throws<ArgumentException>(() => config.ApplyBoltzmannReproductionSelector(0.01, 0.0));
+        Assert.Throws<ArgumentException>(() => config.ApplyBoltzmannReproductionSelectorWithLinearDecay(0.01, -1.0));
+        Assert.Throws<ArgumentException>(() => config.ApplyBoltzmannReproductionSelectorWithLinearDecay(0.01, 0.0));
+    }
+
+    [Fact]
+    public void Configuration_WithValidParameters_ShouldCreateSelector()
+    {
+        var config = new ReproductionSelectorConfiguration<int>();
+        
+        var exponentialSelector = config.ApplyBoltzmannReproductionSelector(); // Exponential defaults
+        Assert.NotNull(exponentialSelector);
+        
+        var linearSelector = config.ApplyBoltzmannReproductionSelectorWithLinearDecay(); // Linear defaults
+        Assert.NotNull(linearSelector);
+        
+        var customExponentialSelector = config.ApplyBoltzmannReproductionSelector(0.1, 2.0); // Custom exponential
+        Assert.NotNull(customExponentialSelector);
+        
+        var customLinearSelector = config.ApplyBoltzmannReproductionSelectorWithLinearDecay(0.05, 3.0); // Custom linear
+        Assert.NotNull(customLinearSelector);
     }
 
     private static int CountChromosomeSelections(List<Couple<int>> couples, DummyChromosome chromosome)

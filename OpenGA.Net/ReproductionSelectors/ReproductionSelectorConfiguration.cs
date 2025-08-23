@@ -69,25 +69,59 @@ public class ReproductionSelectorConfiguration<T>
     }
 
     /// <summary>
-    /// Boltzmann Selection reproduction selector that uses temperature-based selection probabilities with decay.
+    /// Boltzmann Selection reproduction selector that uses temperature-based selection probabilities with exponential decay.
     /// This strategy applies the Boltzmann distribution to control selection pressure through a temperature parameter
-    /// that starts at 1.0 and decays over epochs using the specified decay rate.
+    /// that starts at the specified initial value and decays exponentially over epochs: T(t) = T₀ × e^(-α×t).
     /// Higher temperature leads to more uniform selection (exploration), while lower temperature leads to more elitist selection (exploitation).
-    /// The temperature decays linearly over epochs, providing a natural transition from exploration to exploitation.
+    /// Exponential decay provides smooth cooling and never reaches absolute zero, maintaining some exploration throughout the run.
     /// </summary>
-    /// <param name="temperatureDecayRate">The rate at which temperature decays per epoch. 
-    /// Higher values (e.g., 0.1) result in faster cooling and quicker transition to exploitation, 
-    /// lower values (e.g., 0.01) result in slower cooling and prolonged exploration phase. 
-    /// Must be greater than or equal to 0. Defaults to 0.01.</param>
-    /// <exception cref="ArgumentException">Thrown when temperatureDecayRate is less than 0.</exception>
-    public BaseReproductionSelector<T> ApplyBoltzmannReproductionSelector(double temperatureDecayRate = 0.01)
+    /// <param name="temperatureDecayRate">The exponential decay rate per epoch. Higher values (e.g., 0.1) result in faster cooling, 
+    /// lower values (e.g., 0.01) result in slower cooling. Must be greater than or equal to 0. Defaults to 0.05.</param>
+    /// <param name="initialTemperature">The starting temperature value. Higher values promote more exploration initially.
+    /// Must be greater than 0. Defaults to 1.0.</param>
+    /// <exception cref="ArgumentException">Thrown when temperatureDecayRate is less than 0 or initialTemperature is less than or equal to 0.</exception>
+    public BaseReproductionSelector<T> ApplyBoltzmannReproductionSelector(double temperatureDecayRate = 0.05, double initialTemperature = 1.0)
     {
         if (temperatureDecayRate < 0)
         {
             throw new ArgumentException("Temperature decay rate must be greater than or equal to 0.", nameof(temperatureDecayRate));
         }
         
-        var result = new BoltzmannReproductionSelector<T>(temperatureDecayRate);
+        if (initialTemperature <= 0)
+        {
+            throw new ArgumentException("Initial temperature must be greater than 0.", nameof(initialTemperature));
+        }
+        
+        var result = new BoltzmannReproductionSelector<T>(temperatureDecayRate, initialTemperature, useExponentialDecay: true);
+        ReproductionSelector = result;
+        return result;
+    }
+
+    /// <summary>
+    /// Boltzmann Selection reproduction selector that uses temperature-based selection probabilities with linear decay.
+    /// This strategy applies the Boltzmann distribution to control selection pressure through a temperature parameter
+    /// that starts at the specified initial value and decays linearly over epochs: T(t) = T₀ - α×t.
+    /// Higher temperature leads to more uniform selection (exploration), while lower temperature leads to more elitist selection (exploitation).
+    /// Linear decay provides predictable cooling and can reach zero temperature for pure exploitation in later epochs.
+    /// </summary>
+    /// <param name="temperatureDecayRate">The linear decay rate per epoch (amount subtracted from temperature each epoch). 
+    /// Higher values result in faster cooling. Must be greater than or equal to 0. Defaults to 0.01.</param>
+    /// <param name="initialTemperature">The starting temperature value. Higher values promote more exploration initially.
+    /// Must be greater than 0. Defaults to 1.0.</param>
+    /// <exception cref="ArgumentException">Thrown when temperatureDecayRate is less than 0 or initialTemperature is less than or equal to 0.</exception>
+    public BaseReproductionSelector<T> ApplyBoltzmannReproductionSelectorWithLinearDecay(double temperatureDecayRate = 0.01, double initialTemperature = 1.0)
+    {
+        if (temperatureDecayRate < 0)
+        {
+            throw new ArgumentException("Temperature decay rate must be greater than or equal to 0.", nameof(temperatureDecayRate));
+        }
+        
+        if (initialTemperature <= 0)
+        {
+            throw new ArgumentException("Initial temperature must be greater than 0.", nameof(initialTemperature));
+        }
+        
+        var result = new BoltzmannReproductionSelector<T>(temperatureDecayRate, initialTemperature, useExponentialDecay: false);
         ReproductionSelector = result;
         return result;
     }
