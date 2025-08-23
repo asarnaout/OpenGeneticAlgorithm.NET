@@ -108,4 +108,62 @@ public class ReplacementStrategyConfiguration<T>
         ReplacementStrategy = replacementStrategy;
         return replacementStrategy;
     }
+
+    /// <summary>
+    /// Apply Boltzmann replacement strategy that uses temperature-based elimination probabilities with exponential decay.
+    /// This strategy applies the Boltzmann distribution to control elimination pressure through a temperature parameter
+    /// that starts at the specified initial value and decays exponentially over epochs: T(t) = T₀ × e^(-α×t).
+    /// Higher temperature leads to more uniform elimination (exploration), while lower temperature leads to more fitness-based elimination (exploitation).
+    /// Uses inverse fitness weighting where chromosomes with lower fitness have higher probability of elimination.
+    /// </summary>
+    /// <param name="temperatureDecayRate">The exponential decay rate per epoch. Higher values (e.g., 0.1) result in faster cooling, 
+    /// lower values (e.g., 0.01) result in slower cooling. Must be greater than or equal to 0. Defaults to 0.05.</param>
+    /// <param name="initialTemperature">The starting temperature value. Higher values promote more exploration initially.
+    /// Must be greater than 0. Defaults to 1.0.</param>
+    /// <exception cref="ArgumentException">Thrown when temperatureDecayRate is less than 0 or initialTemperature is less than or equal to 0.</exception>
+    public BaseReplacementStrategy<T> ApplyBoltzmannReplacementStrategy(double temperatureDecayRate = 0.05, double initialTemperature = 1.0)
+    {
+        if (temperatureDecayRate < 0)
+        {
+            throw new ArgumentException("Temperature decay rate must be greater than or equal to 0.", nameof(temperatureDecayRate));
+        }
+        
+        if (initialTemperature <= 0)
+        {
+            throw new ArgumentException("Initial temperature must be greater than 0.", nameof(initialTemperature));
+        }
+        
+        var result = new BoltzmannReplacementStrategy<T>(temperatureDecayRate, initialTemperature, useExponentialDecay: true);
+        ReplacementStrategy = result;
+        return result;
+    }
+
+    /// <summary>
+    /// Apply Boltzmann replacement strategy that uses temperature-based elimination probabilities with linear decay.
+    /// This strategy applies the Boltzmann distribution to control elimination pressure through a temperature parameter
+    /// that starts at the specified initial value and decays linearly over epochs: T(t) = T₀ - α×t.
+    /// Higher temperature leads to more uniform elimination (exploration), while lower temperature leads to more fitness-based elimination (exploitation).
+    /// Uses inverse fitness weighting where chromosomes with lower fitness have higher probability of elimination.
+    /// </summary>
+    /// <param name="temperatureDecayRate">The linear decay rate per epoch (amount subtracted from temperature each epoch). 
+    /// Higher values result in faster cooling. Must be greater than or equal to 0. Defaults to 0.01.</param>
+    /// <param name="initialTemperature">The starting temperature value. Higher values promote more exploration initially.
+    /// Must be greater than 0. Defaults to 1.0.</param>
+    /// <exception cref="ArgumentException">Thrown when temperatureDecayRate is less than 0 or initialTemperature is less than or equal to 0.</exception>
+    public BaseReplacementStrategy<T> ApplyBoltzmannReplacementStrategyWithLinearDecay(double temperatureDecayRate = 0.01, double initialTemperature = 1.0)
+    {
+        if (temperatureDecayRate < 0)
+        {
+            throw new ArgumentException("Temperature decay rate must be greater than or equal to 0.", nameof(temperatureDecayRate));
+        }
+        
+        if (initialTemperature <= 0)
+        {
+            throw new ArgumentException("Initial temperature must be greater than 0.", nameof(initialTemperature));
+        }
+        
+        var result = new BoltzmannReplacementStrategy<T>(temperatureDecayRate, initialTemperature, useExponentialDecay: false);
+        ReplacementStrategy = result;
+        return result;
+    }
 }

@@ -32,11 +32,13 @@ public class RandomEliminationReplacementStrategy<T> : BaseReplacementStrategy<T
     /// <param name="population">The current population of chromosomes</param>
     /// <param name="offspring">The newly generated offspring chromosomes</param>
     /// <param name="random">Random number generator for stochastic operations</param>
+    /// <param name="currentEpoch">The current epoch/generation number (not used in random elimination)</param>
     /// <returns>The chromosomes selected for elimination through random selection</returns>
     protected internal override IEnumerable<Chromosome<T>> SelectChromosomesForElimination(
         Chromosome<T>[] population, 
         Chromosome<T>[] offspring, 
-        Random random)
+        Random random,
+        int currentEpoch = 0)
     {
         if (population.Length == 0 || offspring.Length == 0)
         {

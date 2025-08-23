@@ -236,7 +236,7 @@ public class OpenGARunner<T>
                 }
             }
 
-            Population = _replacementStrategyConfig.ReplacementStrategy.ApplyReplacement(Population, [.. offspring], _random);
+            Population = _replacementStrategyConfig.ReplacementStrategy.ApplyReplacement(Population, [.. offspring], _random, CurrentEpoch);
 
             foreach (var chromosome in Population)
             {

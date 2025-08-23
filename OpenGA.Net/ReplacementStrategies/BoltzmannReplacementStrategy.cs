@@ -1,0 +1,100 @@
+using OpenGA.Net.Extensions;
+
+namespace OpenGA.Net.ReplacementStrategies;
+
+/// <summary>
+/// Boltzmann replacement strategy that uses temperature-based elimination probabilities with decay.
+/// This strategy applies the Boltzmann distribution to control elimination pressure through a temperature parameter
+/// that decays over epochs.
+/// 
+/// In Boltzmann replacement:
+/// 1. Elimination probability is calculated using exp((maxFitness - fitness) / temperature) (inverse fitness)
+/// 2. Higher temperature leads to more uniform elimination (exploration)
+/// 3. Lower temperature leads to more fitness-based elimination (exploitation)
+/// 4. Temperature starts at the specified initial value and decays over time using the specified decay rate
+/// 5. Temperature never goes below 0 (for linear decay) or approaches 0 asymptotically (for exponential decay)
+/// 
+/// This approach provides a smooth transition from exploration to exploitation over time for replacement selection.
+/// </summary>
+public class BoltzmannReplacementStrategy<T>(double temperatureDecayRate, double initialTemperature = 1.0, bool useExponentialDecay = true) : BaseReplacementStrategy<T>
+{
+    private readonly double _temperatureDecayRate = temperatureDecayRate;
+    private readonly double _initialTemperature = initialTemperature;
+    private readonly bool _useExponentialDecay = useExponentialDecay;
+
+    /// <summary>
+    /// Selects chromosomes for elimination using Boltzmann distribution with temperature decay.
+    /// Uses inverse fitness weighting where chromosomes with lower fitness have higher probability of elimination.
+    /// </summary>
+    /// <param name="population">The current population of chromosomes</param>
+    /// <param name="offspring">The newly generated offspring chromosomes</param>
+    /// <param name="random">Random number generator for stochastic operations</param>
+    /// <param name="currentEpoch">The current epoch/generation number for temperature calculation</param>
+    /// <returns>The chromosomes selected for elimination through Boltzmann selection</returns>
+    protected internal override IEnumerable<Chromosome<T>> SelectChromosomesForElimination(
+        Chromosome<T>[] population, 
+        Chromosome<T>[] offspring, 
+        Random random, 
+        int currentEpoch = 0)
+    {
+        if (population.Length == 0 || offspring.Length == 0)
+        {
+            return [];
+        }
+
+        // We need to eliminate as many chromosomes as we have offspring
+        var eliminationsNeeded = Math.Min(offspring.Length, population.Length);
+
+        // If we need to eliminate the entire population, just return it directly
+        if (eliminationsNeeded == population.Length)
+        {
+            return population;
+        }
+
+        // Calculate current temperature with decay
+        var currentTemperature = _useExponentialDecay 
+            ? _initialTemperature * Math.Exp(-_temperatureDecayRate * currentEpoch)
+            : Math.Max(0, _initialTemperature - (_temperatureDecayRate * currentEpoch));
+        
+        // If temperature reaches 0 (only possible with linear decay), use a very small positive value to avoid division by zero
+        if (currentTemperature == 0)
+        {
+            currentTemperature = double.Epsilon;
+        }
+
+        // Calculate Boltzmann weights for elimination: exp((maxFitness - fitness) / temperature)
+        // This gives higher elimination probability to lower fitness chromosomes
+        var maxFitness = population.Max(c => c.Fitness);
+        var minFitness = population.Min(c => c.Fitness);
+        
+        // To avoid numerical overflow/underflow, we normalize by using the fitness range
+        var fitnessRange = maxFitness - minFitness;
+        
+        // If all chromosomes have the same fitness, eliminate randomly
+        if (fitnessRange == 0)
+        {
+            var shuffledPopulation = population.FisherYatesShuffle(random);
+            return shuffledPopulation.Take(eliminationsNeeded);
+        }
+
+        var candidatesForElimination = new List<Chromosome<T>>(eliminationsNeeded);
+        var eliminatedChromosomes = new HashSet<Chromosome<T>>();
+        
+        // Create weighted roulette wheel with inverse fitness for elimination
+        var availablePopulation = population.ToList();
+
+        for (int i = 0; i < eliminationsNeeded && availablePopulation.Count > 0; i++)
+        {
+            // Create roulette wheel with current available population
+            var rouletteWheel = WeightedRouletteWheel<Chromosome<T>>.Init(availablePopulation, 
+                chromosome => Math.Exp((maxFitness - chromosome.Fitness) / currentTemperature));
+            
+            var selected = rouletteWheel.Spin();
+            candidatesForElimination.Add(selected);
+            eliminatedChromosomes.Add(selected);
+            availablePopulation.Remove(selected);
+        }
+
+        return candidatesForElimination;
+    }
+}

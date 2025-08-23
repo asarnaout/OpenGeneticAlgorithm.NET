@@ -30,11 +30,13 @@ public class GenerationalReplacementStrategy<T> : BaseReplacementStrategy<T>
     /// <param name="population">The current population of chromosomes</param>
     /// <param name="offspring">The newly generated offspring chromosomes</param>
     /// <param name="random">Random number generator (not used in this strategy)</param>
+    /// <param name="currentEpoch">The current epoch/generation number (not used in generational replacement)</param>
     /// <returns>All chromosomes from the current population for elimination</returns>
     protected internal override IEnumerable<Chromosome<T>> SelectChromosomesForElimination(
         Chromosome<T>[] population, 
         Chromosome<T>[] offspring, 
-        Random random)
+        Random random,
+        int currentEpoch = 0)
     {
         // In generational replacement, we eliminate the entire parent population
         return population;
