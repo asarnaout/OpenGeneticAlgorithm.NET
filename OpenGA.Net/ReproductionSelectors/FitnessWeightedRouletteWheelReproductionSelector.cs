@@ -14,6 +14,6 @@ public class FitnessWeightedRouletteWheelReproductionSelector<T> : BaseReproduct
             return GenerateCouplesFromATwoIndividualPopulation(population, minimumNumberOfCouples);
         }
 
-        return CreateStochasticCouples(population, random, minimumNumberOfCouples, () => WeightedRouletteWheel<Chromosome<T>>.Init(population, d => d.CalculateFitness()));
+        return CreateStochasticCouples(population, random, minimumNumberOfCouples, () => WeightedRouletteWheel<Chromosome<T>>.Init(population, d => d.Fitness));
     }
 }

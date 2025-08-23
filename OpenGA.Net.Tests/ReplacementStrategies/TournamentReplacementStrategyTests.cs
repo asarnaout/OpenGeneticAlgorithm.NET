@@ -145,7 +145,7 @@ public class TournamentReplacementStrategyTests
         
         // With stochastic selection, even high fitness chromosomes could be eliminated
         // but low fitness ones are more likely to be eliminated
-        Assert.True(result.Any(c => c.CalculateFitness() >= 2)); // Some reasonably fit should survive
+        Assert.Contains(result, c => c.CalculateFitness() >= 2); // Some reasonably fit should survive
     }
 
     [Fact]

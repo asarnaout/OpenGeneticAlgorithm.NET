@@ -161,6 +161,8 @@ public class OpenGARunner<T>
 
         for (var i = 0; i < _epochs; i++)
         {
+            // Fitness is now calculated lazily when accessed
+            
             List<Chromosome<T>> offspring = [];
 
             var requiredNumberOfOffspring = _replacementStrategyConfig.ReplacementStrategy switch
@@ -196,7 +198,12 @@ public class OpenGARunner<T>
 
                     if (_random.NextDouble() <= _crossoverRate)
                     {
-                        offspring.AddRange(_crossoverStrategyConfig.CrossoverStrategy.Crossover(couple, _random));
+                        var newOffspring = _crossoverStrategyConfig.CrossoverStrategy.Crossover(couple, _random);
+                        foreach (var child in newOffspring)
+                        {
+                            child.InvalidateFitness(); // Invalidate fitness for new offspring
+                        }
+                        offspring.AddRange(newOffspring);
                     }
                 }
 
@@ -213,9 +220,11 @@ public class OpenGARunner<T>
                 if (_random.NextDouble() <= _mutationRate)
                 {
                     chromosome.Mutate();
+                    chromosome.InvalidateFitness(); // Invalidate fitness after mutation
                 }
 
                 chromosome.GeneticRepair();
+                chromosome.InvalidateFitness(); // Invalidate fitness after genetic repair
                 chromosome.IncrementAge();
             }
 

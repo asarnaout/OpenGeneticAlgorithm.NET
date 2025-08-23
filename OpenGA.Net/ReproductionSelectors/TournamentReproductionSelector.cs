@@ -106,13 +106,13 @@ public class TournamentReproductionSelector<T>(bool stochasticTournament) : Base
             if (!StochasticTournament)
             {
                 // Deterministic tournament: select the two fittest individuals
-                var orderedTournament = tournament.OrderByDescending(x => x.CalculateFitness()).ToArray();
+                var orderedTournament = tournament.OrderByDescending(x => x.Fitness).ToArray();
                 yield return Couple<T>.Pair(orderedTournament[0], orderedTournament[1]);
             }
             else
             {
                 // Stochastic tournament: use fitness-weighted selection
-                var rouletteWheel = WeightedRouletteWheel<Chromosome<T>>.Init(tournament, d => d.CalculateFitness());
+                var rouletteWheel = WeightedRouletteWheel<Chromosome<T>>.Init(tournament, d => d.Fitness);
                 var winner1 = rouletteWheel.SpinAndReadjustWheel(); // Remove winner1 from subsequent selections
                 var winner2 = rouletteWheel.Spin(); // Select winner2 from remaining participants
 

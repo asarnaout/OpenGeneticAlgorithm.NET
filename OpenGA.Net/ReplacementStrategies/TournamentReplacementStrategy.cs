@@ -152,8 +152,8 @@ public class TournamentReplacementStrategy<T> : BaseReplacementStrategy<T>
         }
 
         // Calculate inverse fitness weights (lower fitness = higher elimination probability)
-        var maxFitness = participants.Max(c => c.CalculateFitness());
-        var minFitness = participants.Min(c => c.CalculateFitness());
+        var maxFitness = participants.Max(c => c.Fitness);
+        var minFitness = participants.Min(c => c.Fitness);
         
         // Add small epsilon to avoid division by zero and ensure all have some elimination probability
         var epsilon = (maxFitness - minFitness) * 0.01 + 0.001;
@@ -161,9 +161,8 @@ public class TournamentReplacementStrategy<T> : BaseReplacementStrategy<T>
         // Create weighted roulette wheel with inverse fitness
         var rouletteWheel = WeightedRouletteWheel<Chromosome<T>>.Init(participants, chromosome =>
         {
-            var fitness = chromosome.CalculateFitness();
             // Inverse weight: maxFitness + epsilon - fitness gives higher weight to lower fitness
-            return maxFitness + epsilon - fitness;
+            return maxFitness + epsilon - chromosome.Fitness;
         });
 
         return rouletteWheel.Spin();
@@ -177,11 +176,11 @@ public class TournamentReplacementStrategy<T> : BaseReplacementStrategy<T>
     private static Chromosome<T> GetLeastFitChromosome(IList<Chromosome<T>> participants)
     {
         var leastFit = participants[0];
-        var minFitness = leastFit.CalculateFitness();
+        var minFitness = leastFit.Fitness;
 
         for (int i = 1; i < participants.Count; i++)
         {
-            var fitness = participants[i].CalculateFitness();
+            var fitness = participants[i].Fitness;
             if (fitness < minFitness)
             {
                 minFitness = fitness;

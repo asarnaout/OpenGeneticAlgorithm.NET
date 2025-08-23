@@ -14,6 +14,14 @@ public abstract class Chromosome<T>(IList<T> genes) : IEquatable<Chromosome<T>>
 
     internal Guid InternalIdentifier { get; } = Guid.NewGuid();
 
+    private double? _fitness;
+    
+    internal double Fitness
+    {
+        get => _fitness ??= CalculateFitness();
+        set => _fitness = value;
+    }
+
     /// <summary>
     /// The age of the chromosome, representing how many epochs/generations it has survived.
     /// This starts at 0 when the chromosome is created and increments each generation it survives.
@@ -50,6 +58,15 @@ public abstract class Chromosome<T>(IList<T> genes) : IEquatable<Chromosome<T>>
     /// is to randomly delete a member of the <see cref="Genes">Genes</see> array.
     /// </summary>
     public abstract void Mutate();
+
+    /// <summary>
+    /// Invalidates the cached fitness value, forcing it to be recalculated on next access.
+    /// This should be called whenever the chromosome's genes are modified.
+    /// </summary>
+    internal void InvalidateFitness()
+    {
+        _fitness = null;
+    }
 
     /// <summary>
     /// Since Chromosomes partake in crossover operations, we will need to ensure that we can create deep copies of

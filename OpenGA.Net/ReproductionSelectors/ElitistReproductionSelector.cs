@@ -24,7 +24,7 @@ public class ElitistReproductionSelector<T>(bool allowMatingElitesWithNonElites,
         }
         
         // Sort population by fitness (best first)
-        var sortedPopulation = population.OrderByDescending(x => x.CalculateFitness()).ToArray();
+        var sortedPopulation = population.OrderByDescending(x => x.Fitness).ToArray();
         
         // Determine elite and non-elite groups
         var eliteCount = Math.Max(1, (int)Math.Ceiling(ProportionOfElitesInPopulation * population.Length));
@@ -228,7 +228,7 @@ public class ElitistReproductionSelector<T>(bool allowMatingElitesWithNonElites,
         }
         
         // Use fitness-weighted selection to favor fitter individuals
-        var rouletteWheel = WeightedRouletteWheel<Chromosome<T>>.Init(candidates, c => c.CalculateFitness());
+        var rouletteWheel = WeightedRouletteWheel<Chromosome<T>>.Init(candidates, c => c.Fitness);
         return rouletteWheel.Spin();
     }
 }

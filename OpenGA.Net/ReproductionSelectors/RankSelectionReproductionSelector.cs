@@ -27,7 +27,7 @@ public class RankSelectionReproductionSelector<T> : BaseReproductionSelector<T>
 
         // Assign ranks based on fitness: worst chromosome gets rank 1, best gets rank N
         // This creates a linear selection pressure where rank (not fitness) determines selection probability
-        var rankedPopulation = population.OrderBy(x => x.CalculateFitness())
+        var rankedPopulation = population.OrderBy(x => x.Fitness)
                                           .Select((chromosome, index) => new { Chromosome = chromosome, Rank = index + 1 })
                                           .ToDictionary(x => x.Chromosome, y => y.Rank);
         

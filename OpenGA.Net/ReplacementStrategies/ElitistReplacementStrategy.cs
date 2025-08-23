@@ -52,7 +52,7 @@ public class ElitistReplacementStrategy<T> (float elitePercentage = 0.1f): BaseR
 
         // Calculate fitness for all chromosomes and sort by fitness (descending - best first)
         var chromosomesWithFitness = population
-            .Select(chromosome => new { Chromosome = chromosome, Fitness = chromosome.CalculateFitness() })
+            .Select(chromosome => new { Chromosome = chromosome, chromosome.Fitness })
             .OrderByDescending(x => x.Fitness)
             .ToArray();
 
