@@ -77,13 +77,13 @@ public class TspChromosome : Chromosome<int>
 ### 🎯 **Reproduction Selectors**
 Choose the best parents for the next generation:
 
-| Strategy | Use Case | Performance |
-|----------|----------|-------------|
-| **Tournament** | General-purpose, good diversity | ⚡⚡⚡ |
-| **Elitist** | Preserve best solutions | ⚡⚡⚡ |
-| **Roulette Wheel** | Fitness-proportionate selection | ⚡⚡ |
-| **Boltzmann** | Temperature-based selection | ⚡⚡ |
-| **Rank Selection** | Uniform pressure across population | ⚡⚡ |
+| Strategy | Use Case |
+|----------|----------|
+| **Tournament** | General-purpose, good diversity |
+| **Elitist** | Preserve best solutions |
+| **Roulette Wheel** | Fitness-proportionate selection |
+| **Boltzmann** | Temperature-based selection |
+| **Rank Selection** | Uniform pressure across population |
 
 ### 🔄 **Crossover Strategies**
 Create offspring by combining parent chromosomes:
@@ -139,9 +139,9 @@ public class RosenbrockChromosome : Chromosome<double>
 {
     public override double CalculateFitness()
     {
-        var x = Genes[0];
-        var y = Genes[1];
-        var result = Math.Pow(1 - x, 2) + 100 * Math.Pow(y - x * x, 2);
+        var xCoordinate = Genes[0];
+        var yCoordinate = Genes[1];
+        var result = Math.Pow(1 - xCoordinate, 2) + 100 * Math.Pow(yCoordinate - xCoordinate * xCoordinate, 2);
         return 1.0 / (1.0 + result); // Higher fitness = lower function value
     }
 }
