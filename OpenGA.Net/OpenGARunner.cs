@@ -2,6 +2,7 @@ using OpenGA.Net.Exceptions;
 using OpenGA.Net.ReproductionSelectors;
 using OpenGA.Net.CrossoverStrategies;
 using OpenGA.Net.ReplacementStrategies;
+using OpenGA.Net.Termination;
 
 namespace OpenGA.Net;
 
@@ -25,6 +26,8 @@ public class OpenGARunner<T>
 
     private readonly ReplacementStrategyConfiguration<T> _replacementStrategyConfig = new();
 
+    private readonly TerminationStrategyConfiguration<T> _terminationStrategyConfig = new();
+
     private Chromosome<T>[] _population = [];
 
     private Chromosome<T>[] Population 
@@ -42,8 +45,6 @@ public class OpenGARunner<T>
     private readonly Random _random = new();
 
     private OpenGARunner() { }
-
-    //TODO: CONVERGENCE!!!!!
 
     /// <summary>
     /// This method is used to initialize the GA Runner. The method expects a population, that is a collection
@@ -74,6 +75,7 @@ public class OpenGARunner<T>
         }
 
         MaxEpochs = maxNumberOfEpochs;
+        _terminationStrategyConfig.ApplyMaximumEpochsTerminationStrategy();
         return this;
     }
 
@@ -167,8 +169,11 @@ public class OpenGARunner<T>
 
         for (; CurrentEpoch < MaxEpochs; CurrentEpoch++)
         {
-            // Fitness is now calculated lazily when accessed
-            
+            if (_terminationStrategyConfig.ShouldTerminate(this))
+            {
+                break;
+            }
+
             List<Chromosome<T>> offspring = [];
 
             var requiredNumberOfOffspring = _replacementStrategyConfig.ReplacementStrategy switch
