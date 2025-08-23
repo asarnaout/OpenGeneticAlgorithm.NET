@@ -131,14 +131,11 @@ public class OpenGARunner<T>
         return this;
     }
 
-    public OpenGARunner<T> ApplyReproductionSelectors(params Action<ReproductionSelectorConfiguration<T>>[] selectorConfigurator)
+    public OpenGARunner<T> ApplyReproductionSelector(Action<ReproductionSelectorConfiguration<T>> selectorConfigurator)
     {
         ArgumentNullException.ThrowIfNull(selectorConfigurator, nameof(selectorConfigurator));
 
-        foreach(var configurator in selectorConfigurator)
-        {
-            configurator(_reproductionSelectorConfig);
-        }
+        selectorConfigurator(_reproductionSelectorConfig);
 
         return this;
     }
@@ -165,7 +162,7 @@ public class OpenGARunner<T>
     {
         if (_reproductionSelectorConfig.ReproductionSelector is null)
         {
-            throw new MissingReproductionSelectorsException("No reproduction selector is specified. Consider calling OpenGARunner<T>.ApplyReproductionSelectors(...) to specify a selector.");
+            throw new MissingReproductionSelectorsException("No reproduction selector is specified. Consider calling OpenGARunner<T>.ApplyReproductionSelector(...) to specify a selector.");
         }
 
         if (_crossoverStrategyConfig.CrossoverStrategy is null)

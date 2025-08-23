@@ -35,8 +35,7 @@ public static class TspSolver
                         .MaxPopulationSize(populationSize)
                         .MutationRate(0.15f)
                         .CrossoverRate(0.85f)
-                        .ApplyReproductionSelectors(c => c.ApplyTournamentReproductionSelector(),
-                                                    c => c.ApplyElitistReproductionSelector())
+                        .ApplyReproductionSelector(c => c.ApplyElitistReproductionSelector())
                         .ApplyCrossoverStrategy(c => c.ApplyOnePointCrossoverStrategy())
                         .ApplyReplacementStrategy(c => c.ApplyElitistReplacementStrategy());
 
@@ -102,9 +101,7 @@ public static class TspSolver
                         .MaxPopulationSize(populationSize)
                         .MutationRate(mutationRate)
                         .CrossoverRate(0.85f)
-                        .ApplyReproductionSelectors(c => c.ApplyTournamentReproductionSelector(),
-                                                    c => c.ApplyElitistReproductionSelector()
-                        )
+                        .ApplyReproductionSelector(c => c.ApplyElitistReproductionSelector())
                         .ApplyCrossoverStrategy(c => c.ApplyOnePointCrossoverStrategy())
                         .ApplyReplacementStrategy(c => c.ApplyElitistReplacementStrategy());
 

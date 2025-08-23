@@ -16,7 +16,7 @@ public class TargetStandardDeviationTerminationStrategyTests
         };
 
         var runner = OpenGARunner<int>.Init(population)
-            .ApplyReproductionSelectors(config => config.ApplyRandomReproductionSelector())
+            .ApplyReproductionSelector(config => config.ApplyRandomReproductionSelector())
             .ApplyCrossoverStrategy(config => config.ApplyOnePointCrossoverStrategy())
             .ApplyReplacementStrategy(config => config.ApplyGenerationalReplacementStrategy());
 

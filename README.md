@@ -35,7 +35,7 @@ var solution = OpenGARunner<int>
     .Epochs(200)
     .MutationRate(0.1f)
     .CrossoverRate(0.8f)
-    .ApplyReproductionSelectors(c => c.ApplyTournamentReproductionSelector())
+    .ApplyReproductionSelector(c => c.ApplyTournamentReproductionSelector())
     .ApplyCrossoverStrategy(c => c.ApplyOnePointCrossoverStrategy())
     .ApplyReplacementStrategy(c => c.ApplyElitistReplacementStrategy())
     .RunToCompletion();
@@ -122,10 +122,7 @@ var solution = OpenGARunner<int>
     .Init(GenerateInitialPopulation(100, cities))
     .Epochs(500)
     .MutationRate(0.15f)
-    .ApplyReproductionSelectors(
-        c => c.ApplyTournamentReproductionSelector(),
-        c => c.ApplyElitistReproductionSelector()
-    )
+    .ApplyReproductionSelector(c => c.ApplyTournamentReproductionSelector())
     .ApplyCrossoverStrategy(c => c.ApplyUniformCrossoverStrategy())
     .ApplyReplacementStrategy(c => c.ApplyElitistReplacementStrategy())
     .RunToCompletion();
@@ -181,15 +178,11 @@ var runner = OpenGARunner<T>
         c.ApplyTargetStandardDeviationTerminationStrategy(0.001)) // Convergence-based termination
 ```
 
-### 🔧 Multiple Selection Strategies
+### 🔧 Reproduction Selector Configuration
 
 ```csharp
-// Combine multiple reproduction selectors for better diversity
-.ApplyReproductionSelectors(
-    c => c.ApplyTournamentReproductionSelector(tournamentSize: 3),
-    c => c.ApplyElitistReproductionSelector(elitePercentage: 0.1f),
-    c => c.ApplyFitnessWeightedRouletteWheelReproductionSelector()
-)
+// Apply a single reproduction selector
+.ApplyReproductionSelector(c => c.ApplyTournamentReproductionSelector(tournamentSize: 3))
 ```
 
 ### 📈 Progress Monitoring
