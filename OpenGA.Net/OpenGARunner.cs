@@ -170,19 +170,25 @@ public class OpenGARunner<T>
                 _ => (int)(_maxNumberOfChromosomes * 0.5)
             };
 
-            var requiredNumberOfCouples = _crossoverStrategyConfig.CrossoverStrategy switch
-            {
-                OnePointCrossoverStrategy<T> => (int)Math.Ceiling(requiredNumberOfOffspring / 2.0),
-                UniformCrossoverStrategy<T> => requiredNumberOfOffspring,
-                _ => (int)Math.Ceiling(requiredNumberOfOffspring / 2.0)
-            };
-
-            var couples = _reproductionSelectorConfig.ReproductionSelector.SelectMatingPairs(_population, _random, requiredNumberOfCouples);
-
             while (offspring.Count < requiredNumberOfOffspring)
             {
+                var remainingOffspringNeeded = requiredNumberOfOffspring - offspring.Count;
+
+                var requiredNumberOfCouples = _crossoverStrategyConfig.CrossoverStrategy switch
+                {
+                    OnePointCrossoverStrategy<T> => (int)Math.Ceiling(remainingOffspringNeeded / 2.0),
+                    UniformCrossoverStrategy<T> => remainingOffspringNeeded,
+                    _ => (int)Math.Ceiling(remainingOffspringNeeded / 2.0)
+                };
+
+                var couples = _reproductionSelectorConfig.ReproductionSelector.SelectMatingPairs(_population, _random, requiredNumberOfCouples);
+
+                var noCouples = true;
+
                 foreach (var couple in couples)
                 {
+                    noCouples = false;
+
                     if (offspring.Count >= requiredNumberOfOffspring)
                     {
                         break;
@@ -190,9 +196,13 @@ public class OpenGARunner<T>
 
                     if (_random.NextDouble() <= _crossoverRate)
                     {
-                        var newOffspring = _crossoverStrategyConfig.CrossoverStrategy.Crossover(couple, _random);
-                        offspring.AddRange(newOffspring);
+                        offspring.AddRange(_crossoverStrategyConfig.CrossoverStrategy.Crossover(couple, _random));
                     }
+                }
+
+                if (noCouples)
+                {
+                    break;
                 }
             }
 
@@ -206,8 +216,12 @@ public class OpenGARunner<T>
                 }
 
                 chromosome.GeneticRepair();
-                
                 chromosome.IncrementAge();
+            }
+            
+            foreach (var child in offspring)
+            {
+                child.ResetAge();
             }
         }
     }
