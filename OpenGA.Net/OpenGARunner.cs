@@ -80,6 +80,17 @@ public class OpenGARunner<T>
     }
 
     /// <summary>
+    /// Specifies the maximum duration the genetic algorithm will run for before terminating.
+    /// This provides an alternative termination condition to the maximum epochs.
+    /// </summary>
+    /// <param name="maximumDuration">The maximum time the algorithm should run before terminating.</param>
+    public OpenGARunner<T> MaxDuration(TimeSpan maximumDuration)
+    {
+        _terminationStrategyConfig.ApplyMaximumDurationTerminationStrategy(maximumDuration);
+        return this;
+    }
+
+    /// <summary>
     /// The maximum number of chromosomes that can ever exist in the population. Defaults to the initial number of chromosomes provided when creating the runner. 
     /// When the limit is reached, the specified <see cref="ReplacementStrategy">ReplacementStrategy</see> is used to keep the population within limits.
     /// </summary>
@@ -167,8 +178,14 @@ public class OpenGARunner<T>
             throw new MissingReplacementStrategyException("No replacement strategy has been specified. Consider calling OpenGARunner<T>.ApplyReplacementStrategy(...) to specify a replacement strategy.");
         }
 
+        // Reset duration and start tracking time
+        CurrentDuration = TimeSpan.Zero;
+        var startTime = DateTime.UtcNow;
+
         for (; CurrentEpoch < MaxEpochs; CurrentEpoch++)
         {
+            CurrentDuration = DateTime.UtcNow - startTime;
+            
             if (_terminationStrategyConfig.ShouldTerminate(this))
             {
                 break;
