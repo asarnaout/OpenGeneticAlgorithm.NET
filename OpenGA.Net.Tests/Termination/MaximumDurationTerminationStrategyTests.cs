@@ -7,25 +7,9 @@ namespace OpenGA.Net.Tests.Termination;
 
 public class MaximumDurationTerminationStrategyTests
 {
-    private OpenGARunner<int> CreateMockRunnerWithDuration(TimeSpan currentDuration)
+    private GeneticAlgorithmState CreateMockStateWithDuration(TimeSpan currentDuration)
     {
-        var population = new[]
-        {
-            new DummyChromosome([1, 2, 3]),
-            new DummyChromosome([4, 5, 6])
-        };
-
-        var runner = OpenGARunner<int>.Init(population)
-            .ApplyReproductionSelector(config => config.ApplyRandomReproductionSelector())
-            .ApplyCrossoverStrategy(config => config.ApplyOnePointCrossoverStrategy())
-            .ApplyReplacementStrategy(config => config.ApplyGenerationalReplacementStrategy());
-
-        // Set the current duration using reflection since it's internal
-        var currentDurationField = typeof(OpenGARunner<int>).GetField("CurrentDuration", 
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        currentDurationField?.SetValue(runner, currentDuration);
-
-        return runner;
+        return new GeneticAlgorithmState(0, 100, currentDuration, 1.0);
     }
 
     [Fact]
@@ -60,10 +44,10 @@ public class MaximumDurationTerminationStrategyTests
         // Arrange
         var maxDuration = TimeSpan.FromMinutes(10);
         var strategy = new MaximumDurationTerminationStrategy<int>(maxDuration);
-        var runner = CreateMockRunnerWithDuration(TimeSpan.FromMinutes(5));
+        var state = CreateMockStateWithDuration(TimeSpan.FromMinutes(5));
 
         // Act
-        var result = strategy.Terminate(runner);
+        var result = strategy.Terminate(state);
 
         // Assert
         Assert.False(result);
@@ -75,10 +59,10 @@ public class MaximumDurationTerminationStrategyTests
         // Arrange
         var maxDuration = TimeSpan.FromMinutes(10);
         var strategy = new MaximumDurationTerminationStrategy<int>(maxDuration);
-        var runner = CreateMockRunnerWithDuration(TimeSpan.FromMinutes(10));
+        var state = CreateMockStateWithDuration(TimeSpan.FromMinutes(10));
 
         // Act
-        var result = strategy.Terminate(runner);
+        var result = strategy.Terminate(state);
 
         // Assert
         Assert.True(result);
@@ -90,10 +74,10 @@ public class MaximumDurationTerminationStrategyTests
         // Arrange
         var maxDuration = TimeSpan.FromMinutes(10);
         var strategy = new MaximumDurationTerminationStrategy<int>(maxDuration);
-        var runner = CreateMockRunnerWithDuration(TimeSpan.FromMinutes(15));
+        var state = CreateMockStateWithDuration(TimeSpan.FromMinutes(15));
 
         // Act
-        var result = strategy.Terminate(runner);
+        var result = strategy.Terminate(state);
 
         // Assert
         Assert.True(result);
@@ -105,10 +89,10 @@ public class MaximumDurationTerminationStrategyTests
         // Arrange
         var maxDuration = TimeSpan.FromSeconds(30);
         var strategy = new MaximumDurationTerminationStrategy<int>(maxDuration);
-        var runner = CreateMockRunnerWithDuration(TimeSpan.Zero);
+        var state = CreateMockStateWithDuration(TimeSpan.Zero);
 
         // Act
-        var result = strategy.Terminate(runner);
+        var result = strategy.Terminate(state);
 
         // Assert
         Assert.False(result);
@@ -120,10 +104,10 @@ public class MaximumDurationTerminationStrategyTests
         // Arrange
         var maxDuration = TimeSpan.FromMilliseconds(500);
         var strategy = new MaximumDurationTerminationStrategy<int>(maxDuration);
-        var runner = CreateMockRunnerWithDuration(TimeSpan.FromMilliseconds(501));
+        var state = CreateMockStateWithDuration(TimeSpan.FromMilliseconds(501));
 
         // Act
-        var result = strategy.Terminate(runner);
+        var result = strategy.Terminate(state);
 
         // Assert
         Assert.True(result);
@@ -135,10 +119,10 @@ public class MaximumDurationTerminationStrategyTests
         // Arrange
         var maxDuration = TimeSpan.FromTicks(1000);
         var strategy = new MaximumDurationTerminationStrategy<int>(maxDuration);
-        var runner = CreateMockRunnerWithDuration(TimeSpan.FromTicks(1001));
+        var state = CreateMockStateWithDuration(TimeSpan.FromTicks(1001));
 
         // Act
-        var result = strategy.Terminate(runner);
+        var result = strategy.Terminate(state);
 
         // Assert
         Assert.True(result);

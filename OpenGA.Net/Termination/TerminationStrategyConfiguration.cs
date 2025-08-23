@@ -57,10 +57,10 @@ public class TerminationStrategyConfiguration<T>
     /// <summary>
     /// Checks if any of the configured termination strategies indicate that the algorithm should terminate.
     /// </summary>
-    /// <param name="gaRunner">The genetic algorithm runner to evaluate.</param>
+    /// <param name="state">The current state of the genetic algorithm to evaluate.</param>
     /// <returns>True if any termination strategy indicates termination should occur, false otherwise.</returns>
-    internal bool ShouldTerminate(OpenGARunner<T> gaRunner)
+    internal bool ShouldTerminate(GeneticAlgorithmState state)
     {
-        return TerminationStrategies.Any(strategy => strategy.Terminate(gaRunner));
+        return TerminationStrategies.Any(strategy => strategy.Terminate(state));
     }
 }

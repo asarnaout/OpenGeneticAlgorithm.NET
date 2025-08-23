@@ -2,8 +2,8 @@ namespace OpenGA.Net.Termination;
 
 internal class MaximumEpochsTerminationStrategy<T> : BaseTerminationStrategy<T>
 {
-    public override bool Terminate(OpenGARunner<T> gaRunner)
+    public override bool Terminate(GeneticAlgorithmState state)
     {
-        return gaRunner.CurrentEpoch >= gaRunner.MaxEpochs;
+        return state.CurrentEpoch >= state.MaxEpochs;
     }
 }

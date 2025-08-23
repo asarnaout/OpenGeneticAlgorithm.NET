@@ -1,32 +1,12 @@
 using OpenGA.Net.Termination;
-using OpenGA.Net.ReproductionSelectors;
-using OpenGA.Net.CrossoverStrategies;
-using OpenGA.Net.ReplacementStrategies;
 
 namespace OpenGA.Net.Tests.Termination;
 
 public class MaximumEpochsTerminationStrategyTests
 {
-    private OpenGARunner<int> CreateMockRunner(int currentEpoch, int maxEpochs)
+    private GeneticAlgorithmState CreateMockState(int currentEpoch, int maxEpochs)
     {
-        var population = new[]
-        {
-            new DummyChromosome([1, 2, 3]),
-            new DummyChromosome([4, 5, 6])
-        };
-
-        var runner = OpenGARunner<int>.Init(population)
-            .Epochs(maxEpochs)
-            .ApplyReproductionSelector(config => config.ApplyRandomReproductionSelector())
-            .ApplyCrossoverStrategy(config => config.ApplyOnePointCrossoverStrategy())
-            .ApplyReplacementStrategy(config => config.ApplyGenerationalReplacementStrategy());
-
-        // Set the current epoch using reflection since it's internal
-        var currentEpochField = typeof(OpenGARunner<int>).GetField("CurrentEpoch", 
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        currentEpochField?.SetValue(runner, currentEpoch);
-
-        return runner;
+        return new GeneticAlgorithmState(currentEpoch, maxEpochs, TimeSpan.Zero, 1.0);
     }
 
     [Fact]
@@ -34,10 +14,10 @@ public class MaximumEpochsTerminationStrategyTests
     {
         // Arrange
         var strategy = new MaximumEpochsTerminationStrategy<int>();
-        var runner = CreateMockRunner(currentEpoch: 5, maxEpochs: 10);
+        var state = CreateMockState(currentEpoch: 5, maxEpochs: 10);
 
         // Act
-        var result = strategy.Terminate(runner);
+        var result = strategy.Terminate(state);
 
         // Assert
         Assert.False(result);
@@ -48,10 +28,10 @@ public class MaximumEpochsTerminationStrategyTests
     {
         // Arrange
         var strategy = new MaximumEpochsTerminationStrategy<int>();
-        var runner = CreateMockRunner(currentEpoch: 10, maxEpochs: 10);
+        var state = CreateMockState(currentEpoch: 10, maxEpochs: 10);
 
         // Act
-        var result = strategy.Terminate(runner);
+        var result = strategy.Terminate(state);
 
         // Assert
         Assert.True(result);
@@ -62,10 +42,10 @@ public class MaximumEpochsTerminationStrategyTests
     {
         // Arrange
         var strategy = new MaximumEpochsTerminationStrategy<int>();
-        var runner = CreateMockRunner(currentEpoch: 15, maxEpochs: 10);
+        var state = CreateMockState(currentEpoch: 15, maxEpochs: 10);
 
         // Act
-        var result = strategy.Terminate(runner);
+        var result = strategy.Terminate(state);
 
         // Assert
         Assert.True(result);
@@ -76,10 +56,10 @@ public class MaximumEpochsTerminationStrategyTests
     {
         // Arrange
         var strategy = new MaximumEpochsTerminationStrategy<int>();
-        var runner = CreateMockRunner(currentEpoch: 0, maxEpochs: 5);
+        var state = CreateMockState(currentEpoch: 0, maxEpochs: 5);
 
         // Act
-        var result = strategy.Terminate(runner);
+        var result = strategy.Terminate(state);
 
         // Assert
         Assert.False(result);

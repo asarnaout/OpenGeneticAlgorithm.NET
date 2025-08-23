@@ -14,7 +14,7 @@ public class BaseTerminationStrategyTests
             _shouldTerminate = shouldTerminate;
         }
 
-        public override bool Terminate(OpenGARunner<T> gaRunner)
+        public override bool Terminate(GeneticAlgorithmState state)
         {
             return _shouldTerminate;
         }
@@ -44,10 +44,11 @@ public class BaseTerminationStrategyTests
         };
 
         var runner = OpenGARunner<int>.Init(population);
+        var state = new GeneticAlgorithmState(0, 100, TimeSpan.Zero, 1.0);
 
         // Act & Assert
-        Assert.True(trueStrategy.Terminate(runner));
-        Assert.False(falseStrategy.Terminate(runner));
+        Assert.True(trueStrategy.Terminate(state));
+        Assert.False(falseStrategy.Terminate(state));
     }
 
     [Fact]
@@ -69,12 +70,13 @@ public class BaseTerminationStrategyTests
         };
 
         var runner = OpenGARunner<int>.Init(population);
+        var state = new GeneticAlgorithmState(0, 100, TimeSpan.Zero, 1.0);
 
         // Act & Assert
         foreach (var strategy in strategies)
         {
             // Should not throw and should return a boolean
-            var result = strategy.Terminate(runner);
+            var result = strategy.Terminate(state);
             Assert.IsType<bool>(result);
         }
     }

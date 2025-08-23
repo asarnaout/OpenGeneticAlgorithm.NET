@@ -14,8 +14,8 @@ public class MaximumDurationTerminationStrategy<T> : BaseTerminationStrategy<T>
         _maximumDuration = maximumDuration;
     }
 
-    public override bool Terminate(OpenGARunner<T> gaRunner)
+    public override bool Terminate(GeneticAlgorithmState state)
     {
-        return gaRunner.CurrentDuration >= _maximumDuration;
+        return state.CurrentDuration >= _maximumDuration;
     }
 }

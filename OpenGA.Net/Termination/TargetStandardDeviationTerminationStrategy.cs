@@ -22,9 +22,9 @@ public class TargetStandardDeviationTerminationStrategy<T> : BaseTerminationStra
         _window = window;
     }
 
-    public override bool Terminate(OpenGARunner<T> gaRunner)
+    public override bool Terminate(GeneticAlgorithmState state)
     {
-        _recentFitnessValues.Enqueue(gaRunner.HighestFitness);
+        _recentFitnessValues.Enqueue(state.HighestFitness);
 
         if (_recentFitnessValues.Count > _window)
         {
