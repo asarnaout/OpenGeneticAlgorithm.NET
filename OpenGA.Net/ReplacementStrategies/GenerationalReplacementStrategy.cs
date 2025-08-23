@@ -23,29 +23,20 @@ namespace OpenGA.Net.ReplacementStrategies;
 /// </summary>
 public class GenerationalReplacementStrategy<T> : BaseReplacementStrategy<T>
 {
+    /// <summary>
+    /// Selects all chromosomes from the population for elimination, implementing a complete
+    /// generational replacement where the entire parent population is replaced by offspring.
+    /// </summary>
+    /// <param name="population">The current population of chromosomes</param>
+    /// <param name="offspring">The newly generated offspring chromosomes</param>
+    /// <param name="random">Random number generator (not used in this strategy)</param>
+    /// <returns>All chromosomes from the current population for elimination</returns>
     protected internal override IEnumerable<Chromosome<T>> SelectChromosomesForElimination(
         Chromosome<T>[] population, 
         Chromosome<T>[] offspring, 
         Random random)
     {
-        return population; // Note: This actually won't be called since the ApplyReplacement override will directly return the offspring.
-    }
-
-    /// <summary>
-    /// Applies the generational replacement strategy by eliminating the entire parent population
-    /// and replacing it completely with the offspring.
-    /// </summary>
-    /// <param name="population">The current population of chromosomes</param>
-    /// <param name="offspring">The newly generated offspring chromosomes</param>
-    /// <param name="random">Random number generator (not used in this strategy)</param>
-    /// <returns>The new population consisting entirely of offspring</returns>
-    public override Chromosome<T>[] ApplyReplacement(
-        Chromosome<T>[] population, 
-        Chromosome<T>[] offspring, 
-        Random random)
-    {
-        // In generational replacement, the new population consists entirely of offspring
-        // No parent chromosomes survive to the next generation
-        return [..offspring];
+        // In generational replacement, we eliminate the entire parent population
+        return population;
     }
 }
