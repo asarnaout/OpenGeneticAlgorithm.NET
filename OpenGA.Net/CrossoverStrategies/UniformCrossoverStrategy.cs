@@ -35,13 +35,10 @@ public class UniformCrossoverStrategy<T> : BaseCrossoverStrategy<T>
         var maxLength = Math.Max(couple.IndividualA.Genes.Count, couple.IndividualB.Genes.Count);
         var minLength = Math.Min(couple.IndividualA.Genes.Count, couple.IndividualB.Genes.Count);
         
-        // Start with the longer parent as the base to avoid excessive resizing
+        // Start with the longer parent as the base
         var offspring = couple.IndividualA.Genes.Count >= couple.IndividualB.Genes.Count 
             ? couple.IndividualA.DeepCopy() 
             : couple.IndividualB.DeepCopy();
-        
-        // Ensure offspring has the correct length
-        ResizeOffspringIfNeeded(offspring, maxLength);
         
         // Perform uniform crossover for overlapping gene positions
         PerformUniformCrossoverInOverlapRegion(offspring, couple, random, minLength);
@@ -50,35 +47,6 @@ public class UniformCrossoverStrategy<T> : BaseCrossoverStrategy<T>
         CopyNonOverlappingGenes(offspring, couple, minLength, maxLength);
         
         yield return offspring;
-    }
-    
-    /// <summary>
-    /// Resizes the offspring chromosome to the target length if necessary.
-    /// </summary>
-    /// <param name="offspring">The offspring chromosome to resize</param>
-    /// <param name="targetLength">The desired length</param>
-    private static void ResizeOffspringIfNeeded(Chromosome<T> offspring, int targetLength)
-    {
-        var currentLength = offspring.Genes.Count;
-        
-        if (currentLength < targetLength)
-        {
-            // Add placeholder genes that will be overwritten
-            var genesToAdd = targetLength - currentLength;
-            for (int i = 0; i < genesToAdd; i++)
-            {
-                offspring.Genes.Add(default!);
-            }
-        }
-        else if (currentLength > targetLength)
-        {
-            // Remove excess genes from the end
-            var genesToRemove = currentLength - targetLength;
-            for (int i = 0; i < genesToRemove; i++)
-            {
-                offspring.Genes.RemoveAt(offspring.Genes.Count - 1);
-            }
-        }
     }
     
     /// <summary>
