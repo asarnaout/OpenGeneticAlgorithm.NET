@@ -65,28 +65,4 @@ public class RandomEliminationReplacementStrategy<T> : BaseReplacementStrategy<T
 
         return candidatesForElimination;
     }
-
-    /// <summary>
-    /// Applies the random replacement strategy by eliminating exactly the number of chromosomes
-    /// needed to accommodate the offspring, selected completely at random.
-    /// </summary>
-    /// <param name="population">The current population of chromosomes</param>
-    /// <param name="offspring">The newly generated offspring chromosomes</param>
-    /// <param name="random">Random number generator for stochastic operations</param>
-    /// <returns>The new population with maintained size</returns>
-    public override Chromosome<T>[] ApplyReplacement(
-        Chromosome<T>[] population, 
-        Chromosome<T>[] offspring, 
-        Random random)
-    {
-        // Select chromosomes for elimination based purely on probability
-        var chromosomesToEliminate = SelectChromosomesForElimination(population, offspring, random).ToHashSet();
-        
-        // Create new population excluding eliminated chromosomes and adding all offspring
-        var survivingPopulation = population.Where(c => !chromosomesToEliminate.Contains(c)).ToList();
-        survivingPopulation.AddRange(offspring);
-
-        // Return the population with maintained size
-        return [..survivingPopulation];
-    }
 }

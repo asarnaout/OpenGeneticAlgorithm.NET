@@ -80,9 +80,4 @@ public class ElitistReplacementStrategy<T> (float elitePercentage = 0.1f): BaseR
 
         return shuffledEligible.Take(eliminationsNeeded);
     }
-
-    /// <summary>
-    /// Gets the percentage of the population protected as elites.
-    /// </summary>
-    public float ElitePercentage => _elitePercentage;
 }

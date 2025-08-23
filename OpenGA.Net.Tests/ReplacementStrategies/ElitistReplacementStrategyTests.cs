@@ -4,28 +4,6 @@ namespace OpenGA.Net.Tests.ReplacementStrategies;
 
 public class ElitistReplacementStrategyTests
 {
-    [Fact]
-    public void Constructor_WithDefaultElitePercentage_ShouldSucceed()
-    {
-        // Arrange & Act
-        var strategy = new ElitistReplacementStrategy<int>();
-
-        // Assert
-        Assert.NotNull(strategy);
-        Assert.Equal(0.1f, strategy.ElitePercentage);
-    }
-
-    [Fact]
-    public void Constructor_WithCustomElitePercentage_ShouldSucceed()
-    {
-        // Arrange & Act
-        var strategy = new ElitistReplacementStrategy<int>(0.25f);
-
-        // Assert
-        Assert.NotNull(strategy);
-        Assert.Equal(0.25f, strategy.ElitePercentage);
-    }
-
     [Theory]
     [InlineData(-0.1f)]
     [InlineData(1.1f)]
