@@ -25,11 +25,11 @@ public class UniformCrossoverStrategy<T> : BaseCrossoverStrategy<T>
     /// <exception cref="InvalidChromosomeException">Thrown when either parent chromosome has null genes</exception>
     protected internal override IEnumerable<Chromosome<T>> Crossover(Couple<T> couple, Random random)
     {
-        if (couple.IndividualA?.Genes is null)
-            throw new InvalidChromosomeException("Parent A has null genes collection.");
+        if (couple.IndividualA?.Genes is null or { Count: 0 })
+            throw new InvalidChromosomeException("Parent A has null or empty genes collection.");
             
-        if (couple.IndividualB?.Genes is null)
-            throw new InvalidChromosomeException("Parent B has null genes collection.");
+        if (couple.IndividualB?.Genes is null or { Count: 0 })
+            throw new InvalidChromosomeException("Parent B has null or empty genes collection.");
         
         // Determine the maximum length to ensure all genetic material is considered
         var maxLength = Math.Max(couple.IndividualA.Genes.Count, couple.IndividualB.Genes.Count);
@@ -43,8 +43,8 @@ public class UniformCrossoverStrategy<T> : BaseCrossoverStrategy<T>
         // Perform uniform crossover for overlapping gene positions
         PerformUniformCrossoverInOverlapRegion(offspring, couple, random, minLength);
         
-        // Handle non-overlapping region by copying from the longer parent
-        CopyNonOverlappingGenes(offspring, couple, minLength, maxLength);
+        // Handle non-overlapping region by randomly deciding to extend or truncate
+        CopyNonOverlappingGenes(offspring, couple, random, minLength, maxLength);
         
         yield return offspring;
     }
@@ -70,24 +70,39 @@ public class UniformCrossoverStrategy<T> : BaseCrossoverStrategy<T>
     }
     
     /// <summary>
-    /// Copies genes from the longer parent to fill the non-overlapping region.
+    /// Handles the non-overlapping region by randomly deciding whether to extend or truncate.
+    /// 50% chance to copy remaining genes from longer parent, 50% chance to truncate to shorter parent length.
     /// </summary>
     /// <param name="offspring">The offspring chromosome being constructed</param>
     /// <param name="couple">The parent chromosomes</param>
+    /// <param name="random">Random number generator</param>
     /// <param name="minLength">The length of the shorter parent</param>
     /// <param name="maxLength">The length of the longer parent</param>
-    private static void CopyNonOverlappingGenes(Chromosome<T> offspring, Couple<T> couple, int minLength, int maxLength)
+    private static void CopyNonOverlappingGenes(Chromosome<T> offspring, Couple<T> couple, Random random, int minLength, int maxLength)
     {
         if (minLength >= maxLength) return; // No non-overlapping region
         
-        // Determine which parent is longer and copy its remaining genes
-        var longerParent = couple.IndividualA.Genes.Count > couple.IndividualB.Genes.Count 
-            ? couple.IndividualA 
-            : couple.IndividualB;
-            
-        for (int i = minLength; i < maxLength; i++)
+        // Coin flip: 50% chance to keep longer length, 50% chance to truncate to shorter length
+        if (random.NextDouble() >= 0.5)
         {
-            offspring.Genes[i] = longerParent.Genes[i];
+            // Keep the longer length - copy remaining genes from the longer parent
+            var longerParent = couple.IndividualA.Genes.Count > couple.IndividualB.Genes.Count 
+                ? couple.IndividualA 
+                : couple.IndividualB;
+                
+            for (int i = minLength; i < maxLength; i++)
+            {
+                offspring.Genes[i] = longerParent.Genes[i];
+            }
+        }
+        else
+        {
+            // Truncate to shorter parent length - remove excess genes
+            var genesToRemove = maxLength - minLength;
+            for (int i = 0; i < genesToRemove; i++)
+            {
+                offspring.Genes.RemoveAt(offspring.Genes.Count - 1);
+            }
         }
     }
 }
