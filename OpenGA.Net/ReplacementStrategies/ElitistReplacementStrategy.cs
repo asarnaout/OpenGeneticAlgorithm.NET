@@ -25,7 +25,7 @@ namespace OpenGA.Net.ReplacementStrategies;
 /// </summary>
 public class ElitistReplacementStrategy<T> (float elitePercentage = 0.1f): BaseReplacementStrategy<T>
 {
-    private readonly float _elitePercentage = elitePercentage;
+    internal readonly float ElitePercentage = elitePercentage;
 
     /// <summary>
     /// Selects chromosomes for elimination while protecting elite chromosomes based on fitness.
@@ -47,7 +47,7 @@ public class ElitistReplacementStrategy<T> (float elitePercentage = 0.1f): BaseR
         }
 
         // Calculate how many elites to protect
-        var eliteCount = (int)Math.Ceiling(population.Length * _elitePercentage);
+        var eliteCount = (int)Math.Ceiling(population.Length * ElitePercentage);
         eliteCount = Math.Min(eliteCount, population.Length); // Ensure we don't exceed population size
 
         // Calculate fitness for all chromosomes and sort by fitness (descending - best first)

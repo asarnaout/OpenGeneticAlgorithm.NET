@@ -163,9 +163,21 @@ public class OpenGARunner<T>
         {
             List<Chromosome<T>> offspring = [];
 
-            var requiredNumberOfOffspring = _random.Next(2, _maxNumberOfChromosomes);
+            var requiredNumberOfOffspring = _replacementStrategyConfig.ReplacementStrategy switch
+            {
+                GenerationalReplacementStrategy<T> => _maxNumberOfChromosomes,
+                ElitistReplacementStrategy<T> elitistStrategy => (int)(_maxNumberOfChromosomes * elitistStrategy.ElitePercentage),
+                _ => (int)(_maxNumberOfChromosomes * 0.5)
+            };
 
-            var couples = _reproductionSelectorConfig.ReproductionSelector.SelectMatingPairs(_population, _random, requiredNumberOfOffspring);
+            var requiredNumberOfCouples = _crossoverStrategyConfig.CrossoverStrategy switch
+            {
+                OnePointCrossoverStrategy<T> => (int)Math.Ceiling(requiredNumberOfOffspring / 2.0),
+                UniformCrossoverStrategy<T> => requiredNumberOfOffspring,
+                _ => (int)Math.Ceiling(requiredNumberOfOffspring / 2.0)
+            };
+
+            var couples = _reproductionSelectorConfig.ReproductionSelector.SelectMatingPairs(_population, _random, requiredNumberOfCouples);
 
             while (offspring.Count < requiredNumberOfOffspring)
             {
@@ -195,7 +207,6 @@ public class OpenGARunner<T>
 
                 chromosome.GeneticRepair();
                 
-                // Increment age for all chromosomes that survived to this generation
                 chromosome.IncrementAge();
             }
         }
