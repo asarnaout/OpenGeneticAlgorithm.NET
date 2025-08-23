@@ -25,6 +25,23 @@ public class CrossoverStrategyConfiguration<T>
     }
 
     /// <summary>
+    /// Multiple points are chosen at random, and genes are alternated between parents at each crossover point to produce two new child chromosomes.
+    /// </summary>
+    /// <param name="numberOfPoints">The number of crossover points to use. Must be greater than 0.</param>
+    /// <returns>The configured k-point crossover strategy.</returns>
+    public BaseCrossoverStrategy<T> ApplyKPointCrossoverStrategy(int numberOfPoints)
+    {
+        if (numberOfPoints <= 0)
+        {
+            throw new ArgumentException("Number of crossover points must be greater than 0.", nameof(numberOfPoints));
+        }
+
+        var result = new KPointCrossoverStrategy<T>(numberOfPoints);
+        CrossoverStrategy = result;
+        return result;
+    }
+
+    /// <summary>
     /// Apply a custom strategy for crossing over chromosomes. Requires an instance of a subclass of <see cref="BaseCrossoverStrategy<T>">BaseCrossoverStrategy<T></see>
     /// to dictate which how a Couple of Chromosomes can reproduce a new set of Chromosomes.
     /// </summary>
