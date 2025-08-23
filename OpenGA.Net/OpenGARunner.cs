@@ -193,9 +193,20 @@ public class OpenGARunner<T>
             var requiredNumberOfOffspring = _replacementStrategyConfig.ReplacementStrategy switch
             {
                 GenerationalReplacementStrategy<T> => _maxNumberOfChromosomes,
-                ElitistReplacementStrategy<T> elitistStrategy => (int)(_maxNumberOfChromosomes * elitistStrategy.ElitePercentage),
+                ElitistReplacementStrategy<T> elitistStrat => _maxNumberOfChromosomes - (int)(_maxNumberOfChromosomes * elitistStrat.ElitePercentage),
                 _ => (int)(_maxNumberOfChromosomes * 0.5)
             };
+
+            // Validate offspring requirements
+            if (requiredNumberOfOffspring <= 0)
+            {
+                throw new InvalidOperationException("Required number of offspring must be greater than zero. Check replacement strategy configuration.");
+            }
+
+            if (requiredNumberOfOffspring > _maxNumberOfChromosomes * 2)
+            {
+                throw new InvalidOperationException($"Required number of offspring ({requiredNumberOfOffspring}) exceeds reasonable bounds (maximum: {_maxNumberOfChromosomes * 2}). This may indicate an issue with the replacement strategy configuration.");
+            }
 
             while (offspring.Count < requiredNumberOfOffspring)
             {
@@ -204,6 +215,7 @@ public class OpenGARunner<T>
                 var requiredNumberOfCouples = _crossoverStrategyConfig.CrossoverStrategy switch
                 {
                     OnePointCrossoverStrategy<T> => (int)Math.Ceiling(remainingOffspringNeeded / 2.0),
+                    KPointCrossoverStrategy<T> => (int)Math.Ceiling(remainingOffspringNeeded / 2.0),
                     UniformCrossoverStrategy<T> => remainingOffspringNeeded,
                     _ => (int)Math.Ceiling(remainingOffspringNeeded / 2.0)
                 };
