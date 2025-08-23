@@ -142,7 +142,7 @@ public class OpenGARunner<T>
         return this;
     }
 
-    public void Start()
+    public Chromosome<T>[] RunToCompletion()
     {
         if (_reproductionSelectorConfig.ReproductionSelector is null)
         {
@@ -218,11 +218,13 @@ public class OpenGARunner<T>
                 chromosome.GeneticRepair();
                 chromosome.IncrementAge();
             }
-            
+
             foreach (var child in offspring)
             {
                 child.ResetAge();
             }
         }
+
+        return Population;
     }
 }
