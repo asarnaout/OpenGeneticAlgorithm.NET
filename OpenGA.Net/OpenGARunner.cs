@@ -206,7 +206,7 @@ public class OpenGARunner<T>
                     _ => (int)Math.Ceiling(remainingOffspringNeeded / 2.0)
                 };
 
-                var couples = _reproductionSelectorConfig.ReproductionSelector.SelectMatingPairs(_population, _random, requiredNumberOfCouples);
+                var couples = _reproductionSelectorConfig.ReproductionSelector.SelectMatingPairs(_population, _random, requiredNumberOfCouples, CurrentEpoch);
 
                 var noCouples = true;
 

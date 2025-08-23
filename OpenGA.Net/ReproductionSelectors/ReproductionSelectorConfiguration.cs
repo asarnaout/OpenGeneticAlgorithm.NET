@@ -69,22 +69,25 @@ public class ReproductionSelectorConfiguration<T>
     }
 
     /// <summary>
-    /// Boltzmann Selection reproduction selector that uses temperature-based selection probabilities.
-    /// This strategy applies the Boltzmann distribution to control selection pressure through a temperature parameter.
+    /// Boltzmann Selection reproduction selector that uses temperature-based selection probabilities with decay.
+    /// This strategy applies the Boltzmann distribution to control selection pressure through a temperature parameter
+    /// that starts at 1.0 and decays over epochs using the specified decay rate.
     /// Higher temperature leads to more uniform selection (exploration), while lower temperature leads to more elitist selection (exploitation).
+    /// The temperature decays linearly over epochs, providing a natural transition from exploration to exploitation.
     /// </summary>
-    /// <param name="temperature">The temperature parameter that controls selection pressure. 
-    /// Higher values (e.g., 100) result in more uniform selection, 
-    /// lower values (e.g., 0.1) result in more elitist selection. Must be greater than 0. Defaults to 1.0.</param>
-    /// <exception cref="ArgumentException">Thrown when temperature is less than or equal to 0.</exception>
-    public BaseReproductionSelector<T> ApplyBoltzmannReproductionSelector(double temperature = 1.0)
+    /// <param name="temperatureDecayRate">The rate at which temperature decays per epoch. 
+    /// Higher values (e.g., 0.1) result in faster cooling and quicker transition to exploitation, 
+    /// lower values (e.g., 0.01) result in slower cooling and prolonged exploration phase. 
+    /// Must be greater than or equal to 0. Defaults to 0.01.</param>
+    /// <exception cref="ArgumentException">Thrown when temperatureDecayRate is less than 0.</exception>
+    public BaseReproductionSelector<T> ApplyBoltzmannReproductionSelector(double temperatureDecayRate = 0.01)
     {
-        if (temperature <= 0)
+        if (temperatureDecayRate < 0)
         {
-            throw new ArgumentException("Temperature must be greater than 0.", nameof(temperature));
+            throw new ArgumentException("Temperature decay rate must be greater than or equal to 0.", nameof(temperatureDecayRate));
         }
         
-        var result = new BoltzmannReproductionSelector<T>(temperature);
+        var result = new BoltzmannReproductionSelector<T>(temperatureDecayRate);
         ReproductionSelector = result;
         return result;
     }

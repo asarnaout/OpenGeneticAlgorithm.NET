@@ -6,6 +6,15 @@ public abstract class BaseReproductionSelector<T>
 {
     protected internal abstract IEnumerable<Couple<T>> SelectMatingPairs(Chromosome<T>[] population, Random random, int minimumNumberOfCouples);
 
+    /// <summary>
+    /// Optional method for reproduction selectors that need access to the current epoch information.
+    /// Default implementation delegates to the standard SelectMatingPairs method.
+    /// </summary>
+    protected internal virtual IEnumerable<Couple<T>> SelectMatingPairs(Chromosome<T>[] population, Random random, int minimumNumberOfCouples, int currentEpoch)
+    {
+        return SelectMatingPairs(population, random, minimumNumberOfCouples);
+    }
+
     internal virtual IEnumerable<Couple<T>> CreateStochasticCouples(IList<Chromosome<T>> candidates, Random random, int minimumNumberOfCouples, Func<WeightedRouletteWheel<Chromosome<T>>> rouletteWheelBuilder)
     {
         if (candidates.Count <= 1)
