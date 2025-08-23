@@ -2,7 +2,7 @@ using OpenGA.Net.CrossoverStrategies;
 using OpenGA.Net.Exceptions;
 using System.Diagnostics;
 
-namespace OpenGA.Net.Tests;
+namespace OpenGA.Net.Tests.CrossoverStrategies;
 
 /// <summary>
 /// Comprehensive test suite for OnePointCrossoverStrategy covering logic correctness,

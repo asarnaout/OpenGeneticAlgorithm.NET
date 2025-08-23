@@ -1,6 +1,6 @@
 using OpenGA.Net.ReplacementStrategies;
 
-namespace OpenGA.Net.Tests;
+namespace OpenGA.Net.Tests.ReplacementStrategies;
 
 public class TournamentReplacementStrategyTests
 {

@@ -1,6 +1,6 @@
 using OpenGA.Net.ReproductionSelectors;
 
-namespace OpenGA.Net.Tests;
+namespace OpenGA.Net.Tests.ReproductionSelectors;
 
 public class FitnessWeightedRouletteWheelReproductionSelectorTests
 {
