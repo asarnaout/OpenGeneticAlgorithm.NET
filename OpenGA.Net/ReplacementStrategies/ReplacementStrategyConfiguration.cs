@@ -29,6 +29,33 @@ public class ReplacementStrategyConfiguration<T>
     }
 
     /// <summary>
+    /// Apply elitist replacement strategy. Protects the top-performing chromosomes (elites) from elimination
+    /// based on their fitness values, while allowing the remaining population to be replaced with offspring.
+    /// This ensures that the best solutions are preserved across generations.
+    /// </summary>
+    /// <param name="elitePercentage">
+    /// The percentage of the population to protect as elites (0.0 to 1.0).
+    /// Default is 0.1 (10%). Must be between 0.0 and 1.0.
+    /// </param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when elitePercentage is not between 0.0 and 1.0.
+    /// </exception>
+    public BaseReplacementStrategy<T> ApplyElitistReplacementStrategy(float elitePercentage = 0.1f)
+    {
+        if (elitePercentage < 0.0f || elitePercentage > 1.0f)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(elitePercentage), 
+                elitePercentage, 
+                "Elite percentage must be between 0.0 and 1.0.");
+        }
+
+        var result = new ElitistReplacementStrategy<T>(elitePercentage);
+        ReplacementStrategy = result;
+        return result;
+    }
+
+    /// <summary>
     /// Apply tournament-based replacement strategy. Eliminates chromosomes through competitive tournaments
     /// where the least fit individuals are more likely to be eliminated.
     /// </summary>
