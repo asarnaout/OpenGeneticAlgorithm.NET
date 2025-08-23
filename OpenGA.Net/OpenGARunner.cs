@@ -163,11 +163,8 @@ public class OpenGARunner<T>
         {
             List<Chromosome<T>> offspring = [];
 
-            //TODO:The value below should affect how many chromosomes will be replaced
-
             var requiredNumberOfOffspring = _random.Next(2, _maxNumberOfChromosomes);
 
-            //TODO: Double check this: Tying the number of couples to the max number of chromosomes
             var couples = _reproductionSelectorConfig.ReproductionSelector.SelectMatingPairs(_population, _random, requiredNumberOfOffspring);
 
             while (offspring.Count < requiredNumberOfOffspring)
@@ -179,7 +176,7 @@ public class OpenGARunner<T>
                         break;
                     }
 
-                    if (_random.NextDouble() > _crossoverRate)
+                    if (_random.NextDouble() <= _crossoverRate)
                     {
                         var newOffspring = _crossoverStrategyConfig.CrossoverStrategy.Crossover(couple, _random);
                         offspring.AddRange(newOffspring);
