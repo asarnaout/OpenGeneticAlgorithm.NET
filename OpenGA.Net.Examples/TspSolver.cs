@@ -9,6 +9,55 @@ namespace OpenGA.Net.Examples;
 public static class TspSolver
 {
     /// <summary>
+    /// Solves a random TSP problem and displays simplified results.
+    /// </summary>
+    public static void SolveRandomTsp(int numberOfCities, double[,] distanceMatrix, (double x, double y)[] coordinates)
+    {
+        Console.WriteLine($"Random TSP Problem: {numberOfCities} cities");
+        
+        // Generate initial population
+        var populationSize = Math.Max(50, numberOfCities * 6);
+        var epochs = Math.Max(100, numberOfCities * 12);
+        var initialPopulation = TspHelper.GenerateInitialPopulation(populationSize, numberOfCities, distanceMatrix);
+        
+        // Calculate initial statistics
+        var initialBestDistance = initialPopulation.Min(c => c.GetTotalDistance());
+        var initialAvgDistance = initialPopulation.Average(c => c.GetTotalDistance());
+
+        Console.WriteLine($"Initial best distance: {initialBestDistance:F2}");
+        Console.WriteLine($"Initial average distance: {initialAvgDistance:F2}");
+        Console.WriteLine($"Running GA with {populationSize} population for {epochs} epochs...\n");
+
+        // Configure and run the genetic algorithm
+        var runner = OpenGARunner<int>
+                        .Init(initialPopulation)
+                        .Epochs(epochs)
+                        .MaxPopulationSize(populationSize)
+                        .MutationRate(0.15f)
+                        .CrossoverRate(0.85f)
+                        .ApplyReproductionSelectors(c => c.ApplyTournamentReproductionSelector(),
+                                                    c => c.ApplyElitistReproductionSelector())
+                        .ApplyCrossoverStrategy(c => c.ApplyOnePointCrossoverStrategy())
+                        .ApplyReplacementStrategy(c => c.ApplyElitistReplacementStrategy());
+
+        // Run the genetic algorithm
+        var finalPopulation = runner.RunToCompletion();
+
+        // Get the best solution
+        var bestChromosome = finalPopulation.OrderByDescending(c => c.CalculateFitness()).First() as TspChromosome;
+        var finalBestDistance = bestChromosome!.GetTotalDistance();
+
+        // Calculate improvement percentage (initial best vs final best)
+        var improvementVsBest = ((initialBestDistance - finalBestDistance) / initialBestDistance) * 100;
+
+        // Display results
+        Console.WriteLine("=== SOLUTION FOUND ===");
+        Console.WriteLine($"Initial best distance: {initialBestDistance:F2}");
+        Console.WriteLine($"Final best distance: {finalBestDistance:F2}");
+        Console.WriteLine($"Improvement: {improvementVsBest:F1}% better");
+        Console.WriteLine($"Optimal tour: {string.Join(" → ", bestChromosome.Genes)} → {bestChromosome.Genes[0]}");
+    }
+    /// <summary>
     /// Solves a TSP problem and displays progress and results.
     /// </summary>
     public static void SolveTsp(string problemName, double[,] distanceMatrix, (double x, double y)[] coordinates, 
