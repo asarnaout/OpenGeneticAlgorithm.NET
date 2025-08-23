@@ -27,7 +27,7 @@ public class OnePointCrossoverStrategy<T> : BaseCrossoverStrategy<T>
     protected internal override IEnumerable<Chromosome<T>> Crossover(Couple<T> couple, Random random)
     {
         // Validate that both parents have enough genes for meaningful crossover
-        if (couple.IndividualA.Genes.Count <= 1 || couple.IndividualB.Genes.Count <= 1)
+        if (couple.IndividualA.Genes is not { Count: > 1 } || couple.IndividualB.Genes is not {Count: > 1 })
         {
             throw new InvalidChromosomeException(
                 "Attempting One Point Crossover on an invalid chromosome. " +
