@@ -123,14 +123,12 @@ public class OnePointCrossoverStrategy<T> : BaseCrossoverStrategy<T>
     private static void CopyGenesFromSecondaryParent(IList<T> offspringGenes, IList<T> secondaryParentGenes, int crossoverPoint)
     {
         var offspringIndex = crossoverPoint;
-        var secondaryIndex = crossoverPoint;
         
         // Copy remaining genes from secondary parent
-        while (secondaryIndex < secondaryParentGenes.Count && offspringIndex < offspringGenes.Count)
+        while (offspringIndex < secondaryParentGenes.Count && offspringIndex < offspringGenes.Count)
         {
-            offspringGenes[offspringIndex] = secondaryParentGenes[secondaryIndex];
+            offspringGenes[offspringIndex] = secondaryParentGenes[offspringIndex];
             offspringIndex++;
-            secondaryIndex++;
         }
     }
 }
