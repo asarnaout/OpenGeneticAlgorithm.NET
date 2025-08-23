@@ -188,7 +188,7 @@ public class OpenGARunner<T>
 
             foreach (var chromosome in Population)
             {
-                if (_random.NextDouble() > 1 - _mutationRate)
+                if (_random.NextDouble() <= _mutationRate)
                 {
                     chromosome.Mutate();
                 }
