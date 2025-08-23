@@ -55,7 +55,7 @@ public class RandomEliminationReplacementStrategy<T> : BaseReplacementStrategy<T
         var candidatesForElimination = new List<Chromosome<T>>(eliminationsNeeded);
 
         // Create a shuffled copy of the population for random selection using extension method
-        var shuffledPopulation = population.FisherYatesShuffled(random);
+        var shuffledPopulation = population.FisherYatesShuffle(random);
 
         // Select exactly eliminationsNeeded chromosomes from the shuffled population
         for (int i = 0; i < eliminationsNeeded; i++)

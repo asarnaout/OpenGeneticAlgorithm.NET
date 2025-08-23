@@ -1,3 +1,5 @@
+using OpenGA.Net.Extensions;
+
 namespace OpenGA.Net.ReproductionSelectors;
 
 public abstract class BaseReproductionSelector<T>
@@ -10,8 +12,6 @@ public abstract class BaseReproductionSelector<T>
         {
             yield break;
         }
-
-        candidates = [.. candidates.OrderBy(x => random.Next())];
 
         for (var i = 0; i < minimumNumberOfCouples; i++)
         {

@@ -69,7 +69,7 @@ public class TournamentReplacementStrategy<T> : BaseReplacementStrategy<T>
         var eliminatedChromosomes = new HashSet<Chromosome<T>>();
         
         // Pre-shuffle the population once using extension method instead of calling OrderBy(random.Next()) repeatedly
-        var shuffledPopulation = population.FisherYatesShuffled(random);
+        var shuffledPopulation = population.FisherYatesShuffle(random);
 
         int currentIndex = 0;
 

@@ -76,7 +76,7 @@ public class ElitistReplacementStrategy<T> (float elitePercentage = 0.1f): BaseR
 
         // Select chromosomes for elimination from the non-elite pool
         // Use random selection among non-elites (could be enhanced with fitness-based selection)
-        var shuffledEligible = eligibleForElimination.FisherYatesShuffled(random);
+        var shuffledEligible = eligibleForElimination.FisherYatesShuffle(random);
 
         return shuffledEligible.Take(eliminationsNeeded);
     }

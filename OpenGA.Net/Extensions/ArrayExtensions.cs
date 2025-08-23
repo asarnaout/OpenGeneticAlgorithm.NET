@@ -18,7 +18,7 @@ public static class ArrayExtensions
     /// The Fisher-Yates shuffle algorithm has O(n) time complexity and guarantees that each
     /// possible permutation of the array has equal probability of occurring.
     /// </remarks>
-    public static T[] FisherYatesShuffled<T>(this T[] array, Random random)
+    public static T[] FisherYatesShuffle<T>(this T[] array, Random random)
     {
         ArgumentNullException.ThrowIfNull(array, nameof(array));
         ArgumentNullException.ThrowIfNull(random, nameof(random));

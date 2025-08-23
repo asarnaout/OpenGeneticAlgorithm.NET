@@ -1,3 +1,5 @@
+using OpenGA.Net.Extensions;
+
 namespace OpenGA.Net.ReproductionSelectors;
 
 /// <summary>
@@ -98,7 +100,7 @@ public class TournamentReproductionSelector<T>(bool stochasticTournament) : Base
             }
 
             // Create tournament by randomly selecting participants
-            var tournament = population.OrderBy(x => random.Next()).Take(tournamentSize).ToArray();
+            var tournament = population.FisherYatesShuffle(random).Take(tournamentSize).ToArray();
 
             // Select winners based on tournament strategy
             if (!StochasticTournament)

@@ -12,7 +12,7 @@ public class ArrayExtensionsTests
         var random = new Random(42); // Fixed seed for deterministic test
 
         // Act
-        var shuffledArray = originalArray.FisherYatesShuffled(random);
+        var shuffledArray = originalArray.FisherYatesShuffle(random);
 
         // Assert
         // Original array should remain unchanged
@@ -32,7 +32,7 @@ public class ArrayExtensionsTests
         var random = new Random(42);
 
         // Act
-        var result = emptyArray.FisherYatesShuffled(random);
+        var result = emptyArray.FisherYatesShuffle(random);
 
         // Assert
         Assert.Empty(result);
@@ -47,7 +47,7 @@ public class ArrayExtensionsTests
         var random = new Random(42);
 
         // Act
-        var result = singleElementArray.FisherYatesShuffled(random);
+        var result = singleElementArray.FisherYatesShuffle(random);
 
         // Assert
         Assert.Single(result);
@@ -63,7 +63,7 @@ public class ArrayExtensionsTests
         var random = new Random(42);
 
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => nullArray!.FisherYatesShuffled(random));
+        Assert.Throws<ArgumentNullException>(() => nullArray!.FisherYatesShuffle(random));
     }
 
     [Fact]
@@ -74,7 +74,7 @@ public class ArrayExtensionsTests
         Random? nullRandom = null;
 
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => array.FisherYatesShuffled(nullRandom!));
+        Assert.Throws<ArgumentNullException>(() => array.FisherYatesShuffle(nullRandom!));
     }
 
     [Fact]
@@ -85,7 +85,7 @@ public class ArrayExtensionsTests
         var random = new Random(42);
 
         // Act
-        var shuffledArray = stringArray.FisherYatesShuffled(random);
+        var shuffledArray = stringArray.FisherYatesShuffle(random);
 
         // Assert
         Assert.Equal(stringArray.Length, shuffledArray.Length);
@@ -102,8 +102,8 @@ public class ArrayExtensionsTests
         var random2 = new Random(123);
 
         // Act
-        var shuffled1 = originalArray.FisherYatesShuffled(random1);
-        var shuffled2 = originalArray.FisherYatesShuffled(random2);
+        var shuffled1 = originalArray.FisherYatesShuffle(random1);
+        var shuffled2 = originalArray.FisherYatesShuffle(random2);
 
         // Assert
         // With different seeds, arrays should likely be different
@@ -120,7 +120,7 @@ public class ArrayExtensionsTests
         var random = new Random(42);
 
         // Act
-        var shuffledArray = originalArray.FisherYatesShuffled(random);
+        var shuffledArray = originalArray.FisherYatesShuffle(random);
 
         // Assert
         // Should contain exactly the same elements
