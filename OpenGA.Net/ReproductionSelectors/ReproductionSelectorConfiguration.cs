@@ -69,6 +69,27 @@ public class ReproductionSelectorConfiguration<T>
     }
 
     /// <summary>
+    /// Boltzmann Selection reproduction selector that uses temperature-based selection probabilities.
+    /// This strategy applies the Boltzmann distribution to control selection pressure through a temperature parameter.
+    /// Higher temperature leads to more uniform selection (exploration), while lower temperature leads to more elitist selection (exploitation).
+    /// </summary>
+    /// <param name="temperature">The temperature parameter that controls selection pressure. 
+    /// Higher values (e.g., 100) result in more uniform selection, 
+    /// lower values (e.g., 0.1) result in more elitist selection. Must be greater than 0. Defaults to 1.0.</param>
+    /// <exception cref="ArgumentException">Thrown when temperature is less than or equal to 0.</exception>
+    public BaseReproductionSelector<T> ApplyBoltzmannReproductionSelector(double temperature = 1.0)
+    {
+        if (temperature <= 0)
+        {
+            throw new ArgumentException("Temperature must be greater than 0.", nameof(temperature));
+        }
+        
+        var result = new BoltzmannReproductionSelector<T>(temperature);
+        ReproductionSelector = result;
+        return result;
+    }
+
+    /// <summary>
     /// The fittest individual chromosomes are guaranteed to participate in the mating process in the current epoch/generation. Non elites may participate as well.
     /// </summary>
     /// <param name="proportionOfElitesInPopulation">The proportion of elites in the population. Example, if the rate is 0.2 and the population size is 100, then we have 20 elites who are guaranteed to take part in the mating process.</param>
