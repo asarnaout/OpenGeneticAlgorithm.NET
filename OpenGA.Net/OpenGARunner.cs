@@ -144,14 +144,19 @@ public class OpenGARunner<T>
 
     public void Start()
     {
-        if (_reproductionSelectorConfig.ChainOfSelectors.Count == 0)
+        if (_reproductionSelectorConfig.ReproductionSelector is null)
         {
-            throw new MissingReproductionSelectorsException("No reproduction selectors are specified. Consider calling OpenGARunner<T>.ApplyReproductionSelectors(...) to specify at least one selector.");
+            throw new MissingReproductionSelectorsException("No reproduction selector is specified. Consider calling OpenGARunner<T>.ApplyReproductionSelectors(...) to specify a selector.");
         }
 
         if (_crossoverStrategyConfig.CrossoverStrategy is null)
         {
             throw new MissingCrossoverStrategyException("No crossover strategy has been specified. Consider calling OpenGARunner<T>.ApplyCrossoverStrategy(...) to specify a crossover strategy.");
+        }
+
+        if (_replacementStrategyConfig.ReplacementStrategy is null)
+        {
+            throw new MissingReplacementStrategyException("No replacement strategy has been specified. Consider calling OpenGARunner<T>.ApplyReplacementStrategy(...) to specify a replacement strategy.");
         }
 
         for (var i = 0; i < _epochs; i++)
@@ -164,13 +169,8 @@ public class OpenGARunner<T>
 
             var requiredNumberOfOffspring = _random.Next(2, _maxNumberOfChromosomes);
 
-            foreach (var selector in _reproductionSelectorConfig.ChainOfSelectors)
-            {
-                //TODO: Double check this: Tying the number of couples to the max number of chromosomes
-                var minimumNumberOfCouples = (int)Math.Round(selector.SelectorWeight * requiredNumberOfOffspring);
-
-                couples.AddRange(selector.SelectMatingPairs(_population, _random, minimumNumberOfCouples));
-            }
+            //TODO: Double check this: Tying the number of couples to the max number of chromosomes
+            couples.AddRange(_reproductionSelectorConfig.ReproductionSelector.SelectMatingPairs(_population, _random, requiredNumberOfOffspring));
 
             while (offspring.Count < requiredNumberOfOffspring)
             {
@@ -187,7 +187,7 @@ public class OpenGARunner<T>
                     }
                 }
             }
-            
+
 
             //TODO: Cant generate more children than the population limit, must double check this here.
 

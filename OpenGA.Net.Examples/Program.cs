@@ -7,9 +7,9 @@ var runner = OpenGARunner<float>
                 .Epochs(60)
                 .MaxPopulationSize(100)
                 .MutationRate(0.25f)
-                .ApplyReproductionSelectors(c => c.ApplyRandomReproductionSelector().Weight(0.6f),
-                                            c => c.ApplyElitistReproductionSelector().Weight(0.3f),
-                                            c => c.ApplyRankSelectionReproductionSelector().Weight(0.4f)
+                .ApplyReproductionSelectors(c => c.ApplyRandomReproductionSelector(),
+                                            c => c.ApplyElitistReproductionSelector(),
+                                            c => c.ApplyRankSelectionReproductionSelector()
                 )
                 .ApplyCrossoverStrategy(c => c.ApplyOnePointCrossoverStrategy())
                 // Replacement strategy options:

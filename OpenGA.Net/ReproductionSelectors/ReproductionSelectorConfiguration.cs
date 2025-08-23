@@ -4,7 +4,7 @@ namespace OpenGA.Net.ReproductionSelectors;
 
 public class ReproductionSelectorConfiguration<T>
 {
-    internal IList<BaseReproductionSelector<T>> ChainOfSelectors = [];
+    internal BaseReproductionSelector<T> ReproductionSelector = default!;
 
     /// <summary>
     /// Parents are chosen at random regardless of their fitness.
@@ -12,7 +12,7 @@ public class ReproductionSelectorConfiguration<T>
     public BaseReproductionSelector<T> ApplyRandomReproductionSelector()
     {
         var result = new RandomReproductionSelector<T>();
-        ChainOfSelectors.Add(result);
+        ReproductionSelector = result;
         return result;
     }
 
@@ -22,7 +22,7 @@ public class ReproductionSelectorConfiguration<T>
     public BaseReproductionSelector<T> ApplyFitnessWeightedRouletteWheelReproductionSelector()
     {
         var result = new FitnessWeightedRouletteWheelReproductionSelector<T>();
-        ChainOfSelectors.Add(result);
+        ReproductionSelector = result;
         return result;
     }
 
@@ -36,7 +36,7 @@ public class ReproductionSelectorConfiguration<T>
     public BaseReproductionSelector<T> ApplyTournamentReproductionSelector(bool stochasticTournament = true)
     {
         var result = new TournamentReproductionSelector<T>(stochasticTournament);
-        ChainOfSelectors.Add(result);
+        ReproductionSelector = result;
         return result;
     }
 
@@ -47,7 +47,7 @@ public class ReproductionSelectorConfiguration<T>
     public BaseReproductionSelector<T> ApplyCustomReproductionSelector(BaseReproductionSelector<T> reproductionSelector)
     {
         ArgumentNullException.ThrowIfNull(reproductionSelector, nameof(reproductionSelector));
-        ChainOfSelectors.Add(reproductionSelector);
+        ReproductionSelector = reproductionSelector;
         return reproductionSelector;
     }
 
@@ -55,7 +55,7 @@ public class ReproductionSelectorConfiguration<T>
     {
         //TODO: Implement strategy
         var result = new BoltzmannReproductionSelector<T>();
-        ChainOfSelectors.Add(result);
+        ReproductionSelector = result;
         return result;
     }
 
@@ -72,7 +72,7 @@ public class ReproductionSelectorConfiguration<T>
     public BaseReproductionSelector<T> ApplyRankSelectionReproductionSelector()
     {
         var result = new RankSelectionReproductionSelector<T>();
-        ChainOfSelectors.Add(result);
+        ReproductionSelector = result;
         return result;
     }
 
@@ -95,40 +95,7 @@ public class ReproductionSelectorConfiguration<T>
         }
 
         var result = new ElitistReproductionSelector<T>(allowMatingElitesWithNonElites, proportionOfElitesInPopulation, proportionOfNonElitesAllowedToMate);
-        ChainOfSelectors.Add(result);
+        ReproductionSelector = result;
         return result;
-    }
-
-    internal void NormalizeWeightsToUnity()
-    {
-        if (ChainOfSelectors.Count == 1)
-        {
-            ChainOfSelectors[0].SelectorWeight = 1.0f;
-            return;
-        }
-
-        var sum = ChainOfSelectors.Sum(x => x.SelectorWeight);
-
-        if (sum == 0)
-        {
-            sum = ChainOfSelectors.Count;
-
-            foreach(var link in ChainOfSelectors)
-            {
-                link.SelectorWeight = 1 / sum;
-            }
-
-            return;
-        }
-
-        foreach (var link in ChainOfSelectors)
-        {
-            if (link.SelectorWeight == 0f)
-            {
-                throw new NullifyingRelativeWeightException("The BaseReproductionSelector<T>.Weight(...) function was called on at least one reproduction selector but was not called on at least one other selector which render all selectors (with a zero weight value) obsolete.");
-            }
-
-            link.SelectorWeight /= sum;
-        }
     }
 }
