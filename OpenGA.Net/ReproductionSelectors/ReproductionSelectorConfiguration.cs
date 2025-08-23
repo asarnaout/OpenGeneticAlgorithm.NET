@@ -94,7 +94,7 @@ public class ReproductionSelectorConfiguration<T>
             throw new ArgumentOutOfRangeException(nameof(proportionOfNonElitesAllowedToMate), "Value must be between 0 and 1.");
         }
 
-        var result = new ElitistReproductionSelector<T>(proportionOfNonElitesAllowedToMate > 0d && allowMatingElitesWithNonElites, proportionOfElitesInPopulation, proportionOfNonElitesAllowedToMate);
+        var result = new ElitistReproductionSelector<T>(allowMatingElitesWithNonElites, proportionOfElitesInPopulation, proportionOfNonElitesAllowedToMate);
         ChainOfSelectors.Add(result);
         return result;
     }

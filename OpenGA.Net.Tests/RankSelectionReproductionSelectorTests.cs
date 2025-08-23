@@ -98,6 +98,149 @@ public class RankSelectionReproductionSelectorTests
         Assert.Equal(leastFitChromosome.InternalIdentifier, sortedPopulationByMatingCount[^1]);
     }
 
+    [Fact]
+    public void RankSelectionShouldAssignCorrectRanksBasedOnFitness()
+    {
+        var selector = new RankSelectionReproductionSelector<int>();
+        var random = new Random(42); // Fixed seed for reproducibility
+
+        // Create chromosomes with known, distinct fitness values
+        var chromosome1 = new DummyChromosome([1, 1, 1]); // Fitness: 1.0 (worst)
+        var chromosome2 = new DummyChromosome([2, 2, 2]); // Fitness: 2.0
+        var chromosome3 = new DummyChromosome([3, 3, 3]); // Fitness: 3.0
+        var chromosome4 = new DummyChromosome([4, 4, 4]); // Fitness: 4.0 (best)
+
+        var population = new[] { chromosome3, chromosome1, chromosome4, chromosome2 }; // Shuffled order
+
+        // Get enough couples to verify ranking behavior
+        var couples = selector.SelectMatingPairs(population, random, 10000).ToList();
+
+        var matingCounter = population.ToDictionary(x => x.InternalIdentifier, x => 0);
+
+        foreach(var couple in couples)
+        {
+            matingCounter[couple.IndividualA.InternalIdentifier]++;
+            matingCounter[couple.IndividualB.InternalIdentifier]++;
+        }
+
+        // In rank selection, higher fitness should lead to more matings
+        // But the difference should be more moderate than fitness-weighted selection
+        Assert.True(matingCounter[chromosome4.InternalIdentifier] > matingCounter[chromosome3.InternalIdentifier]);
+        Assert.True(matingCounter[chromosome3.InternalIdentifier] > matingCounter[chromosome2.InternalIdentifier]);
+        Assert.True(matingCounter[chromosome2.InternalIdentifier] > matingCounter[chromosome1.InternalIdentifier]);
+    }
+
+    [Fact]
+    public void RankSelectionShouldHandleIdenticalFitnessValues()
+    {
+        var selector = new RankSelectionReproductionSelector<int>();
+        var random = new Random(42);
+
+        // Create chromosomes with identical fitness values
+        var chromosome1 = new DummyChromosome([5, 5, 5]); // Fitness: 5.0
+        var chromosome2 = new DummyChromosome([5, 5, 5]); // Fitness: 5.0
+        var chromosome3 = new DummyChromosome([5, 5, 5]); // Fitness: 5.0
+
+        var population = new[] { chromosome1, chromosome2, chromosome3 };
+
+        var couples = selector.SelectMatingPairs(population, random, 1000).ToList();
+
+        Assert.Equal(1000, couples.Count);
+
+        // With identical fitness, all chromosomes should have roughly equal selection probability
+        var matingCounter = population.ToDictionary(x => x.InternalIdentifier, x => 0);
+
+        foreach(var couple in couples)
+        {
+            matingCounter[couple.IndividualA.InternalIdentifier]++;
+            matingCounter[couple.IndividualB.InternalIdentifier]++;
+        }
+
+        // When fitness is identical, OrderBy will still assign different ranks (1, 2, 3)
+        // This means the selection won't be perfectly uniform, but should still be reasonably balanced
+        // Let's verify that no chromosome is completely excluded and all get some selection
+        foreach(var count in matingCounter.Values)
+        {
+            Assert.True(count > 0, "All chromosomes with identical fitness should get some selection");
+        }
+
+        // Verify that the difference in selection isn't too extreme
+        var minSelections = matingCounter.Values.Min();
+        var maxSelections = matingCounter.Values.Max();
+        var ratio = (double)maxSelections / minSelections;
+        
+        // With ranks 1, 2, 3 the ratio should be 3:1 at most, but randomness should reduce this
+        Assert.True(ratio < 5.0, $"Selection ratio between most and least selected should be reasonable, but was {ratio}");
+    }
+
+    [Fact]
+    public void RankSelectionShouldReduceSelectionPressureComparedToFitnessWeighted()
+    {
+        var rankSelector = new RankSelectionReproductionSelector<int>();
+        var fitnessSelector = new FitnessWeightedRouletteWheelReproductionSelector<int>();
+        var random = new Random(42);
+
+        // Create population with one very fit chromosome and several average ones
+        var superFitChromosome = new DummyChromosome([100, 100, 100]); // Fitness: 100.0
+        var averageChromosomes = Enumerable.Range(0, 5)
+            .Select(_ => new DummyChromosome([10, 10, 10])) // Fitness: 10.0 each
+            .ToArray();
+
+        var population = new Chromosome<int>[] { superFitChromosome }.Concat(averageChromosomes).ToArray();
+
+        var rankCouples = rankSelector.SelectMatingPairs(population, random, 10000).ToList();
+        var fitnessCouples = fitnessSelector.SelectMatingPairs(population, new Random(42), 10000).ToList();
+
+        // Count selections for the super fit chromosome in both strategies
+        var rankSelections = rankCouples.Count(c => 
+            c.IndividualA.InternalIdentifier == superFitChromosome.InternalIdentifier ||
+            c.IndividualB.InternalIdentifier == superFitChromosome.InternalIdentifier);
+
+        var fitnessSelections = fitnessCouples.Count(c => 
+            c.IndividualA.InternalIdentifier == superFitChromosome.InternalIdentifier ||
+            c.IndividualB.InternalIdentifier == superFitChromosome.InternalIdentifier);
+
+        // Rank selection should give the super fit chromosome less dominance than fitness-weighted selection
+        Assert.True(rankSelections < fitnessSelections, 
+            $"Rank selection should reduce selection pressure. Rank: {rankSelections}, Fitness: {fitnessSelections}");
+
+        // Both should still favor the super fit chromosome over average ones
+        var averageSelections = rankCouples.Count(c => 
+            averageChromosomes.Any(avg => avg.InternalIdentifier == c.IndividualA.InternalIdentifier ||
+                                         avg.InternalIdentifier == c.IndividualB.InternalIdentifier));
+
+        Assert.True(rankSelections > averageSelections / averageChromosomes.Length, 
+            "Rank selection should still favor fitter chromosomes");
+    }
+
+    [Fact]
+    public void RankSelectionShouldProduceValidCouplesWithMinimumRequirement()
+    {
+        var selector = new RankSelectionReproductionSelector<int>();
+        var random = new Random();
+
+        var population = GenerateRandomPopulation(10, random);
+
+        var minimumCouples = 5;
+        var couples = selector.SelectMatingPairs(population, random, minimumCouples).ToList();
+
+        Assert.Equal(minimumCouples, couples.Count);
+
+        // Verify all couples have different individuals
+        foreach(var couple in couples)
+        {
+            Assert.NotEqual(couple.IndividualA.InternalIdentifier, couple.IndividualB.InternalIdentifier);
+        }
+
+        // Verify all individuals in couples are from the population
+        var populationIds = new HashSet<Guid>(population.Select(x => x.InternalIdentifier));
+        foreach(var couple in couples)
+        {
+            Assert.Contains(couple.IndividualA.InternalIdentifier, populationIds);
+            Assert.Contains(couple.IndividualB.InternalIdentifier, populationIds);
+        }
+    }
+
     private static DummyChromosome[] GenerateRandomPopulation(int size, Random random) =>
         Enumerable.Range(0, size)
             .Select(x => new DummyChromosome(Enumerable.Range(0, 10).Select(y => random.Next()).ToList()))
