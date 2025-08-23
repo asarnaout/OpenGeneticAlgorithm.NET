@@ -96,7 +96,7 @@ Create offspring by combining parent chromosomes:
 // Uniform crossover - maximum genetic diversity
 .ApplyCrossoverStrategy(c => c.ApplyUniformCrossoverStrategy())
 
-// Custom crossover - your own breeding logic
+// Custom crossover - your own crossover logic
 .ApplyCrossoverStrategy(c => c.ApplyCustomCrossoverStrategy(new MyCustomCrossover()))
 ```
 
@@ -109,57 +109,6 @@ Manage population evolution over generations:
 | **Generational** | Replace entire population | Exploration-heavy problems |
 | **Tournament** | Compete for survival | Balanced selection pressure |
 | **Age-based** | Older chromosomes are more likely to be replaced | Long-term diversity |
-
----
-
-## 📊 Real-World Examples
-
-### 🗺️ Traveling Salesman Problem
-
-```csharp
-// Solve a 50-city TSP in under 1 second
-var cities = GenerateRandomCities(50);
-var bestSolution = OpenGARunner<int>
-    .Init(GenerateInitialPopulation(100, cities))
-    .Epochs(500)
-    .MutationRate(0.15f)
-    .ApplyReproductionSelector(c => c.ApplyTournamentReproductionSelector())
-    .ApplyCrossoverStrategy(c => c.ApplyUniformCrossoverStrategy())
-    .ApplyReplacementStrategy(c => c.ApplyElitistReplacementStrategy())
-    .RunToCompletion();
-```
-
-### 🎛️ Function Optimization
-
-```csharp
-// Minimize Rosenbrock function: f(x,y) = (a-x)² + b(y-x²)²
-public class RosenbrockChromosome : Chromosome<double>
-{
-    public override double CalculateFitness()
-    {
-        var xCoordinate = Genes[0];
-        var yCoordinate = Genes[1];
-        var result = Math.Pow(1 - xCoordinate, 2) + 100 * Math.Pow(yCoordinate - xCoordinate * xCoordinate, 2);
-        return 1.0 / (1.0 + result); // Higher fitness = lower function value
-    }
-}
-```
-
-### 🧠 Neural Network Evolution
-
-```csharp
-// Evolve neural network weights
-public class NeuralNetworkChromosome : Chromosome<double>
-{
-    private readonly NeuralNetwork _network;
-    
-    public override double CalculateFitness()
-    {
-        _network.SetWeights(Genes);
-        return _network.Evaluate(testData);
-    }
-}
-```
 
 ---
 
