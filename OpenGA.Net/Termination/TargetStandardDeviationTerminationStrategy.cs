@@ -1,10 +1,26 @@
 namespace OpenGA.Net.Termination;
 
-public class TargetStandardDeviationTerminationStrategy<T>(double targetStandardDeviation, int window = 5) : BaseTerminationStrategy<T>
+public class TargetStandardDeviationTerminationStrategy<T> : BaseTerminationStrategy<T>
 {
-    private readonly double _targetStandardDeviation = targetStandardDeviation;
+    private readonly double _targetStandardDeviation;
     private readonly Queue<double> _recentFitnessValues = new();
-    private readonly int _window = window;
+    private readonly int _window;
+
+    public TargetStandardDeviationTerminationStrategy(double targetStandardDeviation, int window = 5)
+    {
+        if (targetStandardDeviation < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(targetStandardDeviation), "Target standard deviation must be greater than or equal to 0.");
+        }
+
+        if (window <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(window), "Window size must be greater than 0.");
+        }
+
+        _targetStandardDeviation = targetStandardDeviation;
+        _window = window;
+    }
 
     public override bool Terminate(OpenGARunner<T> gaRunner)
     {
