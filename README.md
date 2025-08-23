@@ -1,9 +1,7 @@
 # 🧬 OpenGA.Net
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![.NET](https://img.shields.io/badge/.NET-8.0-purple.svg)](h### 📊 Getting Results
-
-```csharps://dotnet.microsoft.com/download)
+[![.NET](https://img.shields.io/badge/.NET-8.0-purple.svg)](https://dotnet.microsoft.com/download)
 [![NuGet](https://img.shields.io/nuget/v/OpenGA.Net.svg)](https://www.nuget.org/packages/OpenGA.Net/)
 [![Downloads](https://img.shields.io/nuget/dt/OpenGA.Net.svg)](https://www.nuget.org/packages/OpenGA.Net/)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/asarnaout/OpenGeneticAlgorithm.Net/build.yml?branch=main)](https://github.com/asarnaout/OpenGeneticAlgorithm.Net/actions)
@@ -34,12 +32,12 @@ var initialPopulation = GenerateRandomRoutes(populationSize: 100, cities);
 // Configure and run your genetic algorithm
 var bestSolution = OpenGARunner<int>
     .Init(initialPopulation)
-    .Epochs(200)
     .MutationRate(0.1f)
     .CrossoverRate(0.8f)
     .ApplyReproductionSelector(c => c.ApplyTournamentReproductionSelector())
     .ApplyCrossoverStrategy(c => c.ApplyOnePointCrossoverStrategy())
     .ApplyReplacementStrategy(c => c.ApplyElitistReplacementStrategy())
+    .ApplyTerminationStrategy(c => c.ApplyMaximumEpochsTerminationStrategy(maxEpochs: 200))
     .RunToCompletion();
 
 // Get your optimized result
@@ -78,79 +76,91 @@ public class TspChromosome : Chromosome<int>
 ### 🎯 **Reproduction Selectors**
 Choose the best parents for the next generation:
 
-| Strategy | Use Case |
-|----------|----------|
-| **Tournament** | General-purpose, good diversity |
-| **Elitist** | Preserve best solutions |
-| **Roulette Wheel** | Fitness-proportionate selection |
-| **Boltzmann** | Temperature-based selection |
-| **Rank Selection** | Uniform pressure across population |
+| Strategy | When to Use | Problem Characteristics | Population Size | Fitness Landscape |
+|----------|-------------|------------------------|-----------------|-------------------|
+| **Tournament** | Default choice for most problems | Balanced exploration/exploitation needed | Any size | Noisy or multimodal landscapes |
+| **Elitist** | Need guaranteed convergence | High-quality solutions must be preserved | Medium to large (50+) | Clear fitness hierarchy |
+| **Roulette Wheel** | Fitness-proportionate diversity | Wide fitness range, avoid premature convergence | Large (100+) | Smooth, unimodal landscapes |
+| **Boltzmann** | Dynamic selection pressure | Need cooling schedule control | Medium to large | Complex, deceptive landscapes |
+| **Rank Selection** | Prevent fitness scaling issues | Similar fitness values across population | Any size | Flat or highly scaled fitness |
+| **Random** | Maximum diversity exploration | Early stages or highly exploratory search | Any size | Unknown or chaotic landscapes |
 
-### 🔄 **Crossover Strategies**
+### 🧬 **Crossover Strategies**
 Create offspring by combining parent chromosomes:
 
-```csharp
-// One-point crossover - fast and effective
-.ApplyCrossoverStrategy(c => c.ApplyOnePointCrossoverStrategy())
+| Strategy | When to Use | Gene Representation | Problem Type | Preservation Needs |
+|----------|-------------|-------------------|--------------|-------------------|
+| **One-Point** | Fast, simple problems | Order doesn't matter critically | Optimization with independent variables | Preserve some gene clusters |
+| **K-Point** | Moderate complexity balance | Mixed dependencies between genes | Multi-dimensional optimization | Control disruption level |
+| **Uniform** | Maximum genetic diversity | Independent genes | Exploratory search, avoid local optima | No specific gene clustering |
+| **Custom** | Domain-specific requirements | Complex constraints or structures | Specialized problem domains | Domain-specific validation |
 
-// Uniform crossover - maximum genetic diversity
-.ApplyCrossoverStrategy(c => c.ApplyUniformCrossoverStrategy())
-
-// Custom crossover - your own crossover logic
-.ApplyCrossoverStrategy(c => c.ApplyCustomCrossoverStrategy(new MyCustomCrossover()))
-```
+**Selection Criteria:**
+- **Gene Independence**: Use Uniform for independent genes, One-Point for clustered genes
+- **Solution Representation**: Use K-Point for structured data, Custom for complex constraints
+- **Performance**: One-Point is fastest, Uniform provides most diversity
+- **Problem Complexity**: Simple problems → One-Point, Complex → Custom or Uniform
 
 ### 🔄 **Replacement Strategies**
 Manage population evolution over generations:
 
-| Strategy | Description | Best For |
-|----------|-------------|----------|
-| **Elitist** | Keep the best, replace the worst | Most problems |
-| **Generational** | Replace entire population | Exploration-heavy problems |
-| **Tournament** | Compete for survival | Balanced selection pressure |
-| **Age-based** | Older chromosomes are more likely to be replaced | Long-term diversity |
+| Strategy | When to Use | Convergence Speed | Population Diversity | Resource Constraints |
+|----------|-------------|-------------------|---------------------|---------------------|
+| **Elitist** | Most optimization problems | Fast convergence | Moderate diversity loss | Low computational overhead |
+| **Generational** | Exploration-heavy search | Slower, thorough exploration | High diversity maintained | Higher memory usage |
+| **Tournament** | Balanced performance | Moderate convergence | Good diversity balance | Moderate computational cost |
+| **Age-based** | Long-running evolutionary systems | Very slow, stable | Excellent long-term diversity | Requires age tracking |
+| **Boltzmann** | Temperature-controlled evolution | Adaptive convergence | Dynamic diversity control | Higher computational complexity |
+| **Random Elimination** | Maintain population diversity | Slowest convergence | Maximum diversity | Minimal computational overhead |
 
----
+**Replacement Strategy Quick Guide:**
+- **Need fast convergence?** → Elitist
+- **Avoiding local optima?** → Generational or Tournament  
+- **Long-term evolution runs?** → Age-based
+- **Limited computational resources?** → Random Elimination
+- **Need adaptive control?** → Boltzmann
 
-## ⚙️ Advanced Configuration
+### 🏁 **Termination Strategies**
+Control when the genetic algorithm stops evolving:
 
-### 🎚️ Fine-Tuning Parameters
+| Strategy | When to Use | Stopping Condition | Best For | Predictability |
+|----------|-------------|-------------------|----------|----------------|
+| **Maximum Epochs** *(Default)* | Known iteration limits | Fixed number of generations | Time-constrained scenarios | Highly predictable runtime |
+| **Maximum Duration** | Real-time applications | Maximum execution duration | Production systems | Predictable time bounds |
+| **Target Standard Deviation** | Diversity monitoring | Low population diversity | Avoiding premature convergence | Adaptive stopping |
+
+**Termination Strategy Quick Guide:**
+- **Default/Most common?** → Maximum Epochs *(automatically applied)*
+- **Need predictable runtime?** → Maximum Epochs or Maximum Duration
+- **Avoiding premature convergence?** → Target Standard Deviation
+- **Production systems?** → Maximum Duration with fallback strategies
+
+### 💡 **Strategy Selection Examples**
 
 ```csharp
-var runner = OpenGARunner<T>
-    .Init(population)
-    .Epochs(1000)                    // Maximum generations
-    .MaxDuration(TimeSpan.FromMinutes(5)) // Time-based termination
-    .MaxPopulationSize(200)          // Population size control
-    .MutationRate(0.1f)              // 10% mutation rate
-    .CrossoverRate(0.8f)             // 80% crossover rate
-    .ApplyTerminationStrategy(c => 
-        c.ApplyTargetStandardDeviationTerminationStrategy(0.001)) // Convergence-based termination
-```
+// High-performance optimization (fast convergence needed)
+.ApplyReproductionSelector(c => c.ApplyElitistReproductionSelector())
+.ApplyCrossoverStrategy(c => c.ApplyOnePointCrossoverStrategy())
+.ApplyReplacementStrategy(c => c.ApplyElitistReplacementStrategy())
+.ApplyTerminationStrategy(c => c.ApplyMaximumEpochsTerminationStrategy(maxEpochs: 100))
 
-### 🔧 Reproduction Selector Configuration
+// Exploratory search (avoiding local optima)
+.ApplyReproductionSelector(c => c.ApplyTournamentReproductionSelector(tournamentSize: 5))
+.ApplyCrossoverStrategy(c => c.ApplyUniformCrossoverStrategy())
+.ApplyReplacementStrategy(c => c.ApplyGenerationalReplacementStrategy())
+.ApplyTerminationStrategy(c => c.ApplyTargetStandardDeviationTerminationStrategy(targetStandardDeviation: 0.001))
 
-```csharp
-// Apply a single reproduction selector
-.ApplyReproductionSelector(c => c.ApplyTournamentReproductionSelector(tournamentSize: 3))
-```
+// Production system (time-constrained)
+.ApplyReproductionSelector(c => c.ApplyTournamentReproductionSelector())
+.ApplyCrossoverStrategy(c => c.ApplyOnePointCrossoverStrategy())
+.ApplyReplacementStrategy(c => c.ApplyElitistReplacementStrategy())
+.ApplyTerminationStrategy(c => c.ApplyMaximumDurationTerminationStrategy(TimeSpan.FromMinutes(5)))
 
-### � Getting Results
-
-```csharp
-// Run the genetic algorithm and get the best solution
-var bestSolution = OpenGARunner<int>
-    .Init(population)
-    .Epochs(1000)
-    .MutationRate(0.1f)
-    .CrossoverRate(0.8f)
-    .ApplyReproductionSelector(c => c.ApplyTournamentReproductionSelector())
-    .ApplyCrossoverStrategy(c => c.ApplyOnePointCrossoverStrategy())
-    .ApplyReplacementStrategy(c => c.ApplyElitistReplacementStrategy())
-    .RunToCompletion();
-
-Console.WriteLine($"Best solution fitness: {bestSolution.Fitness:F4}");
-Console.WriteLine($"Best solution genes: [{string.Join(", ", bestSolution.Genes)}]");
+// Quality-focused research (target standard deviation termination)
+.ApplyReproductionSelector(c => c.ApplyBoltzmannReproductionSelector(temperature: 100))
+.ApplyCrossoverStrategy(c => c.ApplyKPointCrossoverStrategy(k: 3))
+.ApplyReplacementStrategy(c => c.ApplyAgeBasedReplacementStrategy())
+.ApplyTerminationStrategy(c => c.ApplyTargetStandardDeviationTerminationStrategy(targetStandardDeviation: 0.001, window: 10))
 ```
 
 ---
@@ -192,6 +202,13 @@ public class MyCustomCrossover<T> : BaseCrossoverStrategy<T>
         Couple<T> couple, Random random)
     {
         // Your custom crossover logic
+        var parent1 = couple.Parent1;
+        var parent2 = couple.Parent2;
+        
+        // Example: Custom blend crossover
+        var offspring = new MyChromosome<T>();
+        // Implement your crossover algorithm here
+        
         yield return offspring;
     }
 }
@@ -203,9 +220,83 @@ public class MyReplacementStrategy<T> : BaseReplacementStrategy<T>
         Chromosome<T>[] population, Chromosome<T>[] offspring, Random random)
     {
         // Your custom replacement logic
-        return chromosomesToEliminate;
+        // Example: Replace chromosomes based on custom criteria
+        var toEliminate = population
+            .OrderBy(c => CustomFitnessMetric(c))
+            .Take(offspring.Length);
+            
+        return toEliminate;
+    }
+    
+    private double CustomFitnessMetric<T>(Chromosome<T> chromosome)
+    {
+        // Your custom elimination criteria
+        return chromosome.Fitness;
     }
 }
+
+// Custom reproduction selector
+public class MyReproductionSelector<T> : BaseReproductionSelector<T>
+{
+    protected internal override IEnumerable<Chromosome<T>> SelectParents(
+        Chromosome<T>[] population, int numberOfParents, Random random)
+    {
+        // Your custom parent selection logic
+        // Example: Custom weighted selection
+        for (int i = 0; i < numberOfParents; i++)
+        {
+            var selectedParent = CustomSelectionAlgorithm(population, random);
+            yield return selectedParent;
+        }
+    }
+    
+    private Chromosome<T> CustomSelectionAlgorithm<T>(
+        Chromosome<T>[] population, Random random)
+    {
+        // Implement your selection algorithm
+        return population[random.Next(population.Length)];
+    }
+}
+
+// Custom termination strategy
+public class MyTerminationStrategy<T> : BaseTerminationStrategy<T>
+{
+    private readonly int _maxStagnantGenerations;
+    private int _stagnantCount = 0;
+    private double _lastBestFitness = double.MinValue;
+    
+    public MyTerminationStrategy(int maxStagnantGenerations)
+    {
+        _maxStagnantGenerations = maxStagnantGenerations;
+    }
+    
+    public override bool Terminate(GeneticAlgorithmState state)
+    {
+        var currentBestFitness = state.HighestFitness;
+        
+        // Terminate if fitness hasn't improved for specified generations
+        if (Math.Abs(currentBestFitness - _lastBestFitness) < 0.0001)
+        {
+            _stagnantCount++;
+        }
+        else
+        {
+            _stagnantCount = 0;
+            _lastBestFitness = currentBestFitness;
+        }
+        
+        return _stagnantCount >= _maxStagnantGenerations;
+    }
+}
+
+// Using your custom strategies
+var result = OpenGARunner<MyGeneType>
+    .Init(initialPopulation)
+    .ApplyReproductionSelector(c => c.ApplyCustomReproductionSelector(new MyReproductionSelector<MyGeneType>()))
+    .ApplyCrossoverStrategy(c => c.ApplyCustomCrossoverStrategy(new MyCustomCrossover<MyGeneType>()))
+    .ApplyReplacementStrategy(c => c.ApplyCustomReplacementStrategy(new MyReplacementStrategy<MyGeneType>()))
+    .ApplyTerminationStrategy(c => c.ApplyCustomTerminationStrategy(new MyTerminationStrategy<MyGeneType>(50)))
+    .RunToCompletion();
 ```
 
 ---

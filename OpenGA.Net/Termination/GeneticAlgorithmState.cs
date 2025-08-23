@@ -8,20 +8,14 @@ namespace OpenGA.Net.Termination;
 /// Initializes a new instance of the GeneticAlgorithmState struct.
 /// </remarks>
 /// <param name="currentEpoch">The current epoch number.</param>
-/// <param name="maxEpochs">The maximum number of epochs.</param>
 /// <param name="currentDuration">The elapsed time since algorithm start.</param>
 /// <param name="highestFitness">The highest fitness in the current population.</param>
-public readonly struct GeneticAlgorithmState(int currentEpoch, int maxEpochs, TimeSpan currentDuration, double highestFitness)
+public readonly struct GeneticAlgorithmState(int currentEpoch, TimeSpan currentDuration, double highestFitness)
 {
     /// <summary>
     /// The current epoch/generation number.
     /// </summary>
     public int CurrentEpoch { get; init; } = currentEpoch;
-
-    /// <summary>
-    /// The maximum number of epochs the algorithm should run.
-    /// </summary>
-    public int MaxEpochs { get; init; } = maxEpochs;
 
     /// <summary>
     /// The elapsed time since the algorithm started.

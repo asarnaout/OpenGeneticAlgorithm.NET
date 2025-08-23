@@ -8,8 +8,6 @@ namespace OpenGA.Net;
 
 public class OpenGARunner<T>
 {
-    internal int MaxEpochs = 80;
-
     internal int CurrentEpoch = 0;
 
     internal TimeSpan CurrentDuration = TimeSpan.Zero;
@@ -45,7 +43,7 @@ public class OpenGARunner<T>
     /// <summary>
     /// Gets the current state of the genetic algorithm including epoch, duration, and fitness metrics.
     /// </summary>
-    internal GeneticAlgorithmState CurrentState => new(CurrentEpoch, MaxEpochs, CurrentDuration, HighestFitness);
+    internal GeneticAlgorithmState CurrentState => new(CurrentEpoch, CurrentDuration, HighestFitness);
 
     private readonly Random _random = new();
 
@@ -66,22 +64,6 @@ public class OpenGARunner<T>
         {
             Population = initialPopulation
         };
-    }
-
-    /// <summary>
-    /// Specifies how many epochs/generations/iterations the genetic algorithm will run for. Defaults to 80.
-    /// Higher values will allow the GA to find better results at a performance penalty and vice versa.
-    /// </summary>
-    public OpenGARunner<T> Epochs(int maxNumberOfEpochs)
-    {
-        if (maxNumberOfEpochs <= 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(maxNumberOfEpochs), "Value must be greater than 0.");
-        }
-
-        MaxEpochs = maxNumberOfEpochs;
-        _terminationStrategyConfig.ApplyMaximumEpochsTerminationStrategy();
-        return this;
     }
 
     /// <summary>
@@ -162,9 +144,24 @@ public class OpenGARunner<T>
 
         return this;
     }
+    
+    public OpenGARunner<T> ApplyTerminationStrategy(Action<TerminationStrategyConfiguration<T>> terminationStrategyConfigurator)
+    {
+        ArgumentNullException.ThrowIfNull(terminationStrategyConfigurator, nameof(terminationStrategyConfigurator));
+
+        terminationStrategyConfigurator(_terminationStrategyConfig);
+
+        return this;
+    }
 
     public Chromosome<T> RunToCompletion()
     {
+        if (_terminationStrategyConfig.TerminationStrategies is [])
+        {
+            // If no termination strategy is specified, default to max epochs
+            _terminationStrategyConfig.ApplyMaximumEpochsTerminationStrategy(100);
+        }
+
         if (_reproductionSelectorConfig.ReproductionSelector is null)
         {
             throw new MissingReproductionSelectorsException("No reproduction selector is specified. Consider calling OpenGARunner<T>.ApplyReproductionSelector(...) to specify a selector.");
@@ -182,10 +179,10 @@ public class OpenGARunner<T>
 
         var startTime = DateTime.UtcNow;
 
-        for (; CurrentEpoch < MaxEpochs; CurrentEpoch++)
+        for (; ; CurrentEpoch++)
         {
             CurrentDuration = DateTime.UtcNow - startTime;
-            
+
             if (_terminationStrategyConfig.ShouldTerminate(CurrentState))
             {
                 break;

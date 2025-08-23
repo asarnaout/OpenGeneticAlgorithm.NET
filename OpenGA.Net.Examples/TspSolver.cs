@@ -276,13 +276,14 @@ public static class TspSolver
         // Configure and run the genetic algorithm
         var runner = OpenGARunner<int>
                         .Init(initialPopulation)
-                        .Epochs(epochs)
                         .MaxPopulationSize(populationSize)
                         .MutationRate(0.15f)
                         .CrossoverRate(0.85f)
                         .ApplyReproductionSelector(c => c.ApplyElitistReproductionSelector())
                         .ApplyCrossoverStrategy(c => c.ApplyOnePointCrossoverStrategy())
-                        .ApplyReplacementStrategy(c => c.ApplyElitistReplacementStrategy());
+                        .ApplyReplacementStrategy(c => c.ApplyElitistReplacementStrategy())
+                        .ApplyTerminationStrategy(c => c.ApplyMaximumEpochsTerminationStrategy(epochs))
+                        ;
 
         // Run the genetic algorithm
         var bestChromosome = runner.RunToCompletion() as TspChromosome;
@@ -346,13 +347,13 @@ public static class TspSolver
 
         var runner = OpenGARunner<int>
                         .Init(initialPopulation)
-                        .Epochs(epochs)
                         .MaxPopulationSize(populationSize)
                         .MutationRate(mutationRate)
                         .CrossoverRate(0.85f)
                         .ApplyReproductionSelector(c => c.ApplyElitistReproductionSelector())
                         .ApplyCrossoverStrategy(c => c.ApplyOnePointCrossoverStrategy())
-                        .ApplyReplacementStrategy(c => c.ApplyElitistReplacementStrategy());
+                        .ApplyReplacementStrategy(c => c.ApplyElitistReplacementStrategy())
+                        .ApplyTerminationStrategy(c => c.ApplyMaximumEpochsTerminationStrategy(epochs));
 
         // Start the genetic algorithm
         var bestChromosome = runner.RunToCompletion() as TspChromosome;

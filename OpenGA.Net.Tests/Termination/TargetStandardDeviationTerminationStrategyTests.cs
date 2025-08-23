@@ -9,7 +9,7 @@ public class TargetStandardDeviationTerminationStrategyTests
 {
     private GeneticAlgorithmState CreateMockStateWithFitness(double highestFitness)
     {
-        return new GeneticAlgorithmState(0, 100, TimeSpan.Zero, highestFitness);
+        return new GeneticAlgorithmState(0, TimeSpan.Zero, highestFitness);
     }
 
     [Fact]

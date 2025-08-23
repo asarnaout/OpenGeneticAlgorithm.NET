@@ -9,7 +9,7 @@ public class MaximumDurationTerminationStrategyTests
 {
     private GeneticAlgorithmState CreateMockStateWithDuration(TimeSpan currentDuration)
     {
-        return new GeneticAlgorithmState(0, 100, currentDuration, 1.0);
+        return new GeneticAlgorithmState(0, currentDuration, 1.0);
     }
 
     [Fact]

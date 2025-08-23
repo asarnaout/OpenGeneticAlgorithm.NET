@@ -8,9 +8,14 @@ public class TerminationStrategyConfiguration<T>
     /// Adds a termination strategy that stops the genetic algorithm when the maximum number of epochs is reached.
     /// </summary>
     /// <returns>The configured termination strategy instance.</returns>
-    internal BaseTerminationStrategy<T> ApplyMaximumEpochsTerminationStrategy()
+    public BaseTerminationStrategy<T> ApplyMaximumEpochsTerminationStrategy(int maxEpochs)
     {
-        var strategy = new MaximumEpochsTerminationStrategy<T>();
+        if (maxEpochs <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(maxEpochs), "Maximum epochs must be greater than zero.");  
+        }            
+
+        var strategy = new MaximumEpochsTerminationStrategy<T>(maxEpochs);
         TerminationStrategies.Add(strategy);
         return strategy;
     }

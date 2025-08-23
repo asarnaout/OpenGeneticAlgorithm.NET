@@ -44,7 +44,7 @@ public class BaseTerminationStrategyTests
         };
 
         var runner = OpenGARunner<int>.Init(population);
-        var state = new GeneticAlgorithmState(0, 100, TimeSpan.Zero, 1.0);
+        var state = new GeneticAlgorithmState(0, TimeSpan.Zero, 1.0);
 
         // Act & Assert
         Assert.True(trueStrategy.Terminate(state));
@@ -59,7 +59,7 @@ public class BaseTerminationStrategyTests
         [
             new TestTerminationStrategy<int>(true),
             new TestTerminationStrategy<int>(false),
-            new MaximumEpochsTerminationStrategy<int>(),
+            new MaximumEpochsTerminationStrategy<int>(100),
             new TargetStandardDeviationTerminationStrategy<int>(0.1),
             new MaximumDurationTerminationStrategy<int>(TimeSpan.FromMinutes(1))
         ];
@@ -70,7 +70,7 @@ public class BaseTerminationStrategyTests
         };
 
         var runner = OpenGARunner<int>.Init(population);
-        var state = new GeneticAlgorithmState(0, 100, TimeSpan.Zero, 1.0);
+        var state = new GeneticAlgorithmState(0, TimeSpan.Zero, 1.0);
 
         // Act & Assert
         foreach (var strategy in strategies)
