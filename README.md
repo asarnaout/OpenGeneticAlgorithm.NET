@@ -1,7 +1,9 @@
 # 🧬 OpenGA.Net
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![.NET](https://img.shields.io/badge/.NET-8.0-purple.svg)](https://dotnet.microsoft.com/download)
+[![.NET](https://img.shields.io/badge/.NET-8.0-purple.svg)](h### 📊 Getting Results
+
+```csharps://dotnet.microsoft.com/download)
 [![NuGet](https://img.shields.io/nuget/v/OpenGA.Net.svg)](https://www.nuget.org/packages/OpenGA.Net/)
 [![Downloads](https://img.shields.io/nuget/dt/OpenGA.Net.svg)](https://www.nuget.org/packages/OpenGA.Net/)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/asarnaout/OpenGeneticAlgorithm.Net/build.yml?branch=main)](https://github.com/asarnaout/OpenGeneticAlgorithm.Net/actions)
@@ -30,7 +32,7 @@ var cities = new[] { 0, 1, 2, 3, 4 };
 var initialPopulation = GenerateRandomRoutes(populationSize: 100, cities);
 
 // Configure and run your genetic algorithm
-var solution = OpenGARunner<int>
+var bestSolution = OpenGARunner<int>
     .Init(initialPopulation)
     .Epochs(200)
     .MutationRate(0.1f)
@@ -41,8 +43,7 @@ var solution = OpenGARunner<int>
     .RunToCompletion();
 
 // Get your optimized result
-var bestRoute = solution.OrderByDescending(chromosome => chromosome.Fitness).First();
-Console.WriteLine($"Best route: {string.Join(" → ", bestRoute.Genes)}");
+Console.WriteLine($"Best route: {string.Join(" → ", bestSolution.Genes)}");
 ```
 
 That's it! 🎉 You just solved an optimization problem with a few lines of code.
@@ -118,7 +119,7 @@ Manage population evolution over generations:
 ```csharp
 // Solve a 50-city TSP in under 1 second
 var cities = GenerateRandomCities(50);
-var solution = OpenGARunner<int>
+var bestSolution = OpenGARunner<int>
     .Init(GenerateInitialPopulation(100, cities))
     .Epochs(500)
     .MutationRate(0.15f)
@@ -185,20 +186,22 @@ var runner = OpenGARunner<T>
 .ApplyReproductionSelector(c => c.ApplyTournamentReproductionSelector(tournamentSize: 3))
 ```
 
-### 📈 Progress Monitoring
+### � Getting Results
 
 ```csharp
-var runner = OpenGARunner<int>.Init(population);
+// Run the genetic algorithm and get the best solution
+var bestSolution = OpenGARunner<int>
+    .Init(population)
+    .Epochs(1000)
+    .MutationRate(0.1f)
+    .CrossoverRate(0.8f)
+    .ApplyReproductionSelector(c => c.ApplyTournamentReproductionSelector())
+    .ApplyCrossoverStrategy(c => c.ApplyOnePointCrossoverStrategy())
+    .ApplyReplacementStrategy(c => c.ApplyElitistReplacementStrategy())
+    .RunToCompletion();
 
-// Track progress during evolution
-while (!runner.IsCompleted)
-{
-    var currentGeneration = runner.Step(); // Run one generation
-    var bestFitness = currentGeneration.Max(c => c.Fitness);
-    var avgFitness = currentGeneration.Average(c => c.Fitness);
-    
-    Console.WriteLine($"Generation {runner.CurrentEpoch}: Best={bestFitness:F4}, Avg={avgFitness:F4}");
-}
+Console.WriteLine($"Best solution fitness: {bestSolution.Fitness:F4}");
+Console.WriteLine($"Best solution genes: [{string.Join(", ", bestSolution.Genes)}]");
 ```
 
 ---

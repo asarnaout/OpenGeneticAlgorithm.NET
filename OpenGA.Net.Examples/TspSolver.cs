@@ -40,10 +40,9 @@ public static class TspSolver
                         .ApplyReplacementStrategy(c => c.ApplyElitistReplacementStrategy());
 
         // Run the genetic algorithm
-        var finalPopulation = runner.RunToCompletion();
+        var bestChromosome = runner.RunToCompletion() as TspChromosome;
 
-        // Get the best solution
-        var bestChromosome = finalPopulation.OrderByDescending(c => c.CalculateFitness()).First() as TspChromosome;
+        // Get the best solution distance
         var finalBestDistance = bestChromosome!.GetTotalDistance();
 
         // Calculate improvement percentage (initial best vs final best)
@@ -106,27 +105,22 @@ public static class TspSolver
                         .ApplyReplacementStrategy(c => c.ApplyElitistReplacementStrategy());
 
         // Start the genetic algorithm
-        var finalPopulation = runner.RunToCompletion();
+        var bestChromosome = runner.RunToCompletion() as TspChromosome;
 
         // Analyze results
-        var bestChromosome = finalPopulation.OrderByDescending(c => c.CalculateFitness()).First() as TspChromosome;
         var finalBestDistance = bestChromosome!.GetTotalDistance();
-        var finalAvgDistance = finalPopulation.Average(c => (c as TspChromosome)!.GetTotalDistance());
 
         Console.WriteLine("Genetic algorithm completed!\n");
 
         Console.WriteLine("=== FINAL RESULTS ===");
         Console.WriteLine($"Best tour distance: {finalBestDistance:F2}");
-        Console.WriteLine($"Average distance: {finalAvgDistance:F2}");
         Console.WriteLine($"Best tour fitness: {bestChromosome.CalculateFitness():F6}");
 
         // Calculate improvement
         var improvement = (initialBestDistance - finalBestDistance) / initialBestDistance * 100;
-        var avgImprovement = (initialAvgDistance - finalAvgDistance) / initialAvgDistance * 100;
 
         Console.WriteLine($"\nImprovement:");
         Console.WriteLine($"  Best solution: {improvement:F1}% better ({initialBestDistance:F2} → {finalBestDistance:F2})");
-        Console.WriteLine($"  Average solution: {avgImprovement:F1}% better ({initialAvgDistance:F2} → {finalAvgDistance:F2})");
 
         Console.WriteLine("\nOptimal tour sequence:");
         var tourSequence = string.Join(" → ", bestChromosome.Genes);

@@ -158,7 +158,7 @@ public class OpenGARunner<T>
         return this;
     }
 
-    public Chromosome<T>[] RunToCompletion()
+    public Chromosome<T> RunToCompletion()
     {
         if (_reproductionSelectorConfig.ReproductionSelector is null)
         {
@@ -257,6 +257,6 @@ public class OpenGARunner<T>
             }
         }
 
-        return Population;
+        return Population.OrderByDescending(c => c.Fitness).First();
     }
 }
