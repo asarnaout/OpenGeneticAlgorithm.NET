@@ -1,6 +1,7 @@
 using OpenGA.Net.Exceptions;
 using OpenGA.Net.ReproductionSelectors;
 using OpenGA.Net.CrossoverStrategies;
+using OpenGA.Net.ReplacementStrategies;
 
 namespace OpenGA.Net;
 
@@ -17,6 +18,8 @@ public class OpenGARunner<T>
     private readonly ReproductionSelectorConfiguration<T> _reproductionSelectorConfig = new();
 
     private readonly CrossoverStrategyConfiguration<T> _crossoverStrategyConfig = new();
+
+    private readonly ReplacementStrategyConfiguration<T> _replacementStrategyConfig = new();
 
     private Chromosome<T>[] _population = [];
 
@@ -126,6 +129,15 @@ public class OpenGARunner<T>
         ArgumentNullException.ThrowIfNull(crossoverStrategyConfigurator, nameof(crossoverStrategyConfigurator));
 
         crossoverStrategyConfigurator(_crossoverStrategyConfig);
+
+        return this;
+    }
+
+    public OpenGARunner<T> ApplyReplacementStrategy(Action<ReplacementStrategyConfiguration<T>> replacementStrategyConfigurator)
+    {
+        ArgumentNullException.ThrowIfNull(replacementStrategyConfigurator, nameof(replacementStrategyConfigurator));
+
+        replacementStrategyConfigurator(_replacementStrategyConfig);
 
         return this;
     }

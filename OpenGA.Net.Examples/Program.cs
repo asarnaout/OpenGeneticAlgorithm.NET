@@ -11,4 +11,7 @@ var runner = OpenGARunner<float>
                                             c => c.ApplyElitistReproductionSelector().Weight(0.3f),
                                             c => c.ApplyRankSelectionReproductionSelector().Weight(0.4f)
                 )
-                .ApplyCrossoverStrategy(c => c.ApplyOnePointCrossoverStrategy());
+                .ApplyCrossoverStrategy(c => c.ApplyOnePointCrossoverStrategy())
+                // Replacement strategy options:
+                .ApplyReplacementStrategy(c => c.ApplyTournamentReplacementStrategy());
+                
