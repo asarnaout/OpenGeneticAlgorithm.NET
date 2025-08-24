@@ -34,10 +34,11 @@ var bestSolution = OpenGARunner<int>
     .Init(initialPopulation)
     .MutationRate(0.1f)
     .CrossoverRate(0.8f)
+    .OverrideOffspringGenerationRate(0.7f) // Optional: Override the default offspring generation rate (each strategy has predefined percentages)
     .ApplyReproductionSelector(c => c.ApplyTournamentReproductionSelector())
     .ApplyCrossoverStrategy(c => c.ApplyOnePointCrossoverStrategy())
     .ApplyReplacementStrategy(c => c.ApplyElitistReplacementStrategy())
-    .ApplyTerminationStrategy(c => c.ApplyMaximumEpochsTerminationStrategy(maxEpochs: 200))
+    .ApplyTerminationStrategy(c => c.ApplyMaximumEpochsTerminationStrategy(maxEpochs: 200)) // Optional: Maximum Epochs Termination is applied by default with a maxEpochs value of 100
     .RunToCompletion();
 
 // Get your optimized result

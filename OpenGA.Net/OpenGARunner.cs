@@ -131,7 +131,7 @@ public class OpenGARunner<T>
     /// <param name="generationRate">The rate of offspring generation relative to population size (0.0 to 2.0). </param>
     /// <returns>The OpenGARunner instance for method chaining</returns>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when generationRate is not between 0.0 and 2.0</exception>
-    public OpenGARunner<T> SetOffspringGenerationRate(float generationRate)
+    public OpenGARunner<T> OverrideOffspringGenerationRate(float generationRate)
     {
         if (generationRate <= 0.0f || generationRate > 2.0f)
         {
