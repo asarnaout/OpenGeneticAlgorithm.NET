@@ -26,6 +26,11 @@ namespace OpenGA.Net.ReplacementStrategies;
 public class AgeBasedReplacementStrategy<T> : BaseReplacementStrategy<T>
 {
     /// <summary>
+    /// The recommended offspring percentage for age-based replacement strategy.
+    /// This moderate turnover rate (35%) maintains diversity while preserving some experienced chromosomes.
+    /// </summary>
+    internal const float RecommendedOffspringPercentage = 0.35f;
+    /// <summary>
     /// Selects chromosomes from the population for elimination using age-weighted selection.
     /// Older chromosomes have a higher probability of being selected for elimination through
     /// a weighted roulette wheel where the weight is proportional to the chromosome's age.

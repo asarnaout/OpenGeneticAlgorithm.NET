@@ -9,6 +9,12 @@ namespace OpenGA.Net.ReplacementStrategies;
 /// </summary>
 public class TournamentReplacementStrategy<T> : BaseReplacementStrategy<T>
 {
+    /// <summary>
+    /// The recommended offspring percentage for tournament replacement strategy.
+    /// This moderate to high turnover rate (50%) works well with tournament selection's inherent fitness preservation.
+    /// </summary>
+    internal const float RecommendedOffspringPercentage = 0.5f;
+
     private readonly int _tournamentSize;
     private readonly bool _stochasticTournament;
 

@@ -26,6 +26,8 @@ public class OpenGARunner<T>
 
     private readonly TerminationStrategyConfiguration<T> _terminationStrategyConfig = new();
 
+    private float? _customOffspringPercentage = null;
+
     private Chromosome<T>[] _population = [];
 
     private Chromosome<T>[] Population 
@@ -118,6 +120,25 @@ public class OpenGARunner<T>
         return this;
     }
 
+    /// <summary>
+    /// Sets a custom offspring percentage that overrides the automatic calculation based on replacement strategy.
+    /// This allows fine-tuning of the genetic algorithm's behavior for specific use cases.
+    /// </summary>
+    /// <param name="offspringPercentage">The percentage of the population size to generate as offspring (0.0 to 2.0). 
+    /// Values above 1.0 generate more offspring than the population size, which can increase selection pressure.</param>
+    /// <returns>The OpenGARunner instance for method chaining</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when offspringPercentage is not between 0.0 and 2.0</exception>
+    public OpenGARunner<T> OffspringPercentage(float offspringPercentage)
+    {
+        if (offspringPercentage <= 0.0f || offspringPercentage > 2.0f)
+        {
+            throw new ArgumentOutOfRangeException(nameof(offspringPercentage), "Offspring percentage must be between 0.0 and 2.0.");
+        }
+
+        _customOffspringPercentage = offspringPercentage;
+        return this;
+    }
+
     public OpenGARunner<T> ApplyReproductionSelector(Action<ReproductionSelectorConfiguration<T>> selectorConfigurator)
     {
         ArgumentNullException.ThrowIfNull(selectorConfigurator, nameof(selectorConfigurator));
@@ -152,6 +173,47 @@ public class OpenGARunner<T>
         terminationStrategyConfigurator(_terminationStrategyConfig);
 
         return this;
+    }
+
+    /// <summary>
+    /// Calculates the optimal number of offspring for the current replacement strategy.
+    /// </summary>
+    /// <returns>The recommended number of offspring to generate</returns>
+    private int CalculateOptimalOffspringCount()
+    {
+        // If user specified a custom percentage, use that instead
+        if (_customOffspringPercentage.HasValue)
+        {
+            return Math.Max(1, (int)(_maxNumberOfChromosomes * _customOffspringPercentage.Value));
+        }
+
+        return _replacementStrategyConfig.ReplacementStrategy switch
+        {
+            // Generational replacement: Replace entire population
+            GenerationalReplacementStrategy<T> => _maxNumberOfChromosomes,
+            
+            // Elitist replacement: Replace all non-elite chromosomes
+            ElitistReplacementStrategy<T> elitistStrat => _maxNumberOfChromosomes - (int)(_maxNumberOfChromosomes * elitistStrat.ElitePercentage),
+            
+            // Age-based replacement: Moderate turnover (older chromosomes more likely to be replaced)
+            // Generally want to replace about 30-40% to maintain diversity while preserving some experience
+            AgeBasedReplacementStrategy<T> => Math.Max(1, (int)(_maxNumberOfChromosomes * AgeBasedReplacementStrategy<T>.RecommendedOffspringPercentage)),
+            
+            // Tournament replacement: Moderate to high turnover depending on selection pressure
+            // Tournament tends to be more selective, so 40-60% replacement works well
+            TournamentReplacementStrategy<T> => Math.Max(1, (int)(_maxNumberOfChromosomes * TournamentReplacementStrategy<T>.RecommendedOffspringPercentage)),
+            
+            // Random elimination: Conservative approach since it's completely random
+            // Lower percentage to avoid losing good solutions by chance
+            RandomEliminationReplacementStrategy<T> => Math.Max(1, (int)(_maxNumberOfChromosomes * RandomEliminationReplacementStrategy<T>.RecommendedOffspringPercentage)),
+            
+            // Boltzmann replacement: Dynamic based on temperature, but generally moderate
+            // Temperature controls selection pressure, so moderate replacement works well
+            BoltzmannReplacementStrategy<T> => Math.Max(1, (int)(_maxNumberOfChromosomes * BoltzmannReplacementStrategy<T>.RecommendedOffspringPercentage)),
+            
+            // Default fallback for any custom strategies
+            _ => Math.Max(1, (int)(_maxNumberOfChromosomes * BaseReplacementStrategy<T>.DefaultOffspringPercentage))
+        };
     }
 
     public Chromosome<T> RunToCompletion()
@@ -190,12 +252,7 @@ public class OpenGARunner<T>
 
             List<Chromosome<T>> offspring = [];
 
-            var requiredNumberOfOffspring = _replacementStrategyConfig.ReplacementStrategy switch
-            {
-                GenerationalReplacementStrategy<T> => _maxNumberOfChromosomes,
-                ElitistReplacementStrategy<T> elitistStrat => _maxNumberOfChromosomes - (int)(_maxNumberOfChromosomes * elitistStrat.ElitePercentage),
-                _ => (int)(_maxNumberOfChromosomes * 0.5)
-            };
+            var requiredNumberOfOffspring = CalculateOptimalOffspringCount();
 
             // Validate offspring requirements
             if (requiredNumberOfOffspring <= 0)

@@ -18,6 +18,12 @@ namespace OpenGA.Net.ReplacementStrategies;
 /// </summary>
 public class BoltzmannReplacementStrategy<T>(double temperatureDecayRate, double initialTemperature = 1.0, bool useExponentialDecay = true) : BaseReplacementStrategy<T>
 {
+    /// <summary>
+    /// The recommended offspring percentage for Boltzmann replacement strategy.
+    /// This moderate turnover rate (40%) works well with temperature-controlled selection pressure.
+    /// </summary>
+    internal const float RecommendedOffspringPercentage = 0.4f;
+
     private readonly double _temperatureDecayRate = temperatureDecayRate;
     private readonly double _initialTemperature = initialTemperature;
     private readonly bool _useExponentialDecay = useExponentialDecay;
