@@ -26,7 +26,7 @@ public class OpenGARunner<T>
 
     private readonly TerminationStrategyConfiguration<T> _terminationStrategyConfig = new();
 
-    private float? _customOffspringPercentage = null;
+    private float? _customOffspringGenerationRate = null;
 
     private Chromosome<T>[] _population = [];
 
@@ -121,21 +121,23 @@ public class OpenGARunner<T>
     }
 
     /// <summary>
-    /// Sets a custom offspring percentage that overrides the automatic calculation based on replacement strategy.
-    /// This allows fine-tuning of the genetic algorithm's behavior for specific use cases.
+    /// Sets a custom offspring generation rate that overrides the automatic calculation based on replacement strategy.
+    /// This allows fine-tuning of the genetic algorithm's behavior for specific use cases by controlling
+    /// how many offspring are generated relative to the population size.
     /// </summary>
-    /// <param name="offspringPercentage">The percentage of the population size to generate as offspring (0.0 to 2.0). 
+    /// <param name="generationRate">The rate of offspring generation relative to population size (0.0 to 2.0). 
+    /// For example, 0.5 generates offspring equal to 50% of population size, while 1.5 generates 150% of population size.
     /// Values above 1.0 generate more offspring than the population size, which can increase selection pressure.</param>
     /// <returns>The OpenGARunner instance for method chaining</returns>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when offspringPercentage is not between 0.0 and 2.0</exception>
-    public OpenGARunner<T> OffspringPercentage(float offspringPercentage)
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when generationRate is not between 0.0 and 2.0</exception>
+    public OpenGARunner<T> SetOffspringGenerationRate(float generationRate)
     {
-        if (offspringPercentage <= 0.0f || offspringPercentage > 2.0f)
+        if (generationRate <= 0.0f || generationRate > 2.0f)
         {
-            throw new ArgumentOutOfRangeException(nameof(offspringPercentage), "Offspring percentage must be between 0.0 and 2.0.");
+            throw new ArgumentOutOfRangeException(nameof(generationRate), "Offspring generation rate must be between 0.0 and 2.0.");
         }
 
-        _customOffspringPercentage = offspringPercentage;
+        _customOffspringGenerationRate = generationRate;
         return this;
     }
 
@@ -181,10 +183,10 @@ public class OpenGARunner<T>
     /// <returns>The recommended number of offspring to generate</returns>
     private int CalculateOptimalOffspringCount()
     {
-        // If user specified a custom percentage, use that instead
-        if (_customOffspringPercentage.HasValue)
+        // If user specified a custom generation rate, use that instead
+        if (_customOffspringGenerationRate.HasValue)
         {
-            return Math.Max(1, (int)(_maxNumberOfChromosomes * _customOffspringPercentage.Value));
+            return Math.Max(1, (int)(_maxNumberOfChromosomes * _customOffspringGenerationRate.Value));
         }
 
         return _replacementStrategyConfig.ReplacementStrategy switch
@@ -197,22 +199,22 @@ public class OpenGARunner<T>
             
             // Age-based replacement: Moderate turnover (older chromosomes more likely to be replaced)
             // Generally want to replace about 30-40% to maintain diversity while preserving some experience
-            AgeBasedReplacementStrategy<T> => Math.Max(1, (int)(_maxNumberOfChromosomes * AgeBasedReplacementStrategy<T>.RecommendedOffspringPercentage)),
+            AgeBasedReplacementStrategy<T> => Math.Max(1, (int)(_maxNumberOfChromosomes * AgeBasedReplacementStrategy<T>.RecommendedOffspringGenerationRate)),
             
             // Tournament replacement: Moderate to high turnover depending on selection pressure
             // Tournament tends to be more selective, so 40-60% replacement works well
-            TournamentReplacementStrategy<T> => Math.Max(1, (int)(_maxNumberOfChromosomes * TournamentReplacementStrategy<T>.RecommendedOffspringPercentage)),
+            TournamentReplacementStrategy<T> => Math.Max(1, (int)(_maxNumberOfChromosomes * TournamentReplacementStrategy<T>.RecommendedOffspringGenerationRate)),
             
             // Random elimination: Conservative approach since it's completely random
             // Lower percentage to avoid losing good solutions by chance
-            RandomEliminationReplacementStrategy<T> => Math.Max(1, (int)(_maxNumberOfChromosomes * RandomEliminationReplacementStrategy<T>.RecommendedOffspringPercentage)),
+            RandomEliminationReplacementStrategy<T> => Math.Max(1, (int)(_maxNumberOfChromosomes * RandomEliminationReplacementStrategy<T>.RecommendedOffspringGenerationRate)),
             
             // Boltzmann replacement: Dynamic based on temperature, but generally moderate
             // Temperature controls selection pressure, so moderate replacement works well
-            BoltzmannReplacementStrategy<T> => Math.Max(1, (int)(_maxNumberOfChromosomes * BoltzmannReplacementStrategy<T>.RecommendedOffspringPercentage)),
+            BoltzmannReplacementStrategy<T> => Math.Max(1, (int)(_maxNumberOfChromosomes * BoltzmannReplacementStrategy<T>.RecommendedOffspringGenerationRate)),
             
             // Default fallback for any custom strategies
-            _ => Math.Max(1, (int)(_maxNumberOfChromosomes * BaseReplacementStrategy<T>.DefaultOffspringPercentage))
+            _ => Math.Max(1, (int)(_maxNumberOfChromosomes * BaseReplacementStrategy<T>.DefaultOffspringGenerationRate))
         };
     }
 

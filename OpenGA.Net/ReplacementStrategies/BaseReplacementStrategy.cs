@@ -7,10 +7,10 @@ namespace OpenGA.Net.ReplacementStrategies;
 public abstract class BaseReplacementStrategy<T>
 {
     /// <summary>
-    /// The default recommended offspring percentage for custom or unknown replacement strategies.
+    /// The default recommended offspring generation rate for custom or unknown replacement strategies.
     /// This conservative rate (30%) provides a safe fallback for strategies without specific recommendations.
     /// </summary>
-    internal const float DefaultOffspringPercentage = 0.3f;
+    internal const float DefaultOffspringGenerationRate = 0.3f;
     /// <summary>
     /// Selects chromosomes from the population that should be eliminated to make room for offspring.
     /// </summary>

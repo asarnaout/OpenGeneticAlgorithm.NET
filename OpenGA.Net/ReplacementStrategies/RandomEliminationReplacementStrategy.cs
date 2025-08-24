@@ -25,10 +25,10 @@ namespace OpenGA.Net.ReplacementStrategies;
 public class RandomEliminationReplacementStrategy<T> : BaseReplacementStrategy<T>
 {
     /// <summary>
-    /// The recommended offspring percentage for random elimination replacement strategy.
+    /// The recommended offspring generation rate for random elimination replacement strategy.
     /// This conservative turnover rate (25%) reduces the risk of losing good solutions through random elimination.
     /// </summary>
-    internal const float RecommendedOffspringPercentage = 0.25f;
+    internal const float RecommendedOffspringGenerationRate = 0.25f;
     /// <summary>
     /// Selects chromosomes from the population for elimination using random selection.
     /// Exactly the number of chromosomes needed to accommodate the offspring will be eliminated,
