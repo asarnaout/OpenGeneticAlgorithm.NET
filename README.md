@@ -312,19 +312,11 @@ We welcome contributions! OpenGA.Net is built by the community, for the communit
 - Expected vs actual behavior
 - Environment details
 
-### 💡 **Have an Idea?**
-[Start a discussion](https://github.com/asarnaout/OpenGeneticAlgorithm.Net/discussions) to:
-- Propose new features
-- Share use cases
-- Get feedback from maintainers
-
 ### 🔧 **Want to Code?**
 1. Fork the repository
 2. Create a feature branch: `git checkout -b feature/amazing-feature`
 3. Make your changes with tests
 4. Submit a pull request
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
 ---
 
