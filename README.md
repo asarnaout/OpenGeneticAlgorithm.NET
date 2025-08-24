@@ -48,11 +48,10 @@ public class TspChromosome : Chromosome<int>
         {
             totalDistance += _distanceMatrix[Genes[i], Genes[i + 1]];
         }
-        // Add distance back to start
-        totalDistance += _distanceMatrix[Genes[^1], Genes[0]];
         
-        // Return inverse distance (shorter routes have higher fitness)
-        return 1.0 / (1.0 + totalDistance);
+        totalDistance += _distanceMatrix[Genes[^1], Genes[0]]; // Add distance back to start
+        
+        return 1.0 / (1.0 + totalDistance); // Return inverse distance (shorter routes have higher fitness)
     }
     
     // Randomly swap two cities in the route
@@ -73,20 +72,7 @@ public class TspChromosome : Chromosome<int>
     // Ensure each city appears exactly once (fix any duplicates)
     public override void GeneticRepair()
     {
-        var allCities = Enumerable.Range(0, _distanceMatrix.GetLength(0)).ToList();
-        var missingCities = allCities.Except(Genes).ToList();
-        var duplicateIndices = Genes.Select((city, index) => new { city, index })
-                                   .GroupBy(x => x.city)
-                                   .Where(g => g.Count() > 1)
-                                   .SelectMany(g => g.Skip(1))
-                                   .Select(x => x.index)
-                                   .ToList();
-        
-        // Replace duplicates with missing cities
-        for (int i = 0; i < Math.Min(duplicateIndices.Count, missingCities.Count); i++)
-        {
-            Genes[duplicateIndices[i]] = missingCities[i];
-        }
+        // Logic to replace duplicate cities with missing cities
     }
 }
 ```
