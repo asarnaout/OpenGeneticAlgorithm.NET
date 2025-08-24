@@ -1,3 +1,5 @@
+using OpenGA.Net.Extensions;
+
 namespace OpenGA.Net.Termination;
 
 public class TargetStandardDeviationTerminationStrategy<T> : BaseTerminationStrategy<T>
@@ -37,10 +39,7 @@ public class TargetStandardDeviationTerminationStrategy<T> : BaseTerminationStra
             return false;
         }
 
-        var values = _recentFitnessValues.ToArray();
-        var mean = values.Average();
-        var variance = values.Sum(x => Math.Pow(x - mean, 2)) / values.Length;
-        var standardDeviation = Math.Sqrt(variance);
+        var standardDeviation = _recentFitnessValues.StandardDeviation();
 
         return standardDeviation <= _targetStandardDeviation;
     }
