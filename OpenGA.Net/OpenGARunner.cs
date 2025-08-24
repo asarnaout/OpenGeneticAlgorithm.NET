@@ -194,14 +194,14 @@ public class OpenGARunner<T>
         return Math.Max(1, (int)(_maxNumberOfChromosomes * _replacementStrategyConfig.ReplacementStrategy.RecommendedOffspringGenerationRate));
     }
 
-    public Chromosome<T> RunToCompletion()
+    /// <summary>
+    /// Validates that all required strategies are configured before running the genetic algorithm.
+    /// </summary>
+    /// <exception cref="MissingReproductionSelectorsException">Thrown when no reproduction selector is configured</exception>
+    /// <exception cref="MissingCrossoverStrategyException">Thrown when no crossover strategy is configured</exception>
+    /// <exception cref="MissingReplacementStrategyException">Thrown when no replacement strategy is configured</exception>
+    private void ValidateRequiredStrategies()
     {
-        if (_terminationStrategyConfig.TerminationStrategies is [])
-        {
-            // If no termination strategy is specified, default to max epochs
-            _terminationStrategyConfig.ApplyMaximumEpochsTerminationStrategy(100);
-        }
-
         if (_reproductionSelectorConfig.ReproductionSelector is null)
         {
             throw new MissingReproductionSelectorsException("No reproduction selector is specified. Consider calling OpenGARunner<T>.ApplyReproductionSelector(...) to specify a selector.");
@@ -216,6 +216,17 @@ public class OpenGARunner<T>
         {
             throw new MissingReplacementStrategyException("No replacement strategy has been specified. Consider calling OpenGARunner<T>.ApplyReplacementStrategy(...) to specify a replacement strategy.");
         }
+
+        if (_terminationStrategyConfig.TerminationStrategies is [])
+        {
+            // If no termination strategy is specified, default to max epochs
+            _terminationStrategyConfig.ApplyMaximumEpochsTerminationStrategy(100);
+        }
+    }
+
+    public Chromosome<T> RunToCompletion()
+    {
+        ValidateRequiredStrategies();
 
         var startTime = DateTime.UtcNow;
 
@@ -232,7 +243,6 @@ public class OpenGARunner<T>
 
             var requiredNumberOfOffspring = CalculateOptimalOffspringCount();
 
-            // Validate offspring requirements
             if (requiredNumberOfOffspring <= 0)
             {
                 throw new InvalidOperationException("Required number of offspring must be greater than zero. Check replacement strategy configuration.");
