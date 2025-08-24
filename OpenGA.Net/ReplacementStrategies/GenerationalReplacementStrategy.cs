@@ -24,6 +24,12 @@ namespace OpenGA.Net.ReplacementStrategies;
 public class GenerationalReplacementStrategy<T> : BaseReplacementStrategy<T>
 {
     /// <summary>
+    /// The recommended offspring generation rate for generational replacement strategy.
+    /// This strategy requires 100% replacement (1.0) to completely replace the entire population.
+    /// </summary>
+    internal override float RecommendedOffspringGenerationRate => 1.0f;
+    
+    /// <summary>
     /// Selects all chromosomes from the population for elimination, implementing a complete
     /// generational replacement where the entire parent population is replaced by offspring.
     /// </summary>
@@ -33,8 +39,8 @@ public class GenerationalReplacementStrategy<T> : BaseReplacementStrategy<T>
     /// <param name="currentEpoch">The current epoch/generation number (not used in generational replacement)</param>
     /// <returns>All chromosomes from the current population for elimination</returns>
     protected internal override IEnumerable<Chromosome<T>> SelectChromosomesForElimination(
-        Chromosome<T>[] population, 
-        Chromosome<T>[] offspring, 
+        Chromosome<T>[] population,
+        Chromosome<T>[] offspring,
         Random random,
         int currentEpoch = 0)
     {

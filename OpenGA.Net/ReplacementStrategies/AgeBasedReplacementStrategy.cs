@@ -29,7 +29,8 @@ public class AgeBasedReplacementStrategy<T> : BaseReplacementStrategy<T>
     /// The recommended offspring generation rate for age-based replacement strategy.
     /// This moderate turnover rate (35%) maintains diversity while preserving some experienced chromosomes.
     /// </summary>
-    internal const float RecommendedOffspringGenerationRate = 0.35f;
+    internal override float RecommendedOffspringGenerationRate => 0.35f;
+    
     /// <summary>
     /// Selects chromosomes from the population for elimination using age-weighted selection.
     /// Older chromosomes have a higher probability of being selected for elimination through
@@ -41,8 +42,8 @@ public class AgeBasedReplacementStrategy<T> : BaseReplacementStrategy<T>
     /// <param name="currentEpoch">The current epoch/generation number (not used in age-based elimination)</param>
     /// <returns>The chromosomes selected for elimination based on age weighting</returns>
     protected internal override IEnumerable<Chromosome<T>> SelectChromosomesForElimination(
-        Chromosome<T>[] population, 
-        Chromosome<T>[] offspring, 
+        Chromosome<T>[] population,
+        Chromosome<T>[] offspring,
         Random random,
         int currentEpoch = 0)
     {
@@ -64,7 +65,7 @@ public class AgeBasedReplacementStrategy<T> : BaseReplacementStrategy<T>
 
         // Handle edge cases for age-based selection
         var maxAge = population.Max(c => c.Age);
-        
+
         // If all chromosomes have age 0, fall back to random selection
         if (maxAge == 0)
         {
@@ -79,7 +80,7 @@ public class AgeBasedReplacementStrategy<T> : BaseReplacementStrategy<T>
         // Create a weighted roulette wheel where weight is proportional to age
         // Add 1 to age to ensure even age-0 chromosomes have some chance of selection
         var wheel = WeightedRouletteWheel<Chromosome<T>>.Init(
-            [..population], 
+            [.. population],
             chromosome => chromosome.Age + 1.0);
 
         // Select chromosomes for elimination using the weighted roulette wheel

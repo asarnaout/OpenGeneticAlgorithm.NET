@@ -28,7 +28,8 @@ public class RandomEliminationReplacementStrategy<T> : BaseReplacementStrategy<T
     /// The recommended offspring generation rate for random elimination replacement strategy.
     /// This conservative turnover rate (25%) reduces the risk of losing good solutions through random elimination.
     /// </summary>
-    internal const float RecommendedOffspringGenerationRate = 0.25f;
+    internal override float RecommendedOffspringGenerationRate => 0.25f;
+    
     /// <summary>
     /// Selects chromosomes from the population for elimination using random selection.
     /// Exactly the number of chromosomes needed to accommodate the offspring will be eliminated,
@@ -40,8 +41,8 @@ public class RandomEliminationReplacementStrategy<T> : BaseReplacementStrategy<T
     /// <param name="currentEpoch">The current epoch/generation number (not used in random elimination)</param>
     /// <returns>The chromosomes selected for elimination through random selection</returns>
     protected internal override IEnumerable<Chromosome<T>> SelectChromosomesForElimination(
-        Chromosome<T>[] population, 
-        Chromosome<T>[] offspring, 
+        Chromosome<T>[] population,
+        Chromosome<T>[] offspring,
         Random random,
         int currentEpoch = 0)
     {

@@ -13,7 +13,7 @@ public class TournamentReplacementStrategy<T> : BaseReplacementStrategy<T>
     /// The recommended offspring generation rate for tournament replacement strategy.
     /// This moderate to high turnover rate (50%) works well with tournament selection's inherent fitness preservation.
     /// </summary>
-    internal const float RecommendedOffspringGenerationRate = 0.5f;
+    internal override float RecommendedOffspringGenerationRate => 0.5f;
 
     private readonly int _tournamentSize;
     private readonly bool _stochasticTournament;

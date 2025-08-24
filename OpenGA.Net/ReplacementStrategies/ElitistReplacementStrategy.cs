@@ -28,6 +28,12 @@ public class ElitistReplacementStrategy<T> (float elitePercentage = 0.1f): BaseR
     internal readonly float ElitePercentage = elitePercentage;
 
     /// <summary>
+    /// The recommended offspring generation rate for elitist replacement strategy.
+    /// This strategy generates offspring to replace all non-elite chromosomes (1.0 - ElitePercentage).
+    /// </summary>
+    internal override float RecommendedOffspringGenerationRate => 1.0f - ElitePercentage;
+
+    /// <summary>
     /// Selects chromosomes for elimination while protecting elite chromosomes based on fitness.
     /// The top-performing chromosomes (based on fitness) are guaranteed survival, while the
     /// remaining chromosomes are eligible for elimination to make room for offspring.

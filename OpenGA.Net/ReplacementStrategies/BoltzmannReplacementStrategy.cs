@@ -22,7 +22,7 @@ public class BoltzmannReplacementStrategy<T>(double temperatureDecayRate, double
     /// The recommended offspring generation rate for Boltzmann replacement strategy.
     /// This moderate turnover rate (40%) works well with temperature-controlled selection pressure.
     /// </summary>
-    internal const float RecommendedOffspringGenerationRate = 0.4f;
+    internal override float RecommendedOffspringGenerationRate => 0.4f;
 
     private readonly double _temperatureDecayRate = temperatureDecayRate;
     private readonly double _initialTemperature = initialTemperature;
