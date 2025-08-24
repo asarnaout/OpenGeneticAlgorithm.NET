@@ -24,7 +24,7 @@ dotnet add package OpenGA.Net
 
 A **Chromosome** in OpenGA.Net represents a potential solution to your optimization problem. It contains **genes** (the solution components) and defines how to evaluate, modify, and repair solutions.
 
-**Step 1:** Create your chromosome by inheriting from the `Chromosome<T>` abstract class:
+**Step 1:** Create your chromosome by inheriting from the `Chromosome<T>` abstract class, the example below demonstrates how a Chromosome representing a potential solution to the [traveling salesman problem](https://en.wikipedia.org/wiki/Travelling_salesman_problem) could look like:
 
 ```csharp
 using OpenGA.Net;
