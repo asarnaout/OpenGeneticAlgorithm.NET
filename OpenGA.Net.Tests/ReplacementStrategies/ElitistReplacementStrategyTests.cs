@@ -123,7 +123,7 @@ public class ElitistReplacementStrategyTests
         // Assert
         // With 80% elite protection, only 1 chromosome (20% of 5) can be eliminated
         // Even though we have 3 offspring, we can only eliminate 1 non-elite
-        Assert.Equal(1, eliminated.Length);
+        Assert.Single(eliminated);
         
         // The eliminated chromosome should be the lowest fitness one
         var lowestFitnessChromosome = population[0]; // [1, 1, 1] with fitness 1.0
@@ -199,7 +199,7 @@ public class ElitistReplacementStrategyTests
         var eliminated = strategy.SelectChromosomesForElimination(population, offspring, random).ToArray();
 
         // Assert
-        Assert.Equal(1, eliminated.Length);
+        Assert.Single(eliminated);
         Assert.Contains(eliminated[0], population);
         // With 0% elite protection, any chromosome can be eliminated
     }
