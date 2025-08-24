@@ -43,13 +43,7 @@ public class TspChromosome : Chromosome<int>
     // Calculate how "good" this route is (shorter distance = higher fitness)
     public override double CalculateFitness()
     {
-        double totalDistance = 0;
-        for (int i = 0; i < Genes.Count - 1; i++)
-        {
-            totalDistance += _distanceMatrix[Genes[i], Genes[i + 1]];
-        }
-        
-        totalDistance += _distanceMatrix[Genes[^1], Genes[0]]; // Add distance back to start
+        double totalDistance = CalculateTotalDisance();
         
         return 1.0 / (1.0 + totalDistance); // Return inverse distance (shorter routes have higher fitness)
     }
@@ -89,7 +83,7 @@ var distanceMatrix = new double[,] {
     {25, 30, 20, 15, 0}
 };
 
-// Generate initial population of random routes
+// Generate initial population of random routes. The initial population represents a set of random solutions to the optimization problem.
 var initialPopulation = new TspChromosome[100];
 var random = new Random();
 for (int i = 0; i < 100; i++)
