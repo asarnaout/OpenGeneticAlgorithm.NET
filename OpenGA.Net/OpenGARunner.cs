@@ -215,7 +215,7 @@ public class OpenGARunner<T>
 
         if (_crossoverStrategyConfig.CrossoverStrategies is [])
         {
-            throw new MissingCrossoverStrategyException("No crossover strategy has been specified. Consider calling OpenGARunner<T>.ApplyCrossoverStrategies(...) to specify crossover strategies.");
+            _crossoverStrategyConfig.ApplyOnePointCrossoverStrategy();
         }
 
         if (_replacementStrategyConfig.ReplacementStrategy is null)

@@ -22,23 +22,110 @@ dotnet add package OpenGA.Net
 
 ### Your First Genetic Algorithm
 
+A **Chromosome** in OpenGA.Net represents a potential solution to your optimization problem. It contains **genes** (the solution components) and defines how to evaluate, modify, and repair solutions.
+
+**Step 1:** Create your chromosome by inheriting from the `Chromosome<T>` abstract class:
+
 ```csharp
 using OpenGA.Net;
 
-// Define your problem (Traveling Salesman Problem example)
-var cities = new[] { 0, 1, 2, 3, 4 };
-var initialPopulation = GenerateRandomRoutes(populationSize: 100, cities);
+// A chromosome for the Traveling Salesman Problem
+// Each chromosome represents a route through cities (genes = city sequence)
+public class TspChromosome : Chromosome<int>
+{
+    private readonly double[,] _distanceMatrix;
+    
+    public TspChromosome(IList<int> cities, double[,] distanceMatrix) : base(cities)
+    {
+        _distanceMatrix = distanceMatrix;
+    }
+    
+    // Calculate how "good" this route is (shorter distance = higher fitness)
+    public override double CalculateFitness()
+    {
+        double totalDistance = 0;
+        for (int i = 0; i < Genes.Count - 1; i++)
+        {
+            totalDistance += _distanceMatrix[Genes[i], Genes[i + 1]];
+        }
+        // Add distance back to start
+        totalDistance += _distanceMatrix[Genes[^1], Genes[0]];
+        
+        // Return inverse distance (shorter routes have higher fitness)
+        return 1.0 / (1.0 + totalDistance);
+    }
+    
+    // Randomly swap two cities in the route
+    public override void Mutate()
+    {
+        var random = new Random();
+        int index1 = random.Next(Genes.Count);
+        int index2 = random.Next(Genes.Count);
+        (Genes[index1], Genes[index2]) = (Genes[index2], Genes[index1]);
+    }
+    
+    // Create an identical copy of this chromosome
+    public override Chromosome<int> DeepCopy()
+    {
+        return new TspChromosome(new List<int>(Genes), _distanceMatrix);
+    }
+    
+    // Ensure each city appears exactly once (fix any duplicates)
+    public override void GeneticRepair()
+    {
+        var allCities = Enumerable.Range(0, _distanceMatrix.GetLength(0)).ToList();
+        var missingCities = allCities.Except(Genes).ToList();
+        var duplicateIndices = Genes.Select((city, index) => new { city, index })
+                                   .GroupBy(x => x.city)
+                                   .Where(g => g.Count() > 1)
+                                   .SelectMany(g => g.Skip(1))
+                                   .Select(x => x.index)
+                                   .ToList();
+        
+        // Replace duplicates with missing cities
+        for (int i = 0; i < Math.Min(duplicateIndices.Count, missingCities.Count); i++)
+        {
+            Genes[duplicateIndices[i]] = missingCities[i];
+        }
+    }
+}
+```
 
+**Step 2:** Create your initial population:
+
+```csharp
+// Create distance matrix for 5 cities
+var distanceMatrix = new double[,] {
+    {0, 10, 15, 20, 25},
+    {10, 0, 35, 25, 30},
+    {15, 35, 0, 30, 20},
+    {20, 25, 30, 0, 15},
+    {25, 30, 20, 15, 0}
+};
+
+// Generate initial population of random routes
+var initialPopulation = new TspChromosome[100];
+var random = new Random();
+for (int i = 0; i < 100; i++)
+{
+    var cities = Enumerable.Range(0, 5).OrderBy(x => random.Next()).ToList();
+    initialPopulation[i] = new TspChromosome(cities, distanceMatrix);
+}
+```
+
+**Step 3:** Configure and run your genetic algorithm:
+
+```csharp
 // Configure and run your genetic algorithm
 var bestSolution = OpenGARunner<int>
     .Init(initialPopulation)
     .ApplyReproductionSelector(c => c.ApplyTournamentReproductionSelector())
-    .ApplyCrossoverStrategies(c => c.ApplyOnePointCrossoverStrategy())
     .ApplyReplacementStrategy(c => c.ApplyElitistReplacementStrategy())
     .RunToCompletion();
 
 // Get your optimized result
 Console.WriteLine($"Best route: {string.Join(" → ", bestSolution.Genes)}");
+Console.WriteLine($"Fitness: {bestSolution.Fitness:F4}");
 ```
 
 That's it! 🎉 You just solved an optimization problem with a few lines of code.
@@ -87,7 +174,7 @@ Create offspring by combining parent chromosomes:
 
 | Strategy | When to Use | Gene Representation | Problem Type | Preservation Needs |
 |----------|-------------|-------------------|--------------|-------------------|
-| **One-Point** | Fast, simple problems | Order doesn't matter critically | Optimization with independent variables | Preserve some gene clusters |
+| **One-Point** *(Default)* | Fast, simple problems | Order doesn't matter critically | Optimization with independent variables | Preserve some gene clusters |
 | **K-Point** | Moderate complexity balance | Mixed dependencies between genes | Multi-dimensional optimization | Control disruption level |
 | **Uniform** | Maximum genetic diversity | Independent genes | Exploratory search, avoid local optima | No specific gene clustering |
 | **Custom** | Domain-specific requirements | Complex constraints or structures | Specialized problem domains | Domain-specific validation |
