@@ -151,9 +151,10 @@ public class KPointCrossoverIntegrationTests
         // Reconfigure for 4-point crossover
         var strategy4Point = config.ApplyKPointCrossoverStrategy(4);
         Assert.IsType<KPointCrossoverStrategy<int>>(strategy4Point);
-        
+
         // Verify the configuration was updated
-        Assert.Equal(strategy4Point, config.CrossoverStrategy);
+        Assert.Equal(strategy2Point, config.CrossoverStrategies.First());
+        Assert.Equal(strategy4Point, config.CrossoverStrategies.Last());
         Assert.NotEqual(strategy2Point, strategy4Point);
         
         // Test both strategies work

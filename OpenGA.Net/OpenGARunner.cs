@@ -151,11 +151,14 @@ public class OpenGARunner<T>
         return this;
     }
 
-    public OpenGARunner<T> ApplyCrossoverStrategy(Action<CrossoverStrategyConfiguration<T>> crossoverStrategyConfigurator)
+    public OpenGARunner<T> ApplyCrossoverStrategies(params Action<CrossoverStrategyConfiguration<T>>[] crossoverStrategyConfigurators)
     {
-        ArgumentNullException.ThrowIfNull(crossoverStrategyConfigurator, nameof(crossoverStrategyConfigurator));
+        ArgumentNullException.ThrowIfNull(crossoverStrategyConfigurators, nameof(crossoverStrategyConfigurators));
 
-        crossoverStrategyConfigurator(_crossoverStrategyConfig);
+        foreach (var crossoverStrategyConfigurator in crossoverStrategyConfigurators)
+        {
+            crossoverStrategyConfigurator(_crossoverStrategyConfig);
+        }
 
         return this;
     }
@@ -207,9 +210,9 @@ public class OpenGARunner<T>
             throw new MissingReproductionSelectorsException("No reproduction selector is specified. Consider calling OpenGARunner<T>.ApplyReproductionSelector(...) to specify a selector.");
         }
 
-        if (_crossoverStrategyConfig.CrossoverStrategy is null)
+        if (_crossoverStrategyConfig.CrossoverStrategies is [])
         {
-            throw new MissingCrossoverStrategyException("No crossover strategy has been specified. Consider calling OpenGARunner<T>.ApplyCrossoverStrategy(...) to specify a crossover strategy.");
+            throw new MissingCrossoverStrategyException("No crossover strategy has been specified. Consider calling OpenGARunner<T>.ApplyCrossoverStrategies(...) to specify crossover strategies.");
         }
 
         if (_replacementStrategyConfig.ReplacementStrategy is null)
@@ -290,7 +293,8 @@ public class OpenGARunner<T>
             {
                 var remainingOffspringNeeded = requiredNumberOfOffspring - offspring.Count;
 
-                var requiredNumberOfCouples = _crossoverStrategyConfig.CrossoverStrategy switch
+                var crossoverStrategy = _crossoverStrategyConfig.CrossoverStrategies.First(); // TODO: FIX THIS
+                var requiredNumberOfCouples = crossoverStrategy switch
                 {
                     OnePointCrossoverStrategy<T> => (int)Math.Ceiling(remainingOffspringNeeded / 2.0),
                     KPointCrossoverStrategy<T> => (int)Math.Ceiling(remainingOffspringNeeded / 2.0),
@@ -313,7 +317,7 @@ public class OpenGARunner<T>
 
                     if (_random.NextDouble() <= _crossoverRate)
                     {
-                        var newOffspring = _crossoverStrategyConfig.CrossoverStrategy.Crossover(couple, _random);
+                        var newOffspring = crossoverStrategy.Crossover(couple, _random);
 
                         foreach (var child in newOffspring)
                         {

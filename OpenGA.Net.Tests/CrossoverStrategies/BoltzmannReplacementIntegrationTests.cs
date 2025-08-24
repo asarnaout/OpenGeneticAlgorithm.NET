@@ -22,7 +22,7 @@ public class BoltzmannReplacementIntegrationTests
         var result = OpenGARunner<int>
             .Init(initialPopulation)
             .ApplyReproductionSelector(c => c.ApplyRandomReproductionSelector())
-            .ApplyCrossoverStrategy(c => c.ApplyOnePointCrossoverStrategy())
+            .ApplyCrossoverStrategies(c => c.ApplyOnePointCrossoverStrategy())
             .ApplyReplacementStrategy(c => c.ApplyBoltzmannReplacementStrategy(temperatureDecayRate: 0.1, initialTemperature: 2.0))
             .RunToCompletion();
 
@@ -45,7 +45,7 @@ public class BoltzmannReplacementIntegrationTests
         var result = OpenGARunner<int>
             .Init(initialPopulation)
             .ApplyReproductionSelector(c => c.ApplyRandomReproductionSelector())
-            .ApplyCrossoverStrategy(c => c.ApplyOnePointCrossoverStrategy())
+            .ApplyCrossoverStrategies(c => c.ApplyOnePointCrossoverStrategy())
             .ApplyReplacementStrategy(c => c.ApplyBoltzmannReplacementStrategyWithLinearDecay(temperatureDecayRate: 0.05, initialTemperature: 1.0))
             .RunToCompletion();
 
