@@ -224,16 +224,11 @@ public class OpenGARunner<T>
         return this;
     }
 
-    /// <summary>
-    /// Validates that all required strategies are configured before running the genetic algorithm.
-    /// </summary>
-    /// <exception cref="MissingReproductionSelectorsException">Thrown when no reproduction selector is configured</exception>
-    /// <exception cref="MissingReplacementStrategyException">Thrown when no replacement strategy is configured</exception>
-    private void ValidateRequiredStrategies()
+    private void DefaultMissingStrategies()
     {
         if (_reproductionSelectorConfig.ReproductionSelector is null)
         {
-            throw new MissingReproductionSelectorsException("No reproduction selector is specified. Consider calling OpenGARunner<T>.ApplyReproductionSelector(...) to specify a selector.");
+            _reproductionSelectorConfig.ApplyTournamentReproductionSelector();
         }
 
         if (_crossoverStrategyConfig.CrossoverStrategies is [])
@@ -243,12 +238,11 @@ public class OpenGARunner<T>
 
         if (_replacementStrategyConfig.ReplacementStrategy is null)
         {
-            throw new MissingReplacementStrategyException("No replacement strategy has been specified. Consider calling OpenGARunner<T>.ApplyReplacementStrategy(...) to specify a replacement strategy.");
+            _replacementStrategyConfig.ApplyElitistReplacementStrategy();
         }
 
         if (_terminationStrategyConfig.TerminationStrategies is [])
         {
-            // If no termination strategy is specified, default to max epochs
             _terminationStrategyConfig.ApplyMaximumEpochsTerminationStrategy(100);
         }
 
@@ -319,18 +313,12 @@ public class OpenGARunner<T>
     /// The chromosome with the highest fitness value from the final population.
     /// This represents the best solution found by the genetic algorithm.
     /// </returns>
-    /// <exception cref="MissingReproductionSelectorsException">
-    /// Thrown when no reproduction selector has been configured.
-    /// </exception>
-    /// <exception cref="MissingReplacementStrategyException">
-    /// Thrown when no replacement strategy has been configured.
-    /// </exception>
     /// <exception cref="InvalidOperationException">
     /// Thrown when the calculated number of offspring is invalid (≤ 0 or > 2× population size).
     /// </exception>
     public Chromosome<T> RunToCompletion()
     {
-        ValidateRequiredStrategies();
+        DefaultMissingStrategies();
 
         var startTime = DateTime.UtcNow;
 

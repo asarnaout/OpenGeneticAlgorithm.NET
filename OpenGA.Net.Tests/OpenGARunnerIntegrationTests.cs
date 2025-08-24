@@ -165,7 +165,7 @@ public class OpenGARunnerIntegrationTests
     #region Missing Strategy Configuration Tests
 
     [Fact]
-    public void RunToCompletion_WithoutReproductionSelector_ThrowsException()
+    public void RunToCompletion_WithoutReproductionSelector_UsesDefaultTournamentSelector()
     {
         // Arrange
         var population = CreateDiversePopulation(5);
@@ -173,13 +173,13 @@ public class OpenGARunnerIntegrationTests
             .ApplyReplacementStrategy(config => config.ApplyGenerationalReplacementStrategy())
             .ApplyTerminationStrategies(config => config.ApplyMaximumEpochsTerminationStrategy(5));
 
-        // Act & Assert
-        Assert.Throws<MissingReproductionSelectorsException>(() => 
-            runner.RunToCompletion());
+        // Act & Assert - Should not throw, should use default Tournament reproduction selector
+        var result = runner.RunToCompletion();
+        Assert.NotNull(result);
     }
 
     [Fact]
-    public void RunToCompletion_WithoutReplacementStrategy_ThrowsException()
+    public void RunToCompletion_WithoutReplacementStrategy_UsesDefaultElitistStrategy()
     {
         // Arrange
         var population = CreateDiversePopulation(5);
@@ -187,9 +187,9 @@ public class OpenGARunnerIntegrationTests
             .ApplyReproductionSelector(config => config.ApplyRandomReproductionSelector())
             .ApplyTerminationStrategies(config => config.ApplyMaximumEpochsTerminationStrategy(5));
 
-        // Act & Assert
-        Assert.Throws<MissingReplacementStrategyException>(() => 
-            runner.RunToCompletion());
+        // Act & Assert - Should not throw, should use default Elitist replacement strategy
+        var result = runner.RunToCompletion();
+        Assert.NotNull(result);
     }
 
     [Fact]

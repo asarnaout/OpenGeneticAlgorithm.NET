@@ -99,8 +99,6 @@ for (int i = 0; i < 100; i++)
 // Configure and run your genetic algorithm
 var bestSolution = OpenGARunner<int>
     .Init(initialPopulation)
-    .ApplyReproductionSelector(c => c.ApplyTournamentReproductionSelector())
-    .ApplyReplacementStrategy(c => c.ApplyElitistReplacementStrategy())
     .RunToCompletion();
 
 // Get your optimized result
@@ -142,7 +140,7 @@ Choose the best parents for the next generation:
 
 | Strategy | When to Use | Problem Characteristics | Population Size | Fitness Landscape |
 |----------|-------------|------------------------|-----------------|-------------------|
-| **Tournament** | Default choice for most problems | Balanced exploration/exploitation needed | Any size | Noisy or multimodal landscapes |
+| **Tournament** *(Default)* | Default choice for most problems | Balanced exploration/exploitation needed | Any size | Noisy or multimodal landscapes |
 | **Elitist** | Need guaranteed convergence | High-quality solutions must be preserved | Medium to large (50+) | Clear fitness hierarchy |
 | **Roulette Wheel** | Fitness-proportionate diversity | Wide fitness range, avoid premature convergence | Large (100+) | Smooth, unimodal landscapes |
 | **Boltzmann** | Dynamic selection pressure | Need cooling schedule control | Medium to large | Complex, deceptive landscapes |
@@ -170,7 +168,7 @@ Manage population evolution over generations:
 
 | Strategy | When to Use | Convergence Speed | Population Diversity | Resource Constraints |
 |----------|-------------|-------------------|---------------------|---------------------|
-| **Elitist** | Most optimization problems | Fast convergence | Moderate diversity loss | Low computational overhead |
+| **Elitist** *(Default)* | Most optimization problems | Fast convergence | Moderate diversity loss | Low computational overhead |
 | **Generational** | Exploration-heavy search | Slower, thorough exploration | High diversity maintained | Higher memory usage |
 | **Tournament** | Balanced performance | Moderate convergence | Good diversity balance | Moderate computational cost |
 | **Age-based** | Long-running evolutionary systems | Very slow, stable | Excellent long-term diversity | Requires age tracking |
