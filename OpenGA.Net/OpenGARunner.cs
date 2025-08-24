@@ -224,6 +224,39 @@ public class OpenGARunner<T>
         }
     }
 
+    /// <summary>
+    /// Executes the genetic algorithm until one of the configured termination conditions is met.
+    /// 
+    /// This method runs the complete genetic algorithm process, including:
+    /// - Validating that all required strategies (reproduction selector, crossover, replacement) are configured
+    /// - Applying a default termination strategy (100 epochs) if none is specified
+    /// - Iteratively evolving the population through selection, crossover, mutation, and replacement
+    /// - Tracking algorithm state including current epoch, duration, and fitness metrics
+    /// - Terminating when any configured termination condition is satisfied
+    /// 
+    /// The algorithm follows these steps each generation:
+    /// 1. Check termination conditions
+    /// 2. Generate offspring through reproduction selection and crossover
+    /// 3. Apply replacement strategy to create new population
+    /// 4. Apply mutation and genetic repair to all chromosomes
+    /// 5. Update chromosome ages and reset offspring ages
+    /// </summary>
+    /// <returns>
+    /// The chromosome with the highest fitness value from the final population.
+    /// This represents the best solution found by the genetic algorithm.
+    /// </returns>
+    /// <exception cref="MissingReproductionSelectorsException">
+    /// Thrown when no reproduction selector has been configured.
+    /// </exception>
+    /// <exception cref="MissingCrossoverStrategyException">
+    /// Thrown when no crossover strategy has been configured.
+    /// </exception>
+    /// <exception cref="MissingReplacementStrategyException">
+    /// Thrown when no replacement strategy has been configured.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when the calculated number of offspring is invalid (≤ 0 or > 2× population size).
+    /// </exception>
     public Chromosome<T> RunToCompletion()
     {
         ValidateRequiredStrategies();
@@ -281,10 +314,12 @@ public class OpenGARunner<T>
                     if (_random.NextDouble() <= _crossoverRate)
                     {
                         var newOffspring = _crossoverStrategyConfig.CrossoverStrategy.Crossover(couple, _random);
+
                         foreach (var child in newOffspring)
                         {
                             child.InvalidateFitness(); // Invalidate fitness for new offspring
                         }
+
                         offspring.AddRange(newOffspring);
                     }
                 }
