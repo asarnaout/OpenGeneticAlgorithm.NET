@@ -32,13 +32,9 @@ var initialPopulation = GenerateRandomRoutes(populationSize: 100, cities);
 // Configure and run your genetic algorithm
 var bestSolution = OpenGARunner<int>
     .Init(initialPopulation)
-    .MutationRate(0.1f)
-    .CrossoverRate(0.8f)
-    .OverrideOffspringGenerationRate(0.7f) // Optional: Override the default offspring generation rate (each strategy has predefined percentages)
     .ApplyReproductionSelector(c => c.ApplyTournamentReproductionSelector())
     .ApplyCrossoverStrategies(c => c.ApplyOnePointCrossoverStrategy())
     .ApplyReplacementStrategy(c => c.ApplyElitistReplacementStrategy())
-    .ApplyTerminationStrategy(c => c.ApplyMaximumEpochsTerminationStrategy(maxEpochs: 200)) // Optional: Maximum Epochs Termination is applied by default with a maxEpochs value of 100
     .RunToCompletion();
 
 // Get your optimized result
@@ -143,25 +139,25 @@ Control when the genetic algorithm stops evolving:
 .ApplyReproductionSelector(c => c.ApplyElitistReproductionSelector())
 .ApplyCrossoverStrategies(c => c.ApplyOnePointCrossoverStrategy())
 .ApplyReplacementStrategy(c => c.ApplyElitistReplacementStrategy())
-.ApplyTerminationStrategy(c => c.ApplyMaximumEpochsTerminationStrategy(maxEpochs: 100))
+.ApplyTerminationStrategies(c => c.ApplyMaximumEpochsTerminationStrategy(maxEpochs: 100))
 
 // Exploratory search (avoiding local optima)
 .ApplyReproductionSelector(c => c.ApplyTournamentReproductionSelector(tournamentSize: 5))
 .ApplyCrossoverStrategies(c => c.ApplyUniformCrossoverStrategy())
 .ApplyReplacementStrategy(c => c.ApplyGenerationalReplacementStrategy())
-.ApplyTerminationStrategy(c => c.ApplyTargetStandardDeviationTerminationStrategy(targetStandardDeviation: 0.001))
+.ApplyTerminationStrategies(c => c.ApplyTargetStandardDeviationTerminationStrategy(targetStandardDeviation: 0.001))
 
 // Production system (time-constrained)
 .ApplyReproductionSelector(c => c.ApplyTournamentReproductionSelector())
 .ApplyCrossoverStrategies(c => c.ApplyOnePointCrossoverStrategy())
 .ApplyReplacementStrategy(c => c.ApplyElitistReplacementStrategy())
-.ApplyTerminationStrategy(c => c.ApplyMaximumDurationTerminationStrategy(TimeSpan.FromMinutes(5)))
+.ApplyTerminationStrategies(c => c.ApplyMaximumDurationTerminationStrategy(TimeSpan.FromMinutes(5)))
 
 // Quality-focused research (target standard deviation termination)
 .ApplyReproductionSelector(c => c.ApplyBoltzmannReproductionSelector(temperature: 100))
 .ApplyCrossoverStrategies(c => c.ApplyKPointCrossoverStrategy(k: 3))
 .ApplyReplacementStrategy(c => c.ApplyAgeBasedReplacementStrategy())
-.ApplyTerminationStrategy(c => c.ApplyTargetStandardDeviationTerminationStrategy(targetStandardDeviation: 0.001, window: 10))
+.ApplyTerminationStrategies(c => c.ApplyTargetStandardDeviationTerminationStrategy(targetStandardDeviation: 0.001, window: 10))
 ```
 
 ---
@@ -296,7 +292,7 @@ var result = OpenGARunner<MyGeneType>
     .ApplyReproductionSelector(c => c.ApplyCustomReproductionSelector(new MyReproductionSelector<MyGeneType>()))
     .ApplyCrossoverStrategies(c => c.ApplyCustomCrossoverStrategy(new MyCustomCrossover<MyGeneType>()))
     .ApplyReplacementStrategy(c => c.ApplyCustomReplacementStrategy(new MyReplacementStrategy<MyGeneType>()))
-    .ApplyTerminationStrategy(c => c.ApplyCustomTerminationStrategy(new MyTerminationStrategy<MyGeneType>(50)))
+    .ApplyTerminationStrategies(c => c.ApplyCustomTerminationStrategy(new MyTerminationStrategy<MyGeneType>(50)))
     .RunToCompletion();
 ```
 

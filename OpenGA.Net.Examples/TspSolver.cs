@@ -282,7 +282,7 @@ public static class TspSolver
                         .ApplyReproductionSelector(c => c.ApplyElitistReproductionSelector())
                         .ApplyCrossoverStrategies(c => c.ApplyOnePointCrossoverStrategy())
                         .ApplyReplacementStrategy(c => c.ApplyElitistReplacementStrategy())
-                        .ApplyTerminationStrategy(c => c.ApplyMaximumEpochsTerminationStrategy(epochs))
+                        .ApplyTerminationStrategies(c => c.ApplyMaximumEpochsTerminationStrategy(epochs))
                         ;
 
         // Run the genetic algorithm
@@ -353,7 +353,7 @@ public static class TspSolver
                         .ApplyReproductionSelector(c => c.ApplyElitistReproductionSelector())
                         .ApplyCrossoverStrategies(c => c.ApplyOnePointCrossoverStrategy())
                         .ApplyReplacementStrategy(c => c.ApplyElitistReplacementStrategy())
-                        .ApplyTerminationStrategy(c => c.ApplyMaximumEpochsTerminationStrategy(epochs));
+                        .ApplyTerminationStrategies(c => c.ApplyMaximumEpochsTerminationStrategy(epochs));
 
         // Start the genetic algorithm
         var bestChromosome = runner.RunToCompletion() as TspChromosome;

@@ -172,11 +172,14 @@ public class OpenGARunner<T>
         return this;
     }
     
-    public OpenGARunner<T> ApplyTerminationStrategy(Action<TerminationStrategyConfiguration<T>> terminationStrategyConfigurator)
+    public OpenGARunner<T> ApplyTerminationStrategies(params Action<TerminationStrategyConfiguration<T>>[] terminationStrategyConfigurators)
     {
-        ArgumentNullException.ThrowIfNull(terminationStrategyConfigurator, nameof(terminationStrategyConfigurator));
+        ArgumentNullException.ThrowIfNull(terminationStrategyConfigurators, nameof(terminationStrategyConfigurators));
 
-        terminationStrategyConfigurator(_terminationStrategyConfig);
+        foreach (var terminationStrategyConfigurator in terminationStrategyConfigurators)
+        {
+            terminationStrategyConfigurator(_terminationStrategyConfig);
+        }
 
         return this;
     }
