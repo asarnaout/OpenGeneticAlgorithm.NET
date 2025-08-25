@@ -16,6 +16,6 @@ public class MaximumDurationTerminationStrategy<T> : BaseTerminationStrategy<T>
 
     public override bool Terminate(GeneticAlgorithmState state)
     {
-        return state.CurrentDuration >= _maximumDuration;
+        return state.StopWatch.Elapsed >= _maximumDuration;
     }
 }

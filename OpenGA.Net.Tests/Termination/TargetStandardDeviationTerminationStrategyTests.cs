@@ -2,6 +2,7 @@ using OpenGA.Net.Termination;
 using OpenGA.Net.ReproductionSelectors;
 using OpenGA.Net.CrossoverStrategies;
 using OpenGA.Net.ReplacementStrategies;
+using System.Diagnostics;
 
 namespace OpenGA.Net.Tests.Termination;
 
@@ -9,7 +10,8 @@ public class TargetStandardDeviationTerminationStrategyTests
 {
     private GeneticAlgorithmState CreateMockStateWithFitness(double highestFitness)
     {
-        return new GeneticAlgorithmState(0, TimeSpan.Zero, highestFitness);
+        var stopwatch = new Stopwatch();
+        return new GeneticAlgorithmState(0, stopwatch, highestFitness);
     }
 
     [Fact]

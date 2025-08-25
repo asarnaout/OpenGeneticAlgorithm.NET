@@ -5,6 +5,7 @@ using OpenGA.Net.ReplacementStrategies;
 using OpenGA.Net.Termination;
 using OpenGA.Net.OperatorSelectionPolicies;
 using OpenGA.Net.Extensions;
+using System.Diagnostics;
 
 namespace OpenGA.Net;
 
@@ -12,7 +13,7 @@ public class OpenGARunner<T>
 {
     internal int CurrentEpoch = 0;
 
-    internal TimeSpan CurrentDuration = TimeSpan.Zero;
+    internal Stopwatch StopWatch = new();
 
     private int _maxNumberOfChromosomes;
 
@@ -49,7 +50,7 @@ public class OpenGARunner<T>
     /// <summary>
     /// Gets the current state of the genetic algorithm including epoch, duration, and fitness metrics.
     /// </summary>
-    internal GeneticAlgorithmState CurrentState => new(CurrentEpoch, CurrentDuration, HighestFitness);
+    internal GeneticAlgorithmState CurrentState => new(CurrentEpoch, StopWatch, HighestFitness);
 
     private readonly Random _random = new();
 
@@ -319,14 +320,11 @@ public class OpenGARunner<T>
     /// </exception>
     public Chromosome<T> RunToCompletion()
     {
+        StopWatch.Start();
         DefaultMissingStrategies();
-
-        var startTime = DateTime.UtcNow;
 
         for (; ; CurrentEpoch++)
         {
-            CurrentDuration = DateTime.UtcNow - startTime;
-
             if (_terminationStrategyConfig.ShouldTerminate(CurrentState))
             {
                 break;
@@ -400,6 +398,8 @@ public class OpenGARunner<T>
                 child.ResetAge();
             }
         }
+
+        StopWatch.Stop();
 
         return Population.OrderByDescending(c => c.Fitness).First();
     }

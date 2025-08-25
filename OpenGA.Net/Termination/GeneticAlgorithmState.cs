@@ -1,3 +1,5 @@
+using System.Diagnostics;
+
 namespace OpenGA.Net.Termination;
 
 /// <summary>
@@ -8,9 +10,9 @@ namespace OpenGA.Net.Termination;
 /// Initializes a new instance of the GeneticAlgorithmState struct.
 /// </remarks>
 /// <param name="currentEpoch">The current epoch number.</param>
-/// <param name="currentDuration">The elapsed time since algorithm start.</param>
+/// <param name="stopwatch">The stopwatch tracking elapsed time since algorithm start.</param>
 /// <param name="highestFitness">The highest fitness in the current population.</param>
-public readonly struct GeneticAlgorithmState(int currentEpoch, TimeSpan currentDuration, double highestFitness)
+public readonly struct GeneticAlgorithmState(int currentEpoch, Stopwatch stopwatch, double highestFitness)
 {
     /// <summary>
     /// The current epoch/generation number.
@@ -18,9 +20,10 @@ public readonly struct GeneticAlgorithmState(int currentEpoch, TimeSpan currentD
     public int CurrentEpoch { get; init; } = currentEpoch;
 
     /// <summary>
-    /// The elapsed time since the algorithm started.
+    /// The stopwatch tracking elapsed time since the algorithm started.
+    /// Use StopWatch.Elapsed to get the current elapsed TimeSpan.
     /// </summary>
-    public TimeSpan CurrentDuration { get; init; } = currentDuration;
+    public Stopwatch StopWatch { get; init; } = stopwatch;
 
     /// <summary>
     /// The highest fitness value found in the current population.

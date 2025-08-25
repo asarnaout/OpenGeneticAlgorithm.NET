@@ -1,4 +1,5 @@
 using OpenGA.Net.Termination;
+using System.Diagnostics;
 
 namespace OpenGA.Net.Tests.Termination;
 
@@ -44,7 +45,8 @@ public class BaseTerminationStrategyTests
         };
 
         var runner = OpenGARunner<int>.Init(population);
-        var state = new GeneticAlgorithmState(0, TimeSpan.Zero, 1.0);
+        var stopwatch = new Stopwatch();
+        var state = new GeneticAlgorithmState(0, stopwatch, 1.0);
 
         // Act & Assert
         Assert.True(trueStrategy.Terminate(state));
@@ -70,7 +72,8 @@ public class BaseTerminationStrategyTests
         };
 
         var runner = OpenGARunner<int>.Init(population);
-        var state = new GeneticAlgorithmState(0, TimeSpan.Zero, 1.0);
+        var stopwatch2 = new Stopwatch();
+        var state = new GeneticAlgorithmState(0, stopwatch2, 1.0);
 
         // Act & Assert
         foreach (var strategy in strategies)

@@ -1,4 +1,5 @@
 using OpenGA.Net.Termination;
+using System.Diagnostics;
 
 namespace OpenGA.Net.Tests.Termination;
 
@@ -6,7 +7,8 @@ public class MaximumEpochsTerminationStrategyTests
 {
     private GeneticAlgorithmState CreateMockState(int currentEpoch)
     {
-        return new GeneticAlgorithmState(currentEpoch, TimeSpan.Zero, 1.0);
+        var stopwatch = new Stopwatch();
+        return new GeneticAlgorithmState(currentEpoch, stopwatch, 1.0);
     }
 
     [Fact]
