@@ -202,7 +202,7 @@ public class OpenGARunner<T>
     /// <param name="policyConfigurator">Action to configure the operator selection policy</param>
     /// <returns>The OpenGARunner instance for method chaining</returns>
     /// <exception cref="ArgumentNullException">Thrown when policyConfigurator is null</exception>
-    public OpenGARunner<T> ApplyOperatorSelectionPolicy(Action<OperatorSelectionPolicyConfiguration> policyConfigurator)
+    public OpenGARunner<T> ApplyCrossoverOperatorSelectionPolicy(Action<OperatorSelectionPolicyConfiguration> policyConfigurator)
     {
         ArgumentNullException.ThrowIfNull(policyConfigurator, nameof(policyConfigurator));
 
