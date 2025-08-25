@@ -111,15 +111,16 @@ public class AdaptivePursuitPolicy(
         var normalizedReward = populationFitnessRange > 0 
             ? fitnessImprovement / populationFitnessRange 
             : fitnessImprovement;
-        
-        // Add diversity bonus to reward operators that generate more diverse results
-        // This helps prevent premature convergence by encouraging exploration of different
-        // genetic combinations, maintaining population diversity which is crucial for finding
-        // global optima rather than getting stuck in local optima
+
+        /*
+         * Add diversity bonus to reward operators that generate more diverse results
+         * This helps prevent premature convergence by encouraging exploration of different
+         * genetic combinations, maintaining population diversity which is crucial for finding
+         * global optima rather than getting stuck in local optima
+         */
         var diversityBonus = _diversityWeight * offspringDiversity;
         var totalReward = normalizedReward + diversityBonus;
         
-        // Update recent rewards queue
         var recentQueue = _recentRewards[@operator];
         recentQueue.Enqueue(totalReward);
         if (recentQueue.Count > _rewardWindowSize)
@@ -127,11 +128,13 @@ public class AdaptivePursuitPolicy(
             recentQueue.Dequeue();
         }
         
-        // Calculate weighted average with more weight on recent rewards
         var weightedReward = CalculateWeightedReward(recentQueue);
         _operatorRewards[@operator] = weightedReward;
 
-        // Update probabilities if minimum usage threshold is met
+        /*
+         * Update probabilities if minimum usage threshold is met. We update probabilities only if all
+         * all operators have been sufficiently used so we do not make decisions based on insufficient data.
+         */
         var shouldAdapt = _operatorUsageCount.Values.All(count => count >= _minimumUsageBeforeAdaptation);
         if (shouldAdapt)
         {
