@@ -188,6 +188,37 @@ public class OpenGARunner<T>
         return this;
     }
 
+    /// <summary>
+    /// Configures the operator selection policy for choosing between multiple crossover strategies.
+    /// 
+    /// When multiple crossover strategies are configured, an operator selection policy determines
+    /// which strategy to use for each crossover operation. This enables adaptive behavior where
+    /// the genetic algorithm can learn which operators work best for the specific problem.
+    /// 
+    /// If not explicitly configured:
+    /// - Single crossover strategy: FirstChoicePolicy is automatically applied
+    /// - Multiple crossover strategies: AdaptivePursuitPolicy is automatically applied
+    /// </summary>
+    /// <param name="policyConfigurator">Action to configure the operator selection policy</param>
+    /// <returns>The OpenGARunner instance for method chaining</returns>
+    /// <exception cref="ArgumentNullException">Thrown when policyConfigurator is null</exception>
+    public OpenGARunner<T> ApplyOperatorSelectionPolicy(Action<OperatorSelectionPolicyConfiguration> policyConfigurator)
+    {
+        ArgumentNullException.ThrowIfNull(policyConfigurator, nameof(policyConfigurator));
+
+        policyConfigurator(_crossoverSelectionPolicyConfig);
+
+        return this;
+    }
+
+    /// <summary>
+    /// Applies default strategies for any components that haven't been explicitly configured.
+    /// 
+    /// This method ensures the genetic algorithm has all required components by applying
+    /// sensible defaults when the user hasn't specified certain strategies. It also
+    /// intelligently configures operator selection policies based on the number of
+    /// crossover strategies available.
+    /// </summary>
     private void DefaultMissingStrategies()
     {
         if (_reproductionSelectorConfig.ReproductionSelector is null)
@@ -214,10 +245,13 @@ public class OpenGARunner<T>
         {
             _crossoverSelectionPolicyConfig.ApplyFirstChoicePolicy();
         }
-        else if (_crossoverSelectionPolicyConfig.Policy is null)
+        else if (_crossoverSelectionPolicyConfig.Policy is null) 
         {
+            // If multiple crossover strategies and no operator policy specified then default to adaptive pursuit
             _crossoverSelectionPolicyConfig.ApplyAdaptivePursuitPolicy();
         }
+
+        _crossoverSelectionPolicyConfig.Policy!.ApplyOperators([.._crossoverStrategyConfig.CrossoverStrategies]);
     }
 
     /// <summary>
@@ -227,15 +261,11 @@ public class OpenGARunner<T>
     /// <param name="parents">The parent chromosomes involved in crossover</param>
     /// <param name="offspring">The offspring produced by crossover</param>
     private void UpdateAdaptivePursuitReward(
+        AdaptivePursuitPolicy adaptivePursuit,
         BaseCrossoverStrategy<T> crossoverStrategy,
         List<Chromosome<T>> parents,
         List<Chromosome<T>> offspring)
     {
-        if (_adaptivePursuit is null)
-        {
-            return;
-        }
-
         // Calculate best fitness among parents and offspring
         var bestParentFitness = parents.Max(p => p.Fitness);
         var bestOffspringFitness = offspring.Max(o => o.Fitness);
@@ -249,7 +279,7 @@ public class OpenGARunner<T>
         var offspringDiversity = offspringFitnesses.StandardDeviation();
 
         // Update the reward for this crossover strategy
-        _adaptivePursuit.UpdateReward(
+        adaptivePursuit.UpdateReward(
             crossoverStrategy,
             bestParentFitness,
             bestOffspringFitness,
@@ -332,8 +362,8 @@ public class OpenGARunner<T>
                 var couples = _reproductionSelectorConfig.ReproductionSelector.SelectMatingPairs(_population, _random, requiredNumberOfCouples, CurrentEpoch);
 
                 var noCouples = true;
-                var generationOffspring = new List<Chromosome<T>>();
-                var generationParents = new List<Chromosome<T>>();
+                List<Chromosome<T>> generationOffspring = [];
+                List<Chromosome<T>> generationParents = [];
 
                 foreach (var couple in couples)
                 {
@@ -347,7 +377,7 @@ public class OpenGARunner<T>
                     if (_random.NextDouble() <= _crossoverRate)
                     {
                         // Track parents for Adaptive Pursuit evaluation
-                        if (_adaptivePursuit is not null)
+                        if (_crossoverSelectionPolicyConfig.Policy is AdaptivePursuitPolicy)
                         {
                             generationParents.Add(couple.IndividualA);
                             generationParents.Add(couple.IndividualB);
@@ -366,9 +396,9 @@ public class OpenGARunner<T>
                 }
 
                 // Update Adaptive Pursuit with performance feedback
-                if (_adaptivePursuit is not null && generationOffspring.Count > 0 && generationParents.Count > 0)
+                if (_crossoverSelectionPolicyConfig.Policy is AdaptivePursuitPolicy adaptivePursuit && generationOffspring.Count > 0 && generationParents.Count > 0)
                 {
-                    UpdateAdaptivePursuitReward(crossoverStrategy, generationParents, generationOffspring);
+                    UpdateAdaptivePursuitReward(adaptivePursuit, crossoverStrategy, generationParents, generationOffspring);
                 }
 
                 if (noCouples)
