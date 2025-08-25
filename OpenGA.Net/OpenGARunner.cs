@@ -258,24 +258,30 @@ public class OpenGARunner<T>
     /// Updates the Adaptive Pursuit Policy algorithm with performance feedback from a crossover operation.
     /// </summary>
     /// <param name="crossoverStrategy">The crossover strategy that was used</param>
-    /// <param name="parents">The parent chromosomes involved in crossover</param>
+    /// <param name="couple">The parent couple involved in crossover</param>
     /// <param name="offspring">The offspring produced by crossover</param>
     private void UpdateAdaptivePursuitReward(
         AdaptivePursuitPolicy adaptivePursuit,
         BaseCrossoverStrategy<T> crossoverStrategy,
-        HashSet<Chromosome<T>> parents,
-        List<Chromosome<T>> offspring)
+        Couple<T> couple,
+        IEnumerable<Chromosome<T>> offspring)
     {
+        var offspringList = offspring.ToList();
+        if (offspringList.Count == 0)
+        {
+            return; // No offspring to evaluate
+        }
+
         // Calculate best fitness among parents and offspring
-        var bestParentFitness = parents.Max(p => p.Fitness);
-        var bestOffspringFitness = offspring.Max(o => o.Fitness);
+        var bestParentFitness = Math.Max(couple.IndividualA.Fitness, couple.IndividualB.Fitness);
+        var bestOffspringFitness = offspringList.Max(o => o.Fitness);
 
         // Calculate population fitness range for normalization
         var populationFitnesses = Population.Select(c => c.Fitness).ToArray();
         var populationFitnessRange = populationFitnesses.Max() - populationFitnesses.Min();
 
         // Calculate diversity among offspring (standard deviation of fitness)
-        var offspringFitnesses = offspring.Select(o => o.Fitness);
+        var offspringFitnesses = offspringList.Select(o => o.Fitness);
         var offspringDiversity = offspringFitnesses.StandardDeviation();
 
         // Update the reward for this crossover strategy
@@ -328,43 +334,20 @@ public class OpenGARunner<T>
 
             List<Chromosome<T>> offspring = [];
 
-            // Track performance data for each strategy across the entire epoch
-            var epochStrategyData = new Dictionary<BaseCrossoverStrategy<T>, (HashSet<Chromosome<T>> parents, List<Chromosome<T>> offspring)>();
-
             var requiredNumberOfOffspring = CalculateOptimalOffspringCount();
 
-            if (requiredNumberOfOffspring <= 0)
-            {
-                throw new InvalidOperationException("Required number of offspring must be greater than zero. Check replacement strategy configuration.");
-            }
-
-            if (requiredNumberOfOffspring > _maxNumberOfChromosomes * 2)
-            {
-                throw new InvalidOperationException($"Required number of offspring ({requiredNumberOfOffspring}) exceeds reasonable bounds (maximum: {_maxNumberOfChromosomes * 2}). This may indicate an issue with the replacement strategy configuration.");
-            }
+            var maxCouplesPerBatch = Math.Max(requiredNumberOfOffspring, _maxNumberOfChromosomes);
 
             while (offspring.Count < requiredNumberOfOffspring)
             {
                 var remainingOffspringNeeded = requiredNumberOfOffspring - offspring.Count;
+                var couplesForThisBatch = Math.Min(maxCouplesPerBatch, remainingOffspringNeeded * 2); // Generate extra to account for failed crossovers
+                var couples = _reproductionSelectorConfig.ReproductionSelector.SelectMatingPairs(_population, _random, couplesForThisBatch, CurrentEpoch);
 
-                var crossoverStrategy = (BaseCrossoverStrategy<T>)_crossoverSelectionPolicyConfig.Policy.SelectOperator(_random);
-
-                var requiredNumberOfCouples = crossoverStrategy switch
-                {
-                    OnePointCrossoverStrategy<T> => (int)Math.Ceiling(remainingOffspringNeeded / 2.0),
-                    KPointCrossoverStrategy<T> => (int)Math.Ceiling(remainingOffspringNeeded / 2.0),
-                    UniformCrossoverStrategy<T> => remainingOffspringNeeded,
-                    _ => (int)Math.Ceiling(remainingOffspringNeeded / 2.0)
-                };
-
-                var couples = _reproductionSelectorConfig.ReproductionSelector.SelectMatingPairs(_population, _random, requiredNumberOfCouples, CurrentEpoch);
-
-                var noCouples = true;
+                var offspringGeneratedInBatch = 0;
 
                 foreach (var couple in couples)
                 {
-                    noCouples = false;
-
                     if (offspring.Count >= requiredNumberOfOffspring)
                     {
                         break;
@@ -372,51 +355,28 @@ public class OpenGARunner<T>
 
                     if (_random.NextDouble() <= _crossoverRate)
                     {
-                        // Track parents and offspring for this strategy across the epoch
-                        if (_crossoverSelectionPolicyConfig.Policy is AdaptivePursuitPolicy)
-                        {
-                            if (!epochStrategyData.TryGetValue(crossoverStrategy, out (HashSet<Chromosome<T>> parents, List<Chromosome<T>> offspring) value))
-                            {
-                                value = (new HashSet<Chromosome<T>>(), new List<Chromosome<T>>());
-                                epochStrategyData[crossoverStrategy] = value;
-                            }
-
-                            value.parents.Add(couple.IndividualA);
-                            value.parents.Add(couple.IndividualB);
-                        }
+                        var crossoverStrategy = (BaseCrossoverStrategy<T>)_crossoverSelectionPolicyConfig.Policy.SelectOperator(_random);
 
                         var newOffspring = crossoverStrategy.Crossover(couple, _random);
 
                         foreach (var child in newOffspring)
                         {
-                            child.InvalidateFitness(); // Invalidate fitness for new offspring
+                            child.InvalidateFitness();
                         }
 
-                        // Add offspring to strategy tracking
-                        if (_crossoverSelectionPolicyConfig.Policy is AdaptivePursuitPolicy)
+                        if (_crossoverSelectionPolicyConfig.Policy is AdaptivePursuitPolicy adaptivePursuit)
                         {
-                            epochStrategyData[crossoverStrategy].offspring.AddRange(newOffspring);
+                            UpdateAdaptivePursuitReward(adaptivePursuit, crossoverStrategy, couple, newOffspring);
                         }
 
                         offspring.AddRange(newOffspring);
+                        offspringGeneratedInBatch += newOffspring.Count();
                     }
                 }
 
-                if (noCouples)
+                if (offspringGeneratedInBatch == 0)
                 {
                     break;
-                }
-            }
-
-            // Update Adaptive Pursuit with epoch-level performance data
-            if (_crossoverSelectionPolicyConfig.Policy is AdaptivePursuitPolicy adaptivePursuit)
-            {
-                foreach (var (strategy, (parents, strategyOffspring)) in epochStrategyData)
-                {
-                    if (parents.Count > 0 && strategyOffspring.Count > 0)
-                    {
-                        UpdateAdaptivePursuitReward(adaptivePursuit, strategy, parents, strategyOffspring);
-                    }
                 }
             }
 
@@ -443,15 +403,30 @@ public class OpenGARunner<T>
 
         return Population.OrderByDescending(c => c.Fitness).First();
     }
-    
+
     private int CalculateOptimalOffspringCount()
     {
+        int result;
+
         if (_customOffspringGenerationRate.HasValue)
         {
-            return Math.Max(1, (int)(_maxNumberOfChromosomes * _customOffspringGenerationRate.Value));
+            result = Math.Max(1, (int)(_maxNumberOfChromosomes * _customOffspringGenerationRate.Value));
+        }
+        else
+        {
+            result = Math.Max(1, (int)(_maxNumberOfChromosomes * _replacementStrategyConfig.ReplacementStrategy.RecommendedOffspringGenerationRate));
         }
 
-        // Use the strategy's own recommended generation rate
-        return Math.Max(1, (int)(_maxNumberOfChromosomes * _replacementStrategyConfig.ReplacementStrategy.RecommendedOffspringGenerationRate));
+        if (result <= 0)
+        {
+            throw new InvalidOperationException("Required number of offspring must be greater than zero. Check replacement strategy configuration.");
+        }
+
+        if (result > _maxNumberOfChromosomes * 2)
+        {
+            throw new InvalidOperationException($"Required number of offspring ({result}) exceeds reasonable bounds (maximum: {_maxNumberOfChromosomes * 2}). This may indicate an issue with the replacement strategy configuration.");
+        }
+
+        return result;
     }
 }
