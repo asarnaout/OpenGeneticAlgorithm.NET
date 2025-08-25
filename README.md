@@ -74,22 +74,13 @@ public class TspChromosome : Chromosome<int>
 **Step 2:** Create your initial population:
 
 ```csharp
-// Create distance matrix for 5 cities
-var distanceMatrix = new double[,] {
-    {0, 10, 15, 20, 25},
-    {10, 0, 35, 25, 30},
-    {15, 35, 0, 30, 20},
-    {20, 25, 30, 0, 15},
-    {25, 30, 20, 15, 0}
-};
-
 // Generate initial population of random routes. The initial population represents a set of random solutions to the optimization problem.
 var initialPopulation = new TspChromosome[100];
 var random = new Random();
 for (int i = 0; i < 100; i++)
 {
-    var cities = Enumerable.Range(0, 5).OrderBy(x => random.Next()).ToList();
-    initialPopulation[i] = new TspChromosome(cities, distanceMatrix);
+    var cities = Enumerable.Range(0, numberOfCities).OrderBy(x => random.Next()).ToList();
+    initialPopulation[i] = new TspChromosome(cities, _distanceMatrix);
 }
 ```
 
