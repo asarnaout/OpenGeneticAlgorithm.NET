@@ -17,6 +17,8 @@ public class OpenGARunner<T>
 
     private int _maxNumberOfChromosomes;
 
+    private int _minNumberOfChromosomes;
+
     private float _mutationRate = 0.2f;
 
     private float _crossoverRate = 0.9f;
@@ -33,17 +35,7 @@ public class OpenGARunner<T>
 
     private float? _customOffspringGenerationRate = null;
 
-    private Chromosome<T>[] _population = [];
-
-    private Chromosome<T>[] Population
-    {
-        get => _population;
-        set
-        {
-            _population = value;
-            _maxNumberOfChromosomes = _population.Length;
-        }
-    }
+    private Chromosome<T>[] Population { get; set; } = [];
 
     internal double HighestFitness => Population.Max(c => c.Fitness);
 
@@ -60,39 +52,44 @@ public class OpenGARunner<T>
     /// This method is used to initialize the GA Runner. The method expects a population, that is a collection
     /// of chromosomes where each chromosome represents a random solution to the problem at hand.
     /// </summary>
-    public static OpenGARunner<T> Init(Chromosome<T>[] initialPopulation)
+    /// <param name="initialPopulation">The initial population of chromosomes</param>
+    /// <param name="minPopulationPercentage">Minimum population size as a percentage of initial population (0.0 to 1.0, default: 0.5 = 50%)</param>
+    /// <param name="maxPopulationPercentage">Maximum population size as a percentage of initial population (1.0+, default: 2.0 = 200%)</param>
+    /// <returns>A configured OpenGARunner instance</returns>
+    /// <exception cref="MissingInitialPopulationException">Thrown when initial population is empty</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when percentage parameters are out of valid range</exception>
+    public static OpenGARunner<T> Init(Chromosome<T>[] initialPopulation, float minPopulationPercentage = 0.5f, float maxPopulationPercentage = 2.0f)
     {
         if (initialPopulation is [])
         {
             throw new MissingInitialPopulationException("Initial population cannot be empty.");
         }
 
+        if (minPopulationPercentage <= 0.0f || minPopulationPercentage > 1.0f)
+        {
+            throw new ArgumentOutOfRangeException(nameof(minPopulationPercentage), "Minimum population percentage must be between 0.0 and 1.0.");
+        }
+
+        if (maxPopulationPercentage < 1.0f)
+        {
+            throw new ArgumentOutOfRangeException(nameof(maxPopulationPercentage), "Maximum population percentage must be 1.0 or greater.");
+        }
+
+        if (minPopulationPercentage >= maxPopulationPercentage)
+        {
+            throw new ArgumentOutOfRangeException(nameof(minPopulationPercentage), "Minimum population percentage must be less than maximum population percentage.");
+        }
+
+        var initialPopulationSize = initialPopulation.Length;
+        var minPopulationSize = Math.Max(1, (int)(initialPopulationSize * minPopulationPercentage));
+        var maxPopulationSize = (int)(initialPopulationSize * maxPopulationPercentage);
+
         return new OpenGARunner<T>
         {
-            Population = initialPopulation
+            Population = initialPopulation,
+            _minNumberOfChromosomes = minPopulationSize,
+            _maxNumberOfChromosomes = maxPopulationSize
         };
-    }
-
-    /// <summary>
-    /// Specifies the maximum duration the genetic algorithm will run for before terminating.
-    /// This provides an alternative termination condition to the maximum epochs.
-    /// </summary>
-    /// <param name="maximumDuration">The maximum time the algorithm should run before terminating.</param>
-    public OpenGARunner<T> MaxDuration(TimeSpan maximumDuration)
-    {
-        _terminationStrategyConfig.ApplyMaximumDurationTerminationStrategy(maximumDuration);
-        return this;
-    }
-
-    /// <summary>
-    /// The maximum number of chromosomes that can ever exist in the population. Defaults to the initial number of chromosomes provided when creating the runner. 
-    /// When the limit is reached, the specified <see cref="ReplacementStrategy">ReplacementStrategy</see> is used to keep the population within limits.
-    /// </summary>
-    public OpenGARunner<T> MaxPopulationSize(int maximumNumberOfChromosomes)
-    {
-        _maxNumberOfChromosomes = maximumNumberOfChromosomes;
-
-        return this;
     }
 
     /// <summary>
@@ -340,7 +337,7 @@ public class OpenGARunner<T>
             {
                 var remainingOffspringNeeded = requiredNumberOfOffspring - offspring.Count;
                 var couplesForThisBatch = Math.Min(maxCouplesPerBatch, remainingOffspringNeeded * 2); // Generate extra to account for failed crossovers
-                var couples = _reproductionSelectorConfig.ReproductionSelector.SelectMatingPairs(_population, _random, couplesForThisBatch, CurrentEpoch);
+                var couples = _reproductionSelectorConfig.ReproductionSelector.SelectMatingPairs(Population, _random, couplesForThisBatch, CurrentEpoch);
 
                 var offspringGeneratedInBatch = 0;
 

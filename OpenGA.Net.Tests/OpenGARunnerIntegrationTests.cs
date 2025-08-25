@@ -590,10 +590,8 @@ public class OpenGARunnerIntegrationTests
     {
         // Arrange
         var population = CreateDiversePopulation(10);
-        var maxSize = 15;
         
-        var runner = OpenGARunner<int>.Init(population)
-            .MaxPopulationSize(maxSize)
+        var runner = OpenGARunner<int>.Init(population, 0.5f, 1.5f) // min 50%, max 150% (15 from 10)
             .ApplyReproductionSelector(config => config.ApplyRandomReproductionSelector())
             .ApplyReplacementStrategy(config => config.ApplyElitistReplacementStrategy(0.3f))
             .ApplyTerminationStrategies(config => config.ApplyMaximumEpochsTerminationStrategy(6))
@@ -689,8 +687,7 @@ public class OpenGARunnerIntegrationTests
         var population = CreateDiversePopulation(20);
         var initialBestFitness = population.Max(c => c.Fitness);
         
-        var runner = OpenGARunner<int>.Init(population)
-            .MaxPopulationSize(25)
+        var runner = OpenGARunner<int>.Init(population, 0.5f, 1.25f)
             .MutationRate(0.15f)
             .CrossoverRate(0.85f)
             .OverrideOffspringGenerationRate(0.8f)
