@@ -82,7 +82,7 @@ public class AdaptivePursuitPolicy(
     /// Updates the reward for a specific operator based on its performance.
     /// Step 1: Calculates the reward as the improvement in fitness by subtracting the best parent's fitness from the best offspring's fitness.
     /// Step 2: Normalizes the reward by the population's fitness range.
-    /// Step 3: Adds a diversity bonus if applicable to get the 'total reward'
+    /// Step 3: Adds a diversity bonus to get the 'total reward'
     /// Step 4: Adds the 'total reward' to the recent rewards queue for that specific operator. If the queue grows beyond a max window size, then the oldest reward is removed.
     /// Step 5: Uses the recent rewards queue for that specific operator to calculate a weighted average reward. This weighted average emphasizes recent weights more than older ones.
     /// Step 6: Updates the probabilities if the operator has been used a sufficient number of times.
