@@ -28,14 +28,9 @@ public class OpenGARunner<T>
 
     private readonly TerminationStrategyConfiguration<T> _terminationStrategyConfig = new();
 
-    private float? _customOffspringGenerationRate = null;
+    private readonly OperatorSelectionPolicyConfiguration _crossoverSelectionPolicyConfig = new();
 
-    private AdaptivePursuitPolicy<T>? _adaptivePursuit = null;
-    private double _adaptivePursuitLearningRate = 0.1;
-    private double _adaptivePursuitMinimumProbability = 0.05;
-    private int _adaptivePursuitRewardWindowSize = 10;
-    private double _adaptivePursuitDiversityWeight = 0.1;
-    private int _adaptivePursuitMinimumUsageBeforeAdaptation = 5;
+    private float? _customOffspringGenerationRate = null;
 
     private Chromosome<T>[] _population = [];
 
@@ -151,37 +146,6 @@ public class OpenGARunner<T>
         return this;
     }
 
-    /// <summary>
-    /// Enables Adaptive Pursuit for dynamic selection of crossover operators.
-    /// When enabled, the genetic algorithm will adaptively choose which crossover operator 
-    /// to use based on their performance, favoring operators that consistently produce 
-    /// high-quality offspring.
-    /// </summary>
-    /// <param name="learningRate">Rate at which probabilities adapt (0.0 to 1.0, default: 0.1)</param>
-    /// <param name="minimumProbability">Minimum probability for any operator to ensure exploration (default: 0.05)</param>
-    /// <param name="rewardWindowSize">Number of recent rewards to consider for temporal weighting (default: 10)</param>
-    /// <param name="diversityWeight">Weight given to diversity bonus in reward calculation (default: 0.1)</param>
-    /// <param name="minimumUsageBeforeAdaptation">Minimum times each operator must be used before adaptation begins (default: 5)</param>
-    /// <returns>The OpenGARunner instance for method chaining</returns>
-    /// <exception cref="InvalidOperationException">Thrown when multiple crossover strategies are not configured</exception>
-    public OpenGARunner<T> EnableAdaptivePursuit(
-        double learningRate = 0.1,
-        double minimumProbability = 0.05,
-        int rewardWindowSize = 10,
-        double diversityWeight = 0.1,
-        int minimumUsageBeforeAdaptation = 5)
-    {
-        _adaptivePursuitLearningRate = learningRate;
-        _adaptivePursuitMinimumProbability = minimumProbability;
-        _adaptivePursuitRewardWindowSize = rewardWindowSize;
-        _adaptivePursuitDiversityWeight = diversityWeight;
-        _adaptivePursuitMinimumUsageBeforeAdaptation = minimumUsageBeforeAdaptation;
-
-        // Note: We'll initialize the AdaptivePursuitPolicy instance in ValidateRequiredStrategies
-        // after all crossover strategies have been configured
-        return this;
-    }
-
     public OpenGARunner<T> ApplyReproductionSelector(Action<ReproductionSelectorConfiguration<T>> selectorConfigurator)
     {
         ArgumentNullException.ThrowIfNull(selectorConfigurator, nameof(selectorConfigurator));
@@ -246,13 +210,14 @@ public class OpenGARunner<T>
             _terminationStrategyConfig.ApplyMaximumEpochsTerminationStrategy(100);
         }
 
-        _adaptivePursuit = new AdaptivePursuitPolicy<T>(
-                _crossoverStrategyConfig.CrossoverStrategies,
-                _adaptivePursuitLearningRate,
-                _adaptivePursuitMinimumProbability,
-                _adaptivePursuitRewardWindowSize,
-                _adaptivePursuitDiversityWeight,
-                _adaptivePursuitMinimumUsageBeforeAdaptation);
+        if (_crossoverStrategyConfig.CrossoverStrategies is { Count: 1 })
+        {
+            _crossoverSelectionPolicyConfig.ApplyFirstChoicePolicy();
+        }
+        else if (_crossoverSelectionPolicyConfig.Policy is null)
+        {
+            _crossoverSelectionPolicyConfig.ApplyAdaptivePursuitPolicy();
+        }
     }
 
     /// <summary>
@@ -272,7 +237,7 @@ public class OpenGARunner<T>
         }
 
         // Calculate best fitness among parents and offspring
-            var bestParentFitness = parents.Max(p => p.Fitness);
+        var bestParentFitness = parents.Max(p => p.Fitness);
         var bestOffspringFitness = offspring.Max(o => o.Fitness);
 
         // Calculate population fitness range for normalization
@@ -349,8 +314,12 @@ public class OpenGARunner<T>
             {
                 var remainingOffspringNeeded = requiredNumberOfOffspring - offspring.Count;
 
-                var crossoverStrategy = _adaptivePursuit is not null ? _adaptivePursuit.SelectOperator(_random)
-                    : _crossoverStrategyConfig.CrossoverStrategies.First();
+                var crossoverStrategy = _crossoverStrategyConfig.CrossoverStrategies[0];
+
+                if (_crossoverSelectionPolicyConfig.Policy is not null)
+                {
+                    crossoverStrategy = (BaseCrossoverStrategy<T>)_crossoverSelectionPolicyConfig.Policy.SelectOperator(_random);
+                }
 
                 var requiredNumberOfCouples = crossoverStrategy switch
                 {
@@ -415,11 +384,11 @@ public class OpenGARunner<T>
                 if (_random.NextDouble() <= _mutationRate)
                 {
                     chromosome.Mutate();
-                    chromosome.InvalidateFitness(); // Invalidate fitness after mutation
+                    chromosome.InvalidateFitness();
                 }
 
                 chromosome.GeneticRepair();
-                chromosome.InvalidateFitness(); // Invalidate fitness after genetic repair
+                chromosome.InvalidateFitness();
                 chromosome.IncrementAge();
             }
 
@@ -434,7 +403,6 @@ public class OpenGARunner<T>
     
     private int CalculateOptimalOffspringCount()
     {
-        // If user specified a custom generation rate, use that instead
         if (_customOffspringGenerationRate.HasValue)
         {
             return Math.Max(1, (int)(_maxNumberOfChromosomes * _customOffspringGenerationRate.Value));

@@ -1,72 +1,50 @@
-using OpenGA.Net.CrossoverStrategies;
-
 namespace OpenGA.Net.OperatorSelectionPolicies;
 
 /// <summary>
-/// Implements Adaptive Pursuit algorithm for dynamic selection of crossover operators.
+/// Implements Adaptive Pursuit algorithm for dynamic selection of genetic operators.
 /// 
-/// This algorithm maintains probability weights for each crossover operator and adapts them
+/// This algorithm maintains probability weights for each operator and adapts them
 /// based on their performance. Better-performing operators receive higher probabilities
 /// over time, while ensuring minimum exploration for all operators.
 /// </summary>
-/// <typeparam name="T">The type of genes in the chromosome</typeparam>
-public class AdaptivePursuitPolicy<T> : OperatorSelectionPolicy<T>
+/// <remarks>
+/// Initializes a new instance of the AdaptivePursuitPolicy algorithm.
+/// </remarks>
+/// <param name="learningRate">Rate at which probabilities adapt (0.0 to 1.0, default: 0.1)</param>
+/// <param name="minimumProbability">Minimum probability for any operator to ensure exploration (default: 0.05)</param>
+/// <param name="rewardWindowSize">Number of recent rewards to consider for temporal weighting (default: 10)</param>
+/// <param name="diversityWeight">Weight given to diversity bonus in reward calculation (default: 0.1)</param>
+/// <param name="minimumUsageBeforeAdaptation">Minimum times each operator must be used before adaptation begins (default: 5)</param>
+public class AdaptivePursuitPolicy(
+    double learningRate,
+    double minimumProbability,
+    int rewardWindowSize,
+    double diversityWeight,
+    int minimumUsageBeforeAdaptation) : OperatorSelectionPolicy
 {
-    private readonly Dictionary<BaseCrossoverStrategy<T>, double> _operatorProbabilities;
-    private readonly Dictionary<BaseCrossoverStrategy<T>, double> _operatorRewards;
-    private readonly Dictionary<BaseCrossoverStrategy<T>, int> _operatorUsageCount;
-    private readonly Dictionary<BaseCrossoverStrategy<T>, Queue<double>> _recentRewards;
+    private Dictionary<BaseOperator, double> _operatorProbabilities = [];
+    private Dictionary<BaseOperator, double> _operatorRewards = [];
+    private Dictionary<BaseOperator, int> _operatorUsageCount = [];
+    private Dictionary<BaseOperator, Queue<double>> _recentRewards = [];
     
-    private readonly double _learningRate;
-    private readonly double _minimumProbability;
-    private readonly int _rewardWindowSize;
-    private readonly double _diversityWeight;
-    private readonly int _minimumUsageBeforeAdaptation;
-    
-    /// <summary>
-    /// Initializes a new instance of the AdaptivePursuitPolicy algorithm.
-    /// </summary>
-    /// <param name="operators">The list of crossover operators to adaptively select from</param>
-    /// <param name="learningRate">Rate at which probabilities adapt (0.0 to 1.0, default: 0.1)</param>
-    /// <param name="minimumProbability">Minimum probability for any operator to ensure exploration (default: 0.05)</param>
-    /// <param name="rewardWindowSize">Number of recent rewards to consider for temporal weighting (default: 10)</param>
-    /// <param name="diversityWeight">Weight given to diversity bonus in reward calculation (default: 0.1)</param>
-    /// <param name="minimumUsageBeforeAdaptation">Minimum times each operator must be used before adaptation begins (default: 5)</param>
-    public AdaptivePursuitPolicy(
-        IList<BaseCrossoverStrategy<T>> operators,
-        double learningRate = 0.1,
-        double minimumProbability = 0.05,
-        int rewardWindowSize = 10,
-        double diversityWeight = 0.1,
-        int minimumUsageBeforeAdaptation = 5)
+    private readonly double _learningRate = learningRate;
+    private readonly double _minimumProbability = minimumProbability;
+    private readonly int _rewardWindowSize = rewardWindowSize;
+    private readonly double _diversityWeight = diversityWeight;
+    private readonly int _minimumUsageBeforeAdaptation = minimumUsageBeforeAdaptation;
+
+    public override void ApplyOperators(IList<BaseOperator> operators)
     {
         if (operators is not { Count: > 0 })
         {
-            throw new ArgumentException("At least one crossover operator must be provided.", nameof(operators));
+            throw new ArgumentException("At least one operator must be provided.", nameof(operators));
         }
 
-        if (learningRate < 0.0 || learningRate > 1.0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(learningRate), "Learning rate must be between 0.0 and 1.0.");
-        }
-
-        if (minimumProbability < 0.0 || minimumProbability > 1.0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(minimumProbability), "Minimum probability must be between 0.0 and 1.0.");
-        }
-
-        if (minimumProbability * operators.Count > 1.0)
+        if (_minimumProbability * operators.Count > 1.0)
         {
             throw new ArgumentException("Minimum probability times number of operators cannot exceed 1.0.");
         }
-        
-        _learningRate = learningRate;
-        _minimumProbability = minimumProbability;
-        _rewardWindowSize = rewardWindowSize;
-        _diversityWeight = diversityWeight;
-        _minimumUsageBeforeAdaptation = minimumUsageBeforeAdaptation;
-        
-        // Initialize equal probabilities for all operators
+
         var initialProbability = 1.0 / operators.Count;
         _operatorProbabilities = operators.ToDictionary(op => op, _ => initialProbability);
         _operatorRewards = operators.ToDictionary(op => op, _ => 0.0);
@@ -75,15 +53,15 @@ public class AdaptivePursuitPolicy<T> : OperatorSelectionPolicy<T>
     }
     
     /// <summary>
-    /// Selects a crossover operator based on current probabilities.
+    /// Selects an operator based on current probabilities.
     /// </summary>
     /// <param name="random">Random number generator</param>
-    /// <returns>The selected crossover operator</returns>
-    public override BaseCrossoverStrategy<T> SelectOperator(Random random)
+    /// <returns>The selected operator</returns>
+    public override BaseOperator SelectOperator(Random random)
     {
         var randomValue = random.NextDouble();
         var cumulativeProbability = 0.0;
-        
+
         foreach (var kvp in _operatorProbabilities)
         {
             cumulativeProbability += kvp.Value;
@@ -93,7 +71,7 @@ public class AdaptivePursuitPolicy<T> : OperatorSelectionPolicy<T>
                 return kvp.Key;
             }
         }
-        
+
         // Fallback (should not happen with proper probabilities)
         var fallbackOperator = _operatorProbabilities.Keys.First();
         _operatorUsageCount[fallbackOperator]++;
@@ -109,21 +87,21 @@ public class AdaptivePursuitPolicy<T> : OperatorSelectionPolicy<T>
     /// Step 5: Uses the recent rewards queue for that specific operator to calculate a weighted average reward. This weighted average emphasizes recent weights more than older ones.
     /// Step 6: Updates the probabilities if the operator has been used a sufficient number of times.
     /// </summary>
-    /// <param name="crossoverOperator">The crossover operator that was used</param>
-    /// <param name="bestParentFitness">Fitness of the best parent before crossover</param>
-    /// <param name="bestOffspringFitness">Fitness of the best offspring after crossover</param>
+    /// <param name="operator">The operator that was used</param>
+    /// <param name="bestParentFitness">Fitness of the best parent before operator application</param>
+    /// <param name="bestOffspringFitness">Fitness of the best offspring after operator application</param>
     /// <param name="populationFitnessRange">Current fitness range in the population for normalization</param>
     /// <param name="offspringDiversity">Measure of diversity among the offspring (optional)</param>
-    public override void UpdateReward(
-        BaseCrossoverStrategy<T> crossoverOperator,
+    public void UpdateReward(
+        BaseOperator @operator,
         double bestParentFitness,
         double bestOffspringFitness,
         double populationFitnessRange,
-        double offspringDiversity = 0.0)
+        double offspringDiversity)
     {
-        if (!_operatorProbabilities.ContainsKey(crossoverOperator))
+        if (!_operatorProbabilities.ContainsKey(@operator))
         {
-            throw new ArgumentException("Unknown crossover operator.", nameof(crossoverOperator));
+            throw new ArgumentException("Unknown operator.", nameof(@operator));
         }
         
         // Calculate primary fitness improvement reward
@@ -134,7 +112,7 @@ public class AdaptivePursuitPolicy<T> : OperatorSelectionPolicy<T>
             ? fitnessImprovement / populationFitnessRange 
             : fitnessImprovement;
         
-        // Add diversity bonus to reward operators that generate more diverse offspring
+        // Add diversity bonus to reward operators that generate more diverse results
         // This helps prevent premature convergence by encouraging exploration of different
         // genetic combinations, maintaining population diversity which is crucial for finding
         // global optima rather than getting stuck in local optima
@@ -142,7 +120,7 @@ public class AdaptivePursuitPolicy<T> : OperatorSelectionPolicy<T>
         var totalReward = normalizedReward + diversityBonus;
         
         // Update recent rewards queue
-        var recentQueue = _recentRewards[crossoverOperator];
+        var recentQueue = _recentRewards[@operator];
         recentQueue.Enqueue(totalReward);
         if (recentQueue.Count > _rewardWindowSize)
         {
@@ -151,7 +129,7 @@ public class AdaptivePursuitPolicy<T> : OperatorSelectionPolicy<T>
         
         // Calculate weighted average with more weight on recent rewards
         var weightedReward = CalculateWeightedReward(recentQueue);
-        _operatorRewards[crossoverOperator] = weightedReward;
+        _operatorRewards[@operator] = weightedReward;
 
         // Update probabilities if minimum usage threshold is met
         var shouldAdapt = _operatorUsageCount.Values.All(count => count >= _minimumUsageBeforeAdaptation);
@@ -197,7 +175,7 @@ public class AdaptivePursuitPolicy<T> : OperatorSelectionPolicy<T>
         var bestOperator = _operatorRewards.OrderByDescending(kvp => kvp.Value).First().Key;
         
         // Update probabilities using Adaptive Pursuit formula
-        var newProbabilities = new Dictionary<BaseCrossoverStrategy<T>, double>();
+        var newProbabilities = new Dictionary<BaseOperator, double>();
         
         foreach (var kvp in _operatorProbabilities)
         {
@@ -231,7 +209,7 @@ public class AdaptivePursuitPolicy<T> : OperatorSelectionPolicy<T>
     /// Normalizes probabilities to ensure they sum to 1.0 while respecting minimum probability constraints.
     /// </summary>
     /// <param name="probabilities">Dictionary of probabilities to normalize</param>
-    private void NormalizeProbabilities(Dictionary<BaseCrossoverStrategy<T>, double> probabilities)
+    private void NormalizeProbabilities(Dictionary<BaseOperator, double> probabilities)
     {
         // Enforce a minimum probability for each operator while making sure the
         // probabilities sum to 1.0. Approach:
@@ -269,7 +247,7 @@ public class AdaptivePursuitPolicy<T> : OperatorSelectionPolicy<T>
         }
 
         // Compute weights for redistribution: how much each entry is above the min
-        var weights = new Dictionary<BaseCrossoverStrategy<T>, double>(n);
+        var weights = new Dictionary<BaseOperator, double>(n);
         var totalWeight = 0.0;
 
         foreach (var key in keys)
