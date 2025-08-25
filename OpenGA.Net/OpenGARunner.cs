@@ -404,15 +404,24 @@ public class OpenGARunner<T>
     private int CalculateOptimalOffspringCount()
     {
         int result;
+        var currentPopulationSize = Population.Length;
 
         if (_customOffspringGenerationRate.HasValue)
         {
-            result = Math.Max(1, (int)(_maxNumberOfChromosomes * _customOffspringGenerationRate.Value));
+            result = Math.Max(1, (int)(currentPopulationSize * _customOffspringGenerationRate.Value));
         }
         else
         {
-            result = Math.Max(1, (int)(_maxNumberOfChromosomes * _replacementStrategyConfig.ReplacementStrategy.RecommendedOffspringGenerationRate));
+            result = Math.Max(1, (int)(currentPopulationSize * _replacementStrategyConfig.ReplacementStrategy.RecommendedOffspringGenerationRate));
         }
+
+        // Ensure the result respects population bounds
+        // The offspring count should be sufficient to potentially reach max population
+        var maxAllowableOffspring = _maxNumberOfChromosomes - _minNumberOfChromosomes;
+        var minRequiredOffspring = Math.Max(1, _minNumberOfChromosomes - currentPopulationSize);
+
+        // Clamp the result within reasonable bounds
+        result = Math.Max(minRequiredOffspring, Math.Min(result, maxAllowableOffspring));
 
         if (result <= 0)
         {
