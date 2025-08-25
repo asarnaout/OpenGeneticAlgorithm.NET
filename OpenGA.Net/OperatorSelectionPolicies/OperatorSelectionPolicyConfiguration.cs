@@ -84,4 +84,20 @@ public class OperatorSelectionPolicyConfiguration
         Policy = result;
         return result;
     }
+
+    /// <summary>
+    /// Configures the Random Choice policy for stochastic operator selection.
+    /// 
+    /// This policy randomly selects operators with equal probability, introducing
+    /// randomness into operator selection. It provides statistical fairness over
+    /// many selections and helps avoid systematic biases that might emerge from
+    /// deterministic selection patterns.
+    /// </summary>
+    /// <returns>The configured RandomChoicePolicy instance</returns>
+    public OperatorSelectionPolicy ApplyRandomChoicePolicy()
+    {
+        var result = new RandomChoicePolicy();
+        Policy = result;
+        return result;
+    }
 }

@@ -36,6 +36,20 @@ public class OperatorSelectionPolicyConfigurationTests
     }
 
     [Fact]
+    public void ApplyRandomChoicePolicy_ReturnsRandomChoicePolicy()
+    {
+        // Arrange
+        var configuration = new OperatorSelectionPolicyConfiguration();
+
+        // Act
+        var policy = configuration.ApplyRandomChoicePolicy();
+
+        // Assert
+        Assert.IsType<RandomChoicePolicy>(policy);
+        Assert.Same(policy, configuration.Policy);
+    }
+
+    [Fact]
     public void ApplyAdaptivePursuitPolicy_ReturnsAdaptivePursuitPolicy()
     {
         // Arrange
@@ -47,6 +61,22 @@ public class OperatorSelectionPolicyConfigurationTests
         // Assert
         Assert.IsType<AdaptivePursuitPolicy>(policy);
         Assert.Same(policy, configuration.Policy);
+    }
+
+    [Fact]
+    public void ApplyRandomChoicePolicy_OverridesPreviousPolicy()
+    {
+        // Arrange
+        var configuration = new OperatorSelectionPolicyConfiguration();
+        
+        // Act - Apply first policy, then override with random choice
+        var firstPolicy = configuration.ApplyFirstChoicePolicy();
+        var randomChoicePolicy = configuration.ApplyRandomChoicePolicy();
+
+        // Assert
+        Assert.IsType<RandomChoicePolicy>(configuration.Policy);
+        Assert.Same(randomChoicePolicy, configuration.Policy);
+        Assert.NotSame(firstPolicy, configuration.Policy);
     }
 
     [Fact]
