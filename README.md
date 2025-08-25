@@ -43,7 +43,7 @@ public class TspChromosome : Chromosome<int>
     // Calculate how "good" this route is (shorter distance = higher fitness)
     public override double CalculateFitness()
     {
-        double totalDistance = CalculateTotalDisance();
+    double totalDistance = CalculateTotalDistance();
         
         return 1.0 / (1.0 + totalDistance); // Return inverse distance (shorter routes have higher fitness)
     }
@@ -106,25 +106,14 @@ That's it! 🎉 You just solved an optimization problem with a few lines of code
 OpenGA.Net is built around four core concepts that work together seamlessly:
 
 ### 🧬 **Chromosomes**
-Your solution candidates. Strongly typed and extensible:
+Your solution candidates. Strongly typed and extensible. Each `Chromosome<T>` subclass defines how a solution is represented and evaluated. Implement:
 
-```csharp
-public class TspChromosome : Chromosome<int>
-{
-    public TspChromosome(IList<int> cities) : base(cities) { }
-    
-    public override double CalculateFitness()
-    {
-        // Your fitness calculation logic
-        return 1.0 / GetTotalDistance();
-    }
-    
-    public override Chromosome<int> DeepCopy()
-    {
-        return new TspChromosome(new List<int>(Genes));
-    }
-}
-```
+- CalculateFitness() — return a higher-is-better score for the current Genes
+- Mutate() — randomly perturb Genes to explore the search space
+- DeepCopy() — produce a full copy used during crossover
+- GeneticRepair() (optional) — fix invalid states after crossover/mutation
+
+Tip: See the TSP chromosome in the Quick Start above for a concrete example. The pattern is the same for any problem: choose a gene representation, define a fitness function, add a simple mutation, and optionally repair to enforce constraints.
 
 ### 🎯 **Reproduction Selectors**
 Choose the best parents for the next generation:
