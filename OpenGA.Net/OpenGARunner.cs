@@ -263,7 +263,7 @@ public class OpenGARunner<T>
     private void UpdateAdaptivePursuitReward(
         AdaptivePursuitPolicy adaptivePursuit,
         BaseCrossoverStrategy<T> crossoverStrategy,
-        List<Chromosome<T>> parents,
+        HashSet<Chromosome<T>> parents,
         List<Chromosome<T>> offspring)
     {
         // Calculate best fitness among parents and offspring
@@ -328,6 +328,9 @@ public class OpenGARunner<T>
 
             List<Chromosome<T>> offspring = [];
 
+            // Track performance data for each strategy across the entire epoch
+            var epochStrategyData = new Dictionary<BaseCrossoverStrategy<T>, (HashSet<Chromosome<T>> parents, List<Chromosome<T>> offspring)>();
+
             var requiredNumberOfOffspring = CalculateOptimalOffspringCount();
 
             if (requiredNumberOfOffspring <= 0)
@@ -362,8 +365,6 @@ public class OpenGARunner<T>
                 var couples = _reproductionSelectorConfig.ReproductionSelector.SelectMatingPairs(_population, _random, requiredNumberOfCouples, CurrentEpoch);
 
                 var noCouples = true;
-                List<Chromosome<T>> generationOffspring = [];
-                List<Chromosome<T>> generationParents = [];
 
                 foreach (var couple in couples)
                 {
@@ -376,11 +377,17 @@ public class OpenGARunner<T>
 
                     if (_random.NextDouble() <= _crossoverRate)
                     {
-                        // Track parents for Adaptive Pursuit evaluation
+                        // Track parents and offspring for this strategy across the epoch
                         if (_crossoverSelectionPolicyConfig.Policy is AdaptivePursuitPolicy)
                         {
-                            generationParents.Add(couple.IndividualA);
-                            generationParents.Add(couple.IndividualB);
+                            if (!epochStrategyData.TryGetValue(crossoverStrategy, out (HashSet<Chromosome<T>> parents, List<Chromosome<T>> offspring) value))
+                            {
+                                value = (new HashSet<Chromosome<T>>(), new List<Chromosome<T>>());
+                                epochStrategyData[crossoverStrategy] = value;
+                            }
+
+                            value.parents.Add(couple.IndividualA);
+                            value.parents.Add(couple.IndividualB);
                         }
 
                         var newOffspring = crossoverStrategy.Crossover(couple, _random);
@@ -390,20 +397,31 @@ public class OpenGARunner<T>
                             child.InvalidateFitness(); // Invalidate fitness for new offspring
                         }
 
-                        generationOffspring.AddRange(newOffspring);
+                        // Add offspring to strategy tracking
+                        if (_crossoverSelectionPolicyConfig.Policy is AdaptivePursuitPolicy)
+                        {
+                            epochStrategyData[crossoverStrategy].offspring.AddRange(newOffspring);
+                        }
+
                         offspring.AddRange(newOffspring);
                     }
-                }
-
-                // Update Adaptive Pursuit with performance feedback
-                if (_crossoverSelectionPolicyConfig.Policy is AdaptivePursuitPolicy adaptivePursuit && generationOffspring.Count > 0 && generationParents.Count > 0)
-                {
-                    UpdateAdaptivePursuitReward(adaptivePursuit, crossoverStrategy, generationParents, generationOffspring);
                 }
 
                 if (noCouples)
                 {
                     break;
+                }
+            }
+
+            // Update Adaptive Pursuit with epoch-level performance data
+            if (_crossoverSelectionPolicyConfig.Policy is AdaptivePursuitPolicy adaptivePursuit)
+            {
+                foreach (var (strategy, (parents, strategyOffspring)) in epochStrategyData)
+                {
+                    if (parents.Count > 0 && strategyOffspring.Count > 0)
+                    {
+                        UpdateAdaptivePursuitReward(adaptivePursuit, strategy, parents, strategyOffspring);
+                    }
                 }
             }
 
