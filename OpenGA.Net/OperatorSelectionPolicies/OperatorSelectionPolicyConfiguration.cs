@@ -68,4 +68,20 @@ public class OperatorSelectionPolicyConfiguration
         Policy = result;
         return result;
     }
+
+    /// <summary>
+    /// Configures the Round Robin policy for balanced operator selection.
+    /// 
+    /// This policy cycles through all available operators in sequence, ensuring each
+    /// operator is used an equal number of times. It provides predictable rotation
+    /// behavior and fair distribution of operator usage without any bias towards
+    /// specific operators.
+    /// </summary>
+    /// <returns>The configured RoundRobinPolicy instance</returns>
+    public OperatorSelectionPolicy ApplyRoundRobinPolicy()
+    {
+        var result = new RoundRobinPolicy();
+        Policy = result;
+        return result;
+    }
 }
