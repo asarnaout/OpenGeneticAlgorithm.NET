@@ -347,12 +347,7 @@ public class OpenGARunner<T>
             {
                 var remainingOffspringNeeded = requiredNumberOfOffspring - offspring.Count;
 
-                var crossoverStrategy = _crossoverStrategyConfig.CrossoverStrategies[0];
-
-                if (_crossoverSelectionPolicyConfig.Policy is not null)
-                {
-                    crossoverStrategy = (BaseCrossoverStrategy<T>)_crossoverSelectionPolicyConfig.Policy.SelectOperator(_random);
-                }
+                var crossoverStrategy = (BaseCrossoverStrategy<T>)_crossoverSelectionPolicyConfig.Policy.SelectOperator(_random);
 
                 var requiredNumberOfCouples = crossoverStrategy switch
                 {
