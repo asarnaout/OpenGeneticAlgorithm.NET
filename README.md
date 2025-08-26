@@ -43,7 +43,7 @@ public class TspChromosome : Chromosome<int>
     // Calculate how "good" this route is (shorter distance = higher fitness)
     public override double CalculateFitness()
     {
-    double totalDistance = CalculateTotalDistance();
+        double totalDistance = CalculateTotalDistance();
         
         return 1.0 / (1.0 + totalDistance); // Return inverse distance (shorter routes have higher fitness)
     }
