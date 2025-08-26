@@ -89,7 +89,7 @@ for (int i = 0; i < 100; i++)
 ```csharp
 // Configure and run your genetic algorithm
 var bestSolution = OpenGARunner<int>
-    .Init(initialPopulation)
+    .Initialize(initialPopulation)
     .RunToCompletion();
 
 // Get your optimized result
@@ -333,7 +333,7 @@ public class MyTerminationStrategy<T> : BaseTerminationStrategy<T>
 
 // Using your custom strategies
 var result = OpenGARunner<MyGeneType>
-    .Init(initialPopulation)
+    .Initialize(initialPopulation)
     .ApplyReproductionSelector(c => c.ApplyCustomReproductionSelector(new MyReproductionSelector<MyGeneType>()))
     .ApplyCrossoverStrategies(c => c.ApplyCustomCrossoverStrategy(new MyCustomCrossover<MyGeneType>()))
     .ApplyReplacementStrategy(c => c.ApplyCustomReplacementStrategy(new MyReplacementStrategy<MyGeneType>()))

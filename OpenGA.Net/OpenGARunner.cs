@@ -54,7 +54,7 @@ public class OpenGARunner<T>
     /// <returns>A configured OpenGARunner instance</returns>
     /// <exception cref="MissingInitialPopulationException">Thrown when initial population is empty</exception>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when percentage parameters are out of valid range</exception>
-    public static OpenGARunner<T> Init(Chromosome<T>[] initialPopulation, float minPopulationPercentage = 0.5f, float maxPopulationPercentage = 2.0f)
+    public static OpenGARunner<T> Initialize(Chromosome<T>[] initialPopulation, float minPopulationPercentage = 0.5f, float maxPopulationPercentage = 2.0f)
     {
         if (initialPopulation is [])
         {

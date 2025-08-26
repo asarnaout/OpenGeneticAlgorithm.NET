@@ -44,7 +44,7 @@ public class BaseTerminationStrategyTests
             new DummyChromosome([1, 2, 3])
         };
 
-        var runner = OpenGARunner<int>.Init(population);
+        var runner = OpenGARunner<int>.Initialize(population);
         var stopwatch = new Stopwatch();
         var state = new GeneticAlgorithmState(0, stopwatch, 1.0);
 
@@ -71,7 +71,7 @@ public class BaseTerminationStrategyTests
             new DummyChromosome([1, 2, 3])
         };
 
-        var runner = OpenGARunner<int>.Init(population);
+        var runner = OpenGARunner<int>.Initialize(population);
         var stopwatch2 = new Stopwatch();
         var state = new GeneticAlgorithmState(0, stopwatch2, 1.0);
 

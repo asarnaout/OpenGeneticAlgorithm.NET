@@ -275,7 +275,7 @@ public static class TspSolver
 
         // Configure and run the genetic algorithm
         var runner = OpenGARunner<int>
-                        .Init(initialPopulation, 0.5f, 1.0f) // min 50%, max 100% (same as initial)
+                        .Initialize(initialPopulation, 0.5f, 1.0f) // min 50%, max 100% (same as initial)
                         .MutationRate(0.15f)
                         .ApplyReproductionSelector(c => c.ApplyElitistReproductionSelector())
                         .Crossover(s => s.Rate(0.85f).RegisterSingleOperator(o => o.ApplyOnePointCrossoverStrategy()))
@@ -344,7 +344,7 @@ public static class TspSolver
         Console.WriteLine("\nStarting genetic algorithm...");
 
         var runner = OpenGARunner<int>
-                        .Init(initialPopulation, 0.5f, 1.0f) // min 50%, max 100% (same as initial)
+                        .Initialize(initialPopulation, 0.5f, 1.0f) // min 50%, max 100% (same as initial)
                         .MutationRate(mutationRate)
                         .ApplyReproductionSelector(c => c.ApplyElitistReproductionSelector())
                         .Crossover(s => s.Rate(0.85f).RegisterSingleOperator(o => o.ApplyOnePointCrossoverStrategy()))

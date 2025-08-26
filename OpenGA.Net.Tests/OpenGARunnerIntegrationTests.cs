@@ -101,7 +101,7 @@ public class OpenGARunnerIntegrationTests
         var population = CreateDiversePopulation(10);
 
         // Act
-        var runner = OpenGARunner<int>.Init(population);
+        var runner = OpenGARunner<int>.Initialize(population);
 
         // Assert
         Assert.NotNull(runner);
@@ -115,7 +115,7 @@ public class OpenGARunnerIntegrationTests
 
         // Act & Assert
         Assert.Throws<MissingInitialPopulationException>(() => 
-            OpenGARunner<int>.Init(emptyPopulation));
+            OpenGARunner<int>.Initialize(emptyPopulation));
     }
 
     [Theory]
@@ -125,7 +125,7 @@ public class OpenGARunnerIntegrationTests
     {
         // Arrange
         var population = CreateDiversePopulation(5);
-        var runner = OpenGARunner<int>.Init(population);
+        var runner = OpenGARunner<int>.Initialize(population);
 
         // Act & Assert
         Assert.Throws<ArgumentOutOfRangeException>(() => 
@@ -142,7 +142,7 @@ public class OpenGARunnerIntegrationTests
 
         // Act & Assert
         Assert.Throws<ArgumentOutOfRangeException>(() => 
-            OpenGARunner<int>.Init(population)
+            OpenGARunner<int>.Initialize(population)
                 .Crossover(s => {
                     s.RegisterSingleOperator(c => c.ApplyOnePointCrossoverStrategy());
                     s.Rate(invalidRate);
@@ -156,7 +156,7 @@ public class OpenGARunnerIntegrationTests
     {
         // Arrange
         var population = CreateDiversePopulation(5);
-        var runner = OpenGARunner<int>.Init(population);
+        var runner = OpenGARunner<int>.Initialize(population);
 
         // Act & Assert
         Assert.Throws<ArgumentOutOfRangeException>(() => 
@@ -172,7 +172,7 @@ public class OpenGARunnerIntegrationTests
     {
         // Arrange
         var population = CreateDiversePopulation(5);
-        var runner = OpenGARunner<int>.Init(population)
+        var runner = OpenGARunner<int>.Initialize(population)
             .ApplyReplacementStrategy(config => config.ApplyGenerationalReplacementStrategy())
             .ApplyTerminationStrategies(config => config.ApplyMaximumEpochsTerminationStrategy(5));
 
@@ -186,7 +186,7 @@ public class OpenGARunnerIntegrationTests
     {
         // Arrange
         var population = CreateDiversePopulation(5);
-        var runner = OpenGARunner<int>.Init(population)
+        var runner = OpenGARunner<int>.Initialize(population)
             .ApplyReproductionSelector(config => config.ApplyRandomReproductionSelector())
             .ApplyTerminationStrategies(config => config.ApplyMaximumEpochsTerminationStrategy(5));
 
@@ -200,7 +200,7 @@ public class OpenGARunnerIntegrationTests
     {
         // Arrange
         var population = CreateDiversePopulation(5);
-        var runner = OpenGARunner<int>.Init(population)
+        var runner = OpenGARunner<int>.Initialize(population)
             .ApplyReproductionSelector(config => config.ApplyRandomReproductionSelector())
             .ApplyReplacementStrategy(config => config.ApplyGenerationalReplacementStrategy())
             .ApplyTerminationStrategies(config => config.ApplyMaximumEpochsTerminationStrategy(3));
@@ -215,7 +215,7 @@ public class OpenGARunnerIntegrationTests
     {
         // Arrange
         var population = CreateDiversePopulation(5);
-        var runner = OpenGARunner<int>.Init(population)
+        var runner = OpenGARunner<int>.Initialize(population)
             .ApplyReproductionSelector(config => config.ApplyRandomReproductionSelector())
             .ApplyReplacementStrategy(config => config.ApplyGenerationalReplacementStrategy())
             .MutationRate(0.1f)
@@ -249,7 +249,7 @@ public class OpenGARunnerIntegrationTests
         var population = CreateDiversePopulation(populationSize);
         var initialBestFitness = population.Max(c => c.Fitness);
         
-        var runner = OpenGARunner<int>.Init(population)
+        var runner = OpenGARunner<int>.Initialize(population)
             .ApplyReproductionSelector(config => config.ApplyRandomReproductionSelector())
             .ApplyReplacementStrategy(config => config.ApplyElitistReplacementStrategy(0.2f))
             .ApplyTerminationStrategies(config => config.ApplyMaximumEpochsTerminationStrategy(10))
@@ -274,7 +274,7 @@ public class OpenGARunnerIntegrationTests
         var initialBestFitness = population.Max(c => c.Fitness);
         var initialAverageFitness = population.Average(c => c.Fitness);
         
-        var runner = OpenGARunner<int>.Init(population)
+        var runner = OpenGARunner<int>.Initialize(population)
             .ApplyReproductionSelector(config => config.ApplyFitnessWeightedRouletteWheelReproductionSelector())
             .ApplyReplacementStrategy(config => config.ApplyElitistReplacementStrategy(0.1f))
             .ApplyTerminationStrategies(config => config.ApplyMaximumEpochsTerminationStrategy(15))
@@ -298,7 +298,7 @@ public class OpenGARunnerIntegrationTests
         var population = CreateDiversePopulation(20);
         var initialBestFitness = population.Max(c => c.Fitness);
         
-        var runner = OpenGARunner<int>.Init(population)
+        var runner = OpenGARunner<int>.Initialize(population)
             .ApplyReproductionSelector(config => config.ApplyElitistReproductionSelector(0.3f, 0.1f, true))
             .ApplyReplacementStrategy(config => config.ApplyElitistReplacementStrategy(0.2f))
             .ApplyTerminationStrategies(config => config.ApplyMaximumEpochsTerminationStrategy(12))
@@ -321,7 +321,7 @@ public class OpenGARunnerIntegrationTests
         // Arrange
         var population = CreateDiversePopulation(12);
         
-        var runner = OpenGARunner<int>.Init(population)
+        var runner = OpenGARunner<int>.Initialize(population)
             .ApplyReproductionSelector(config => config.ApplyTournamentReproductionSelector(true))
             .ApplyReplacementStrategy(config => config.ApplyRandomEliminationReplacementStrategy())
             .ApplyTerminationStrategies(config => config.ApplyMaximumEpochsTerminationStrategy(8))
@@ -347,7 +347,7 @@ public class OpenGARunnerIntegrationTests
         // Arrange
         var population = CreateDiversePopulation(8);
         
-        var runner = OpenGARunner<int>.Init(population)
+        var runner = OpenGARunner<int>.Initialize(population)
             .ApplyReproductionSelector(config => config.ApplyRandomReproductionSelector())
             .ApplyReplacementStrategy(config => config.ApplyGenerationalReplacementStrategy())
             .ApplyTerminationStrategies(config => config.ApplyMaximumEpochsTerminationStrategy(5))
@@ -370,7 +370,7 @@ public class OpenGARunnerIntegrationTests
         var population = CreateDiversePopulation(15);
         var initialBestFitness = population.Max(c => c.Fitness);
         
-        var runner = OpenGARunner<int>.Init(population)
+        var runner = OpenGARunner<int>.Initialize(population)
             .ApplyReproductionSelector(config => config.ApplyFitnessWeightedRouletteWheelReproductionSelector())
             .ApplyReplacementStrategy(config => config.ApplyElitistReplacementStrategy(0.3f)) // Protect top 30%
             .ApplyTerminationStrategies(config => config.ApplyMaximumEpochsTerminationStrategy(10))
@@ -393,7 +393,7 @@ public class OpenGARunnerIntegrationTests
         // Arrange
         var population = CreateDiversePopulation(12);
         
-        var runner = OpenGARunner<int>.Init(population)
+        var runner = OpenGARunner<int>.Initialize(population)
             .ApplyReproductionSelector(config => config.ApplyRandomReproductionSelector())
             .ApplyReplacementStrategy(config => config.ApplyTournamentReplacementStrategy(4, true))
             .ApplyTerminationStrategies(config => config.ApplyMaximumEpochsTerminationStrategy(8))
@@ -414,7 +414,7 @@ public class OpenGARunnerIntegrationTests
         // Arrange
         var population = CreateDiversePopulation(10);
         
-        var runner = OpenGARunner<int>.Init(population)
+        var runner = OpenGARunner<int>.Initialize(population)
             .ApplyReproductionSelector(config => config.ApplyRandomReproductionSelector())
             .ApplyReplacementStrategy(config => config.ApplyAgeBasedReplacementStrategy())
             .ApplyTerminationStrategies(config => config.ApplyMaximumEpochsTerminationStrategy(8))
@@ -440,7 +440,7 @@ public class OpenGARunnerIntegrationTests
         var population = CreateDiversePopulation(10);
         var maxEpochs = 7;
         
-        var runner = OpenGARunner<int>.Init(population)
+        var runner = OpenGARunner<int>.Initialize(population)
             .ApplyReproductionSelector(config => config.ApplyRandomReproductionSelector())
             .ApplyReplacementStrategy(config => config.ApplyGenerationalReplacementStrategy())
             .ApplyTerminationStrategies(config => config.ApplyMaximumEpochsTerminationStrategy(maxEpochs))
@@ -466,7 +466,7 @@ public class OpenGARunnerIntegrationTests
         var population = CreateDiversePopulation(10);
         var maxDuration = TimeSpan.FromSeconds(2);
         
-        var runner = OpenGARunner<int>.Init(population)
+        var runner = OpenGARunner<int>.Initialize(population)
             .ApplyReproductionSelector(config => config.ApplyRandomReproductionSelector())
             .ApplyReplacementStrategy(config => config.ApplyGenerationalReplacementStrategy())
             .ApplyTerminationStrategies(config => config.ApplyMaximumDurationTerminationStrategy(maxDuration))
@@ -491,7 +491,7 @@ public class OpenGARunnerIntegrationTests
         // Arrange - Use a converged population that should trigger the termination condition
         var population = CreateConvergedPopulation(10);
         
-        var runner = OpenGARunner<int>.Init(population)
+        var runner = OpenGARunner<int>.Initialize(population)
             .ApplyReproductionSelector(config => config.ApplyRandomReproductionSelector())
             .ApplyReplacementStrategy(config => config.ApplyElitistReplacementStrategy(0.5f)) // High elitism
             .ApplyTerminationStrategies(config => config.ApplyTargetStandardDeviationTerminationStrategy(5.0, 3))
@@ -516,7 +516,7 @@ public class OpenGARunnerIntegrationTests
         // Arrange
         var population = CreateDiversePopulation(8);
         
-        var runner = OpenGARunner<int>.Init(population)
+        var runner = OpenGARunner<int>.Initialize(population)
             .ApplyReproductionSelector(config => config.ApplyRandomReproductionSelector())
             .ApplyReplacementStrategy(config => config.ApplyGenerationalReplacementStrategy())
             .ApplyTerminationStrategies(
@@ -551,7 +551,7 @@ public class OpenGARunnerIntegrationTests
         // Arrange
         var population = CreateDiversePopulation(populationSize);
         
-        var runner = OpenGARunner<int>.Init(population)
+        var runner = OpenGARunner<int>.Initialize(population)
             .ApplyReproductionSelector(config => config.ApplyRandomReproductionSelector())
             .ApplyReplacementStrategy(config => config.ApplyElitistReplacementStrategy(0.2f))
             .ApplyTerminationStrategies(config => config.ApplyMaximumEpochsTerminationStrategy(5))
@@ -575,7 +575,7 @@ public class OpenGARunnerIntegrationTests
         // Arrange
         var population = CreateDiversePopulation(10);
         
-        var runner = OpenGARunner<int>.Init(population)
+        var runner = OpenGARunner<int>.Initialize(population)
             .ApplyReproductionSelector(config => config.ApplyRandomReproductionSelector())
             .ApplyReplacementStrategy(config => config.ApplyGenerationalReplacementStrategy())
             .ApplyTerminationStrategies(config => config.ApplyMaximumEpochsTerminationStrategy(5))
@@ -597,7 +597,7 @@ public class OpenGARunnerIntegrationTests
         // Arrange
         var population = CreateDiversePopulation(10);
         
-        var runner = OpenGARunner<int>.Init(population, 0.5f, 1.5f) // min 50%, max 150% (15 from 10)
+        var runner = OpenGARunner<int>.Initialize(population, 0.5f, 1.5f) // min 50%, max 150% (15 from 10)
             .ApplyReproductionSelector(config => config.ApplyRandomReproductionSelector())
             .ApplyReplacementStrategy(config => config.ApplyElitistReplacementStrategy(0.3f))
             .ApplyTerminationStrategies(config => config.ApplyMaximumEpochsTerminationStrategy(6))
@@ -622,7 +622,7 @@ public class OpenGARunnerIntegrationTests
         // Arrange
         var population = CreateDiversePopulation(10);
         
-        var runner = OpenGARunner<int>.Init(population)
+        var runner = OpenGARunner<int>.Initialize(population)
             .ApplyReproductionSelector(config => config.ApplyRandomReproductionSelector())
             .Crossover(s => { 
                 s.RegisterSingleOperator(config => config.ApplyOnePointCrossoverStrategy()); 
@@ -646,7 +646,7 @@ public class OpenGARunnerIntegrationTests
         // Arrange
         var population = CreateDiversePopulation(10);
         
-        var runner = OpenGARunner<int>.Init(population)
+        var runner = OpenGARunner<int>.Initialize(population)
             .ApplyReproductionSelector(config => config.ApplyRandomReproductionSelector())
             .Crossover(s => { 
                 s.RegisterSingleOperator(config => config.ApplyUniformCrossoverStrategy()); 
@@ -670,7 +670,7 @@ public class OpenGARunnerIntegrationTests
         // Arrange
         var population = CreateDiversePopulation(10);
         
-        var runner = OpenGARunner<int>.Init(population)
+        var runner = OpenGARunner<int>.Initialize(population)
             .ApplyReproductionSelector(config => config.ApplyRandomReproductionSelector())
             .Crossover(s => { 
                 s.RegisterSingleOperator(config => config.ApplyKPointCrossoverStrategy(2)); 
@@ -699,7 +699,7 @@ public class OpenGARunnerIntegrationTests
         var population = CreateDiversePopulation(20);
         var initialBestFitness = population.Max(c => c.Fitness);
         
-        var runner = OpenGARunner<int>.Init(population, 0.5f, 1.25f)
+        var runner = OpenGARunner<int>.Initialize(population, 0.5f, 1.25f)
             .MutationRate(0.15f)
             .OverrideOffspringGenerationRate(0.8f)
             .ApplyReproductionSelector(config => config.ApplyElitistReproductionSelector(0.2f, 0.1f, true))
@@ -736,7 +736,7 @@ public class OpenGARunnerIntegrationTests
         // Arrange
         var population = CreateDiversePopulation(12);
         
-        var runner = OpenGARunner<int>.Init(population)
+        var runner = OpenGARunner<int>.Initialize(population)
             .MutationRate(0.05f) // Low mutation
             .Crossover(s => { s.RegisterSingleOperator(c => c.ApplyOnePointCrossoverStrategy()); s.Rate(0.95f); }) // High crossover
             .ApplyReproductionSelector(config => config.ApplyFitnessWeightedRouletteWheelReproductionSelector())
@@ -758,7 +758,7 @@ public class OpenGARunnerIntegrationTests
         // Arrange
         var population = CreateDiversePopulation(12);
         
-        var runner = OpenGARunner<int>.Init(population)
+        var runner = OpenGARunner<int>.Initialize(population)
             .MutationRate(0.4f) // High mutation
             .Crossover(s => { s.RegisterSingleOperator(c => c.ApplyOnePointCrossoverStrategy()); s.Rate(0.5f); }) // Lower crossover
             .ApplyReproductionSelector(config => config.ApplyRandomReproductionSelector())
@@ -784,7 +784,7 @@ public class OpenGARunnerIntegrationTests
         // Act - Run the algorithm multiple times
         for (int i = 0; i < 3; i++)
         {
-            var runner = OpenGARunner<int>.Init(CreateDiversePopulation(10))
+            var runner = OpenGARunner<int>.Initialize(CreateDiversePopulation(10))
                 .ApplyReproductionSelector(config => config.ApplyRandomReproductionSelector())
                 .ApplyReplacementStrategy(config => config.ApplyGenerationalReplacementStrategy())
                 .ApplyTerminationStrategies(config => config.ApplyMaximumEpochsTerminationStrategy(5))
@@ -815,7 +815,7 @@ public class OpenGARunnerIntegrationTests
         // Arrange
         var population = CreateDiversePopulation(2);
         
-        var runner = OpenGARunner<int>.Init(population)
+        var runner = OpenGARunner<int>.Initialize(population)
             .ApplyReproductionSelector(config => config.ApplyRandomReproductionSelector())
             .ApplyReplacementStrategy(config => config.ApplyGenerationalReplacementStrategy())
             .ApplyTerminationStrategies(config => config.ApplyMaximumEpochsTerminationStrategy(3))
@@ -836,7 +836,7 @@ public class OpenGARunnerIntegrationTests
         // Arrange
         var population = new[] { CreateTargetFitnessChromosome(50) };
         
-        var runner = OpenGARunner<int>.Init(population)
+        var runner = OpenGARunner<int>.Initialize(population)
             .ApplyReproductionSelector(config => config.ApplyRandomReproductionSelector())
             .ApplyReplacementStrategy(config => config.ApplyElitistReplacementStrategy(1.0f)) // Protect the only chromosome
             .ApplyTerminationStrategies(config => config.ApplyMaximumEpochsTerminationStrategy(3))
