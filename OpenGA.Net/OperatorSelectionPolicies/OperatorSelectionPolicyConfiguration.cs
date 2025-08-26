@@ -122,20 +122,6 @@ public class OperatorSelectionPolicyConfiguration
     /// Note: This method is optional if you have already assigned custom weights to operators
     /// using the WithCustomWeight() method. In such cases, the CustomWeightPolicy will be
     /// automatically applied during execution, so explicit configuration is not required.
-    /// 
-    /// Example usage:
-    /// <code>
-    /// // Explicit configuration (optional when weights are set):
-    /// .ApplyCrossoverStrategies(
-    ///     c => c.ApplyOnePointCrossoverStrategy().WithCustomWeight(0.3f),
-    ///     c => c.ApplyUniformCrossoverStrategy().WithCustomWeight(0.7f))
-    /// .ApplyCrossoverOperatorSelectionPolicy(p => p.ApplyCustomWeightPolicy())
-    /// 
-    /// // Automatic application (CustomWeightPolicy applied automatically):
-    /// .ApplyCrossoverStrategies(
-    ///     c => c.ApplyOnePointCrossoverStrategy().WithCustomWeight(0.3f),
-    ///     c => c.ApplyUniformCrossoverStrategy().WithCustomWeight(0.7f))
-    /// // No need to explicitly call ApplyCustomWeightPolicy()
     /// </code>
     /// </summary>
     /// <returns>The configured CustomWeightPolicy instance</returns>

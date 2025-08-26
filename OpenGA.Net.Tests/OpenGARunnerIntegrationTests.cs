@@ -618,7 +618,7 @@ public class OpenGARunnerIntegrationTests
         
         var runner = OpenGARunner<int>.Init(population)
             .ApplyReproductionSelector(config => config.ApplyRandomReproductionSelector())
-            .ApplyCrossoverStrategies(config => config.ApplyOnePointCrossoverStrategy())
+            .Crossover(s => s.RegisterSingleOperator(config => config.ApplyOnePointCrossoverStrategy()))
             .ApplyReplacementStrategy(config => config.ApplyGenerationalReplacementStrategy())
             .ApplyTerminationStrategies(config => config.ApplyMaximumEpochsTerminationStrategy(6))
             .MutationRate(0.2f)
@@ -640,7 +640,7 @@ public class OpenGARunnerIntegrationTests
         
         var runner = OpenGARunner<int>.Init(population)
             .ApplyReproductionSelector(config => config.ApplyRandomReproductionSelector())
-            .ApplyCrossoverStrategies(config => config.ApplyUniformCrossoverStrategy())
+            .Crossover(s => s.RegisterSingleOperator(config => config.ApplyUniformCrossoverStrategy()))
             .ApplyReplacementStrategy(config => config.ApplyGenerationalReplacementStrategy())
             .ApplyTerminationStrategies(config => config.ApplyMaximumEpochsTerminationStrategy(6))
             .MutationRate(0.2f)
@@ -662,7 +662,7 @@ public class OpenGARunnerIntegrationTests
         
         var runner = OpenGARunner<int>.Init(population)
             .ApplyReproductionSelector(config => config.ApplyRandomReproductionSelector())
-            .ApplyCrossoverStrategies(config => config.ApplyKPointCrossoverStrategy(2))
+            .Crossover(s => s.RegisterSingleOperator(config => config.ApplyKPointCrossoverStrategy(2)))
             .ApplyReplacementStrategy(config => config.ApplyGenerationalReplacementStrategy())
             .ApplyTerminationStrategies(config => config.ApplyMaximumEpochsTerminationStrategy(6))
             .MutationRate(0.2f)
@@ -692,7 +692,7 @@ public class OpenGARunnerIntegrationTests
             .CrossoverRate(0.85f)
             .OverrideOffspringGenerationRate(0.8f)
             .ApplyReproductionSelector(config => config.ApplyElitistReproductionSelector(0.2f, 0.1f, true))
-            .ApplyCrossoverStrategies(config => config.ApplyKPointCrossoverStrategy(2))
+            .Crossover(s => s.RegisterSingleOperator(config => config.ApplyKPointCrossoverStrategy(2)))
             .ApplyReplacementStrategy(config => config.ApplyElitistReplacementStrategy(0.15f))
             .ApplyTerminationStrategies(
                 config => config.ApplyMaximumEpochsTerminationStrategy(15),
