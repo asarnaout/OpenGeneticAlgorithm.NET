@@ -15,23 +15,29 @@ namespace OpenGA.Net.OperatorSelectionPolicies;
 /// <param name="rewardWindowSize">Number of recent rewards to consider for temporal weighting (default: 10)</param>
 /// <param name="diversityWeight">Weight given to diversity bonus in reward calculation (default: 0.1)</param>
 /// <param name="minimumUsageBeforeAdaptation">Minimum times each operator must be used before adaptation begins (default: 5)</param>
+/// <param name="warmupRuns">Number of warm-up runs before adaptation begins (default: 10)</param>
 public class AdaptivePursuitPolicy(
     double learningRate,
     double minimumProbability,
     int rewardWindowSize,
     double diversityWeight,
-    int minimumUsageBeforeAdaptation) : OperatorSelectionPolicy
+    int minimumUsageBeforeAdaptation,
+    int warmupRuns) : OperatorSelectionPolicy
 {
     private Dictionary<BaseOperator, double> _operatorProbabilities = [];
     private Dictionary<BaseOperator, double> _operatorRewards = [];
     private Dictionary<BaseOperator, int> _operatorUsageCount = [];
     private Dictionary<BaseOperator, Queue<double>> _recentRewards = [];
+
+    private IList<BaseOperator> _operators = [];
     
     private readonly double _learningRate = learningRate;
     private readonly double _minimumProbability = minimumProbability;
     private readonly int _rewardWindowSize = rewardWindowSize;
     private readonly double _diversityWeight = diversityWeight;
     private readonly int _minimumUsageBeforeAdaptation = minimumUsageBeforeAdaptation;
+    private readonly int _warmupRuns = warmupRuns;
+    private int _roundRobinIndex = 0;
 
     public override void ApplyOperators(IList<BaseOperator> operators)
     {
@@ -45,20 +51,38 @@ public class AdaptivePursuitPolicy(
             throw new ArgumentException("Minimum probability times number of operators cannot exceed 1.0.");
         }
 
+        _operators = operators;
+
         var initialProbability = 1.0 / operators.Count;
         _operatorProbabilities = operators.ToDictionary(op => op, _ => initialProbability);
         _operatorRewards = operators.ToDictionary(op => op, _ => 0.0);
         _operatorUsageCount = operators.ToDictionary(op => op, _ => 0);
         _recentRewards = operators.ToDictionary(op => op, _ => new Queue<double>());
+        
+        // Reset round-robin index when operators are applied
+        _roundRobinIndex = 0;
     }
     
     /// <summary>
     /// Selects an operator based on current probabilities.
+    /// During warmup period (epoch <= warmupRuns), uses round-robin selection to ensure equal initial usage.
+    /// After warmup, uses adaptive probability-based selection.
     /// </summary>
     /// <param name="random">Random number generator</param>
+    /// <param name="epoch">Current epoch number of the genetic algorithm</param>
     /// <returns>The selected operator</returns>
-    public override BaseOperator SelectOperator(Random random)
+    public override BaseOperator SelectOperator(Random random, int epoch)
     {
+        // During warmup period, use round-robin selection to ensure fair initial usage
+        if (epoch <= _warmupRuns)
+        {
+            var selectedOperator = _operators[_roundRobinIndex];
+            _roundRobinIndex = (_roundRobinIndex + 1) % _operators.Count;
+            _operatorUsageCount[selectedOperator]++;
+            return selectedOperator;
+        }
+
+        // After warmup, use adaptive probability-based selection
         var randomValue = random.NextDouble();
         var cumulativeProbability = 0.0;
 

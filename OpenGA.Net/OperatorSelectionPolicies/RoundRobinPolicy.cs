@@ -38,9 +38,10 @@ public class RoundRobinPolicy : OperatorSelectionPolicy
     /// to the first operator after reaching the end of the list.
     /// </summary>
     /// <param name="random">Random number generator (not used by this policy)</param>
+    /// <param name="epoch">Current epoch number of the genetic algorithm (not used by this policy)</param>
     /// <returns>The next operator in the round-robin sequence</returns>
     /// <exception cref="InvalidOperationException">Thrown when no operators are available for selection</exception>
-    public override BaseOperator SelectOperator(Random random)
+    public override BaseOperator SelectOperator(Random random, int epoch)
     {
         if (_operators.Count == 0)
         {

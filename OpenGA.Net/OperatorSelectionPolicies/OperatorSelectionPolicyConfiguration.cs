@@ -23,6 +23,7 @@ public class OperatorSelectionPolicyConfiguration
     /// <param name="rewardWindowSize">Number of recent rewards to consider for temporal weighting (default: 10). Larger windows provide more stable but slower adaptation.</param>
     /// <param name="diversityWeight">Weight given to diversity bonus in reward calculation (default: 0.1). Encourages operators that maintain population diversity.</param>
     /// <param name="minimumUsageBeforeAdaptation">Minimum times each operator must be used before adaptation begins (default: 5). Ensures fair initial evaluation.</param>
+    /// <param name="warmupRuns">Number of warm-up runs before adaptation begins (default: 10). Allows the algorithm to gather initial performance data.</param>
     /// <returns>The configured AdaptivePursuitPolicy instance</returns>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when parameter values are outside valid ranges</exception>
     public OperatorSelectionPolicy ApplyAdaptivePursuitPolicy(
@@ -30,7 +31,8 @@ public class OperatorSelectionPolicyConfiguration
         double minimumProbability = 0.05,
         int rewardWindowSize = 10,
         double diversityWeight = 0.1,
-        int minimumUsageBeforeAdaptation = 5)
+        int minimumUsageBeforeAdaptation = 5,
+        int warmupRuns = 10)
     {
         if (learningRate < 0.0 || learningRate > 1.0)
         {
@@ -42,12 +44,18 @@ public class OperatorSelectionPolicyConfiguration
             throw new ArgumentOutOfRangeException(nameof(minimumProbability), "Minimum probability must be between 0.0 and 1.0.");
         }
 
+        if (warmupRuns < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(warmupRuns), "Warm-up runs must be non-negative.");
+        }
+
         var result = new AdaptivePursuitPolicy(
             learningRate,
             minimumProbability,
             rewardWindowSize,
             diversityWeight,
-            minimumUsageBeforeAdaptation);
+            minimumUsageBeforeAdaptation,
+            warmupRuns);
 
         Policy = result;
         return result;

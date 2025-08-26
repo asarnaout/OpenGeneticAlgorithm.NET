@@ -350,7 +350,7 @@ public class OpenGARunner<T>
 
                     if (_random.NextDouble() <= _crossoverRate)
                     {
-                        var crossoverStrategy = (BaseCrossoverStrategy<T>)_crossoverSelectionPolicyConfig.Policy.SelectOperator(_random);
+                        var crossoverStrategy = (BaseCrossoverStrategy<T>)_crossoverSelectionPolicyConfig.Policy.SelectOperator(_random, CurrentEpoch);
 
                         var newOffspring = crossoverStrategy.Crossover(couple, _random);
 

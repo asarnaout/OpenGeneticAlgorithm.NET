@@ -39,7 +39,7 @@ public class RandomChoicePolicyTests
 
         // Assert - Should be able to select without throwing
         var random = new Random(42);
-        var selected = policy.SelectOperator(random);
+        var selected = policy.SelectOperator(random, 0);
         Assert.Contains(selected, operators);
     }
 
@@ -73,7 +73,7 @@ public class RandomChoicePolicyTests
         var random = new Random();
 
         // Act & Assert
-        var exception = Assert.Throws<InvalidOperationException>(() => policy.SelectOperator(random));
+        var exception = Assert.Throws<InvalidOperationException>(() => policy.SelectOperator(random, 0));
         Assert.Contains("No operators available for selection", exception.Message);
     }
 
@@ -86,7 +86,7 @@ public class RandomChoicePolicyTests
         policy.ApplyOperators(operators);
 
         // Act & Assert
-        var exception = Assert.Throws<ArgumentNullException>(() => policy.SelectOperator(null!));
+        var exception = Assert.Throws<ArgumentNullException>(() => policy.SelectOperator(null!, 0));
         Assert.Contains("Random number generator cannot be null", exception.Message);
     }
 
@@ -105,7 +105,7 @@ public class RandomChoicePolicyTests
         // Act & Assert - Test multiple selections
         for (int i = 0; i < 10; i++)
         {
-            var selected = policy.SelectOperator(random);
+            var selected = policy.SelectOperator(random, 0);
             Assert.Equal("OnlyOp", ((TestOperator)selected).Name);
         }
     }
@@ -128,7 +128,7 @@ public class RandomChoicePolicyTests
         var selectedOperators = new HashSet<string>();
         for (int i = 0; i < 100; i++)
         {
-            var selected = policy.SelectOperator(random);
+            var selected = policy.SelectOperator(random, 0);
             selectedOperators.Add(((TestOperator)selected).Name);
         }
 
@@ -165,7 +165,7 @@ public class RandomChoicePolicyTests
         const int totalSelections = 10000;
         for (int i = 0; i < totalSelections; i++)
         {
-            var selected = policy.SelectOperator(random);
+            var selected = policy.SelectOperator(random, 0);
             var operatorName = ((TestOperator)selected).Name;
             selectionCounts[operatorName]++;
         }
@@ -206,8 +206,8 @@ public class RandomChoicePolicyTests
         
         for (int i = 0; i < 20; i++)
         {
-            sequence1.Add(((TestOperator)policy1.SelectOperator(random1)).Name);
-            sequence2.Add(((TestOperator)policy2.SelectOperator(random2)).Name);
+            sequence1.Add(((TestOperator)policy1.SelectOperator(random1, 0)).Name);
+            sequence2.Add(((TestOperator)policy2.SelectOperator(random2, 0)).Name);
         }
 
         // Assert - Sequences should be different (extremely unlikely to be identical)
@@ -239,8 +239,8 @@ public class RandomChoicePolicyTests
         
         for (int i = 0; i < 20; i++)
         {
-            sequence1.Add(((TestOperator)policy1.SelectOperator(random1)).Name);
-            sequence2.Add(((TestOperator)policy2.SelectOperator(random2)).Name);
+            sequence1.Add(((TestOperator)policy1.SelectOperator(random1, 0)).Name);
+            sequence2.Add(((TestOperator)policy2.SelectOperator(random2, 0)).Name);
         }
 
         // Assert - Sequences should be identical with same seed
@@ -266,7 +266,7 @@ public class RandomChoicePolicyTests
         
         for (int i = 0; i < 50 && (!foundOp1 || !foundOp2); i++)
         {
-            var selected = ((TestOperator)policy.SelectOperator(random)).Name;
+            var selected = ((TestOperator)policy.SelectOperator(random, 0)).Name;
             if (selected == "Op1") foundOp1 = true;
             if (selected == "Op2") foundOp2 = true;
         }

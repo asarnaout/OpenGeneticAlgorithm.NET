@@ -17,8 +17,9 @@ public abstract class OperatorSelectionPolicy
     /// Selects an operator based on the policy's selection mechanism.
     /// </summary>
     /// <param name="random">Random number generator for policies that require randomization</param>
+    /// <param name="epoch">Current epoch number of the genetic algorithm</param>
     /// <returns>The selected operator according to the policy's strategy</returns>
-    public abstract BaseOperator SelectOperator(Random random);
+    public abstract BaseOperator SelectOperator(Random random, int epoch);
 
     /// <summary>
     /// Configures the policy with the available operators that can be selected from.

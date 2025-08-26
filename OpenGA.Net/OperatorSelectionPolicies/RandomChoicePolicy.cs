@@ -38,10 +38,11 @@ public class RandomChoicePolicy : OperatorSelectionPolicy
     /// random choice behavior.
     /// </summary>
     /// <param name="random">Random number generator used for selection</param>
+    /// <param name="epoch">Current epoch number of the genetic algorithm (not used by this policy)</param>
     /// <returns>A randomly selected operator</returns>
     /// <exception cref="InvalidOperationException">Thrown when no operators are available for selection</exception>
     /// <exception cref="ArgumentNullException">Thrown when random parameter is null</exception>
-    public override BaseOperator SelectOperator(Random random)
+    public override BaseOperator SelectOperator(Random random, int epoch)
     {
         if (_operators.Count == 0)
         {

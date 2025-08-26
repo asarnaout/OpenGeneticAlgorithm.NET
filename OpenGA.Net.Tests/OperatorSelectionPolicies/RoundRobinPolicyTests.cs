@@ -39,7 +39,7 @@ public class RoundRobinPolicyTests
 
         // Assert - Verify that first selection starts with first operator
         var random = new Random();
-        var selected = policy.SelectOperator(random);
+        var selected = policy.SelectOperator(random, 0);
         Assert.Equal("Op1", ((TestOperator)selected).Name);
     }
 
@@ -73,7 +73,7 @@ public class RoundRobinPolicyTests
         var random = new Random();
 
         // Act & Assert
-        var exception = Assert.Throws<InvalidOperationException>(() => policy.SelectOperator(random));
+        var exception = Assert.Throws<InvalidOperationException>(() => policy.SelectOperator(random, 0));
         Assert.Contains("No operators available for selection", exception.Message);
     }
 
@@ -94,13 +94,13 @@ public class RoundRobinPolicyTests
         // Act & Assert - Test multiple complete cycles
         for (int cycle = 0; cycle < 3; cycle++)
         {
-            var selected1 = policy.SelectOperator(random);
+            var selected1 = policy.SelectOperator(random, 0);
             Assert.Equal("Op1", ((TestOperator)selected1).Name);
 
-            var selected2 = policy.SelectOperator(random);
+            var selected2 = policy.SelectOperator(random, 0);
             Assert.Equal("Op2", ((TestOperator)selected2).Name);
 
-            var selected3 = policy.SelectOperator(random);
+            var selected3 = policy.SelectOperator(random, 0);
             Assert.Equal("Op3", ((TestOperator)selected3).Name);
         }
     }
@@ -120,7 +120,7 @@ public class RoundRobinPolicyTests
         // Act & Assert - Test multiple selections
         for (int i = 0; i < 10; i++)
         {
-            var selected = policy.SelectOperator(random);
+            var selected = policy.SelectOperator(random, 0);
             Assert.Equal("OnlyOp", ((TestOperator)selected).Name);
         }
     }
@@ -141,10 +141,10 @@ public class RoundRobinPolicyTests
         // Act & Assert - Test alternating pattern
         for (int cycle = 0; cycle < 5; cycle++)
         {
-            var selected1 = policy.SelectOperator(random);
+            var selected1 = policy.SelectOperator(random, 0);
             Assert.Equal("Op1", ((TestOperator)selected1).Name);
 
-            var selected2 = policy.SelectOperator(random);
+            var selected2 = policy.SelectOperator(random, 0);
             Assert.Equal("Op2", ((TestOperator)selected2).Name);
         }
     }
@@ -176,7 +176,7 @@ public class RoundRobinPolicyTests
         const int totalSelections = 1000; // Should be evenly divisible by 4
         for (int i = 0; i < totalSelections; i++)
         {
-            var selected = policy.SelectOperator(random);
+            var selected = policy.SelectOperator(random, 0);
             var operatorName = ((TestOperator)selected).Name;
             selectionCounts[operatorName]++;
         }
@@ -211,8 +211,8 @@ public class RoundRobinPolicyTests
         // Act & Assert - Both policies should produce identical sequences regardless of random seeds
         for (int i = 0; i < 9; i++) // 3 complete cycles
         {
-            var selected1 = policy1.SelectOperator(random1);
-            var selected2 = policy2.SelectOperator(random2);
+            var selected1 = policy1.SelectOperator(random1, 0);
+            var selected2 = policy2.SelectOperator(random2, 0);
             
             Assert.Equal(((TestOperator)selected1).Name, ((TestOperator)selected2).Name);
         }
@@ -233,14 +233,14 @@ public class RoundRobinPolicyTests
         var random = new Random();
 
         // Act - Select a few operators to advance the index
-        policy.SelectOperator(random); // Op1
-        policy.SelectOperator(random); // Op2
+        policy.SelectOperator(random, 0); // Op1
+        policy.SelectOperator(random, 0); // Op2
         
         // Re-apply operators (simulating reconfiguration)
         policy.ApplyOperators(operators);
         
         // Assert - Should start from Op1 again
-        var selected = policy.SelectOperator(random);
+        var selected = policy.SelectOperator(random, 0);
         Assert.Equal("Op1", ((TestOperator)selected).Name);
     }
 }
