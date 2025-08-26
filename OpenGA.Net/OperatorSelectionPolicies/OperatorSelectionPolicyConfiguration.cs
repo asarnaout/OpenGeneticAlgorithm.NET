@@ -122,7 +122,6 @@ public class OperatorSelectionPolicyConfiguration
     /// Note: This method is optional if you have already assigned custom weights to operators
     /// using the WithCustomWeight() method. In such cases, the CustomWeightPolicy will be
     /// automatically applied during execution, so explicit configuration is not required.
-    /// </code>
     /// </summary>
     /// <returns>The configured CustomWeightPolicy instance</returns>
     public OperatorSelectionPolicy ApplyCustomWeightPolicy()

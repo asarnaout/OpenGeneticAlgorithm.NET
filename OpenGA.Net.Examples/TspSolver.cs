@@ -277,9 +277,8 @@ public static class TspSolver
         var runner = OpenGARunner<int>
                         .Init(initialPopulation, 0.5f, 1.0f) // min 50%, max 100% (same as initial)
                         .MutationRate(0.15f)
-                        .CrossoverRate(0.85f)
                         .ApplyReproductionSelector(c => c.ApplyElitistReproductionSelector())
-                        .Crossover(s => s.RegisterSingleOperator(o => o.ApplyOnePointCrossoverStrategy()))
+                        .Crossover(s => s.Rate(0.85f).RegisterSingleOperator(o => o.ApplyOnePointCrossoverStrategy()))
                         .ApplyReplacementStrategy(c => c.ApplyElitistReplacementStrategy())
                         .ApplyTerminationStrategies(c => c.ApplyMaximumEpochsTerminationStrategy(epochs))
                         ;
@@ -347,9 +346,8 @@ public static class TspSolver
         var runner = OpenGARunner<int>
                         .Init(initialPopulation, 0.5f, 1.0f) // min 50%, max 100% (same as initial)
                         .MutationRate(mutationRate)
-                        .CrossoverRate(0.85f)
                         .ApplyReproductionSelector(c => c.ApplyElitistReproductionSelector())
-                        .Crossover(s => s.RegisterSingleOperator(o => o.ApplyOnePointCrossoverStrategy()))
+                        .Crossover(s => s.Rate(0.85f).RegisterSingleOperator(o => o.ApplyOnePointCrossoverStrategy()))
                         .ApplyReplacementStrategy(c => c.ApplyElitistReplacementStrategy())
                         .ApplyTerminationStrategies(c => c.ApplyMaximumEpochsTerminationStrategy(epochs));
 

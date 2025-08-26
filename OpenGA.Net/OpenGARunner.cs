@@ -21,8 +21,6 @@ public class OpenGARunner<T>
 
     private float _mutationRate = 0.2f;
 
-    private float _crossoverRate = 0.9f;
-
     private readonly ReproductionSelectorConfiguration<T> _reproductionSelectorConfig = new();
 
     private readonly CrossoverStrategyRegistration<T> _crossoverStrategyRegistration = new();
@@ -102,21 +100,6 @@ public class OpenGARunner<T>
         }
 
         _mutationRate = mutationRate;
-        return this;
-    }
-
-    /// <summary>
-    /// The crossover rate dictates the likelihood of 2 mating parents producing an offspring. Defaults to 0.9 (90%).
-    /// </summary>
-    /// <param name="crossoverRate">Value should be between 0 and 1, where 0 indicates no chance of success in reproduction while 1 indicates a 100% chance.</param>
-    public OpenGARunner<T> CrossoverRate(float crossoverRate)
-    {
-        if (crossoverRate < 0 || crossoverRate > 1)
-        {
-            throw new ArgumentOutOfRangeException(nameof(crossoverRate), "Value must be between 0 and 1.");
-        }
-
-        _crossoverRate = crossoverRate;
         return this;
     }
 
@@ -350,7 +333,7 @@ public class OpenGARunner<T>
                         break;
                     }
 
-                    if (_random.NextDouble() <= _crossoverRate)
+                    if (_random.NextDouble() <= _crossoverStrategyRegistration.GetCrossoverRate())
                     {
                         var crossoverStrategy = (BaseCrossoverStrategy<T>)_crossoverStrategyRegistration.GetCrossoverSelectionPolicy().SelectOperator(_random, CurrentEpoch);
 
