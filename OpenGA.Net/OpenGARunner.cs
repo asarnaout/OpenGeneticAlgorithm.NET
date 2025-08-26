@@ -188,7 +188,7 @@ public class OpenGARunner<T>
 
         if (_crossoverStrategyRegistration.GetRegisteredCrossoverStrategies() is [])
         {
-            _crossoverStrategyRegistration.RegisterSingleOperator(s => s.ApplyOnePointCrossoverStrategy());
+            _crossoverStrategyRegistration.RegisterSingle(s => s.OnePointCrossover());
         }
 
         if (_replacementStrategyConfig.ReplacementStrategy is null)
@@ -229,7 +229,6 @@ public class OpenGARunner<T>
             {
                 // If multiple crossover strategies and no operator policy specified then default to adaptive pursuit
                 _crossoverStrategyRegistration.WithPolicy(p => p.ApplyAdaptivePursuitPolicy());
-
             }
         }
 

@@ -10,14 +10,19 @@ public class CrossoverStrategyRegistration<T>
 
     private float _crossoverRate = 0.9f;
 
-    public void RegisterSingleOperator(Action<CrossoverStrategyConfiguration<T>> singleRegistration)
+    public void RegisterSingle(Action<CrossoverStrategyConfiguration<T>> singleRegistration)
     {
         ArgumentNullException.ThrowIfNull(singleRegistration, nameof(singleRegistration));
 
         singleRegistration(_crossoverStrategyConfig);
+        
+        if (_crossoverStrategyConfig.CrossoverStrategies.Count > 1)
+        {
+            throw new InvalidOperationException("Multiple crossover strategies registered. Use RegisterMulti for multiple registrations.");
+        }
     }
 
-    public CrossoverStrategyRegistration<T> RegisterMultiOperators(Action<CrossoverStrategyConfiguration<T>> configurator)
+    public CrossoverStrategyRegistration<T> RegisterMulti(Action<CrossoverStrategyConfiguration<T>> configurator)
     {
         ArgumentNullException.ThrowIfNull(configurator, nameof(configurator));
 

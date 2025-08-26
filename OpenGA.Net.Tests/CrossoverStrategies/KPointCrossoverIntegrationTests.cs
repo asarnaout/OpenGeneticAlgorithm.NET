@@ -26,7 +26,7 @@ public class KPointCrossoverIntegrationTests
 
         // Configure K-Point crossover strategy via configuration
         var config = new CrossoverStrategyConfiguration<int>();
-        var strategy = config.ApplyKPointCrossoverStrategy(3);
+        var strategy = config.KPointCrossover(3);
 
         // Perform crossover
         var random = new Random(42);
@@ -74,7 +74,7 @@ public class KPointCrossoverIntegrationTests
         var couple = Couple<int>.Pair(parentA, parentB);
 
         var config = new CrossoverStrategyConfiguration<int>();
-        var strategy = config.ApplyKPointCrossoverStrategy(numberOfPoints);
+        var strategy = config.KPointCrossover(numberOfPoints);
 
         var random = new Random(42);
         var offspring = strategy.Crossover(couple, random).ToList();
@@ -93,7 +93,7 @@ public class KPointCrossoverIntegrationTests
     public void KPointCrossover_MultipleGenerations_ShouldMaintainGeneticDiversity()
     {
         var config = new CrossoverStrategyConfiguration<int>();
-        var strategy = config.ApplyKPointCrossoverStrategy(2);
+        var strategy = config.KPointCrossover(2);
         var random = new Random(42);
 
         // Initial population
@@ -145,11 +145,11 @@ public class KPointCrossoverIntegrationTests
         var config = new CrossoverStrategyConfiguration<int>();
         
         // Configure for 2-point crossover
-        var strategy2Point = config.ApplyKPointCrossoverStrategy(2);
+        var strategy2Point = config.KPointCrossover(2);
         Assert.IsType<KPointCrossoverStrategy<int>>(strategy2Point);
         
         // Reconfigure for 4-point crossover
-        var strategy4Point = config.ApplyKPointCrossoverStrategy(4);
+        var strategy4Point = config.KPointCrossover(4);
         Assert.IsType<KPointCrossoverStrategy<int>>(strategy4Point);
 
         // Verify the configuration was updated
