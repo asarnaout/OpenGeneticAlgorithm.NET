@@ -23,7 +23,7 @@ public class OperatorSelectionPolicyConfiguration
     /// <param name="rewardWindowSize">Number of recent rewards to consider for temporal weighting (default: 10). Larger windows provide more stable but slower adaptation.</param>
     /// <param name="diversityWeight">Weight given to diversity bonus in reward calculation (default: 0.1). Encourages operators that maintain population diversity.</param>
     /// <param name="minimumUsageBeforeAdaptation">Minimum times each operator must be used before adaptation begins (default: 5). Ensures fair initial evaluation.</param>
-    /// <param name="warmupRuns">Number of warm-up runs before adaptation begins (default: 10). Allows the algorithm to gather initial performance data.</param>
+    /// <param name="warmupRuns">Number of warm-up runs before adaptation begins (default: 10). These runs are part of the total maximum epochs, not additional to them. During warmup, operators are selected using round-robin to ensure equal initial usage.</param>
     /// <returns>The configured AdaptivePursuitPolicy instance</returns>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when parameter values are outside valid ranges</exception>
     public OperatorSelectionPolicy ApplyAdaptivePursuitPolicy(
