@@ -108,4 +108,30 @@ public class OperatorSelectionPolicyConfiguration
         Policy = result;
         return result;
     }
+
+    /// <summary>
+    /// Configures the Custom Weight policy for weighted operator selection.
+    /// 
+    /// This policy selects operators based on their CustomWeight property using
+    /// a weighted roulette wheel algorithm. Operators with higher weights have
+    /// a proportionally higher probability of being selected. The weights are
+    /// automatically normalized, so they don't need to sum to 1.0.
+    /// 
+    /// If all operators have zero weight, the policy falls back to uniform selection.
+    /// 
+    /// Example usage:
+    /// <code>
+    /// .ApplyCrossoverStrategies(
+    ///     c => c.ApplyOnePointCrossoverStrategy().WithCustomWeight(0.3f),
+    ///     c => c.ApplyUniformCrossoverStrategy().WithCustomWeight(0.7f))
+    /// .ApplyCrossoverOperatorSelectionPolicy(p => p.ApplyCustomWeightPolicy())
+    /// </code>
+    /// </summary>
+    /// <returns>The configured CustomWeightPolicy instance</returns>
+    public OperatorSelectionPolicy ApplyCustomWeightPolicy()
+    {
+        var result = new CustomWeightPolicy();
+        Policy = result;
+        return result;
+    }
 }

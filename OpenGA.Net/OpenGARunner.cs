@@ -194,12 +194,19 @@ public class OpenGARunner<T>
     /// the genetic algorithm can learn which operators work best for the specific problem.
     /// 
     /// If not explicitly configured:
+    /// - Any operator has custom weight > 0: CustomWeightPolicy is automatically applied
     /// - Single crossover strategy: FirstChoicePolicy is automatically applied
     /// - Multiple crossover strategies: AdaptivePursuitPolicy is automatically applied
+    /// 
+    /// Note: If custom weights are configured on any operators, the policy must be compatible
+    /// with weighted selection (i.e., CustomWeightPolicy) or an exception will be thrown.
     /// </summary>
     /// <param name="policyConfigurator">Action to configure the operator selection policy</param>
     /// <returns>The OpenGARunner instance for method chaining</returns>
     /// <exception cref="ArgumentNullException">Thrown when policyConfigurator is null</exception>
+    /// <exception cref="OperatorSelectionPolicyConflictException">
+    /// Thrown during execution if custom weights are configured but an incompatible policy is applied.
+    /// </exception>
     public OpenGARunner<T> ApplyCrossoverOperatorSelectionPolicy(Action<OperatorSelectionPolicyConfiguration> policyConfigurator)
     {
         ArgumentNullException.ThrowIfNull(policyConfigurator, nameof(policyConfigurator));
@@ -215,8 +222,17 @@ public class OpenGARunner<T>
     /// This method ensures the genetic algorithm has all required components by applying
     /// sensible defaults when the user hasn't specified certain strategies. It also
     /// intelligently configures operator selection policies based on the number of
-    /// crossover strategies available.
+    /// crossover strategies available and whether custom weights are configured.
+    /// 
+    /// Operator selection policy precedence:
+    /// 1. If explicitly configured policy exists → use it (validates compatibility with custom weights)
+    /// 2. If any operator has custom weight > 0 → use CustomWeightPolicy
+    /// 3. If single strategy → use FirstChoicePolicy
+    /// 4. If multiple strategies → use AdaptivePursuitPolicy
     /// </summary>
+    /// <exception cref="OperatorSelectionPolicyConflictException">
+    /// Thrown when custom weights are configured but a non-CustomWeight operator selection policy is applied.
+    /// </exception>
     private void DefaultMissingStrategies()
     {
         if (_reproductionSelectorConfig.ReproductionSelector is null)
@@ -243,10 +259,30 @@ public class OpenGARunner<T>
         {
             _crossoverSelectionPolicyConfig.ApplyFirstChoicePolicy();
         }
-        else if (_crossoverSelectionPolicyConfig.Policy is null) 
+        else
         {
-            // If multiple crossover strategies and no operator policy specified then default to adaptive pursuit
-            _crossoverSelectionPolicyConfig.ApplyAdaptivePursuitPolicy();
+            var hasCustomWeights = _crossoverStrategyConfig.CrossoverStrategies.Any(strategy => strategy.CustomWeight > 0);
+
+            if (_crossoverSelectionPolicyConfig.Policy is not null)
+            {
+                if (hasCustomWeights && _crossoverSelectionPolicyConfig.Policy is not CustomWeightPolicy)
+                {
+                    throw new OperatorSelectionPolicyConflictException(
+                        @"Cannot apply a non-CustomWeight operator selection policy when crossover strategies 
+                        have custom weights. Either remove the custom weights using WithCustomWeight(0) or use 
+                        ApplyCustomWeightPolicy().");
+                }
+            }
+            else if (hasCustomWeights)
+            {
+                // Auto-apply CustomWeightPolicy when weights are detected and no policy is explicitly set
+                _crossoverSelectionPolicyConfig.ApplyCustomWeightPolicy();
+            }
+            else
+            {
+                // If multiple crossover strategies and no operator policy specified then default to adaptive pursuit
+                _crossoverSelectionPolicyConfig.ApplyAdaptivePursuitPolicy();
+            }
         }
 
         _crossoverSelectionPolicyConfig.Policy!.ApplyOperators([.._crossoverStrategyConfig.CrossoverStrategies]);

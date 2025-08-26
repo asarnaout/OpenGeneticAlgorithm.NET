@@ -50,6 +50,20 @@ public class OperatorSelectionPolicyConfigurationTests
     }
 
     [Fact]
+    public void ApplyCustomWeightPolicy_ReturnsCustomWeightPolicy()
+    {
+        // Arrange
+        var configuration = new OperatorSelectionPolicyConfiguration();
+
+        // Act
+        var policy = configuration.ApplyCustomWeightPolicy();
+
+        // Assert
+        Assert.IsType<CustomWeightPolicy>(policy);
+        Assert.Same(policy, configuration.Policy);
+    }
+
+    [Fact]
     public void ApplyAdaptivePursuitPolicy_ReturnsAdaptivePursuitPolicy()
     {
         // Arrange
