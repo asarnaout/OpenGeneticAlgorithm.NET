@@ -16,6 +16,38 @@ public abstract class BaseOperator : IEquatable<BaseOperator>
 {
     internal float CustomWeight { get; set; }
 
+    /// <summary>
+    /// Sets a custom weight for this operator when used in multi-operator scenarios.
+    /// 
+    /// This method is primarily useful when you have multiple operators of the same type
+    /// (e.g., multiple crossover strategies, multiple mutation operators) and want to
+    /// influence their selection probability in operator selection policies such as
+    /// CustomWeightPolicy or weighted random selection mechanisms.
+    /// 
+    /// Note: This weight only has meaning when multiple operators are available for selection.
+    /// If only a single operator is used, the weight value has no effect on the algorithm's behavior.
+    /// </summary>
+    /// <param name="weight">
+    /// The custom weight to assign to this operator. Must be non-negative.
+    /// Higher weights increase the probability of this operator being selected
+    /// when multiple operators are available.
+    /// </param>
+    /// <returns>
+    /// The current operator instance to allow for method chaining.
+    /// </returns>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when the weight is negative.
+    /// </exception>
+    /// <example>
+    /// <code>
+    /// // Example with multiple crossover strategies
+    /// var onePointCrossover = new OnePointCrossoverStrategy().WithCustomWeight(0.3f);
+    /// var uniformCrossover = new UniformCrossoverStrategy().WithCustomWeight(0.7f);
+    /// 
+    /// // The uniform crossover will be selected more frequently due to higher weight
+    /// var strategies = new[] { onePointCrossover, uniformCrossover };
+    /// </code>
+    /// </example>
     public BaseOperator WithCustomWeight(float weight)
     {
         if (weight < 0)
