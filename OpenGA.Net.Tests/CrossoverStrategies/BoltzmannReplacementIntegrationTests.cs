@@ -23,7 +23,7 @@ public class BoltzmannReplacementIntegrationTests
             .Initialize(initialPopulation)
             .ApplyReproductionSelector(c => c.ApplyRandomReproductionSelector())
             .Crossover(s => s.RegisterSingle(c => c.OnePointCrossover()))
-            .ApplyReplacementStrategy(c => c.ApplyBoltzmannReplacementStrategy(temperatureDecayRate: 0.1, initialTemperature: 2.0))
+            .Replacement(c => c.RegisterSingle(s => s.Boltzmann(temperatureDecayRate: 0.1, initialTemperature: 2.0)))
             .RunToCompletion();
 
         Assert.NotNull(result);
@@ -46,7 +46,7 @@ public class BoltzmannReplacementIntegrationTests
             .Initialize(initialPopulation)
             .ApplyReproductionSelector(c => c.ApplyRandomReproductionSelector())
             .Crossover(s => s.RegisterSingle(c => c.OnePointCrossover()))
-            .ApplyReplacementStrategy(c => c.ApplyBoltzmannReplacementStrategyWithLinearDecay(temperatureDecayRate: 0.05, initialTemperature: 1.0))
+            .Replacement(c => c.RegisterSingle(s => s.BoltzmannWithLinearDecay(temperatureDecayRate: 0.05, initialTemperature: 1.0)))
             .RunToCompletion();
 
         Assert.NotNull(result);

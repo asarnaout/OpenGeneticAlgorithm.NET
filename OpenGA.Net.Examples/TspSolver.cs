@@ -279,7 +279,7 @@ public static class TspSolver
                         .MutationRate(0.15f)
                         .ApplyReproductionSelector(c => c.ApplyElitistReproductionSelector())
                         .Crossover(s => s.Rate(0.85f).RegisterSingle(o => o.OnePointCrossover()))
-                        .ApplyReplacementStrategy(c => c.ApplyElitistReplacementStrategy())
+                        .Replacement(c => c.RegisterSingle(o => o.Elitist()))
                         .ApplyTerminationStrategies(c => c.ApplyMaximumEpochsTerminationStrategy(epochs))
                         ;
 
@@ -348,7 +348,7 @@ public static class TspSolver
                         .MutationRate(mutationRate)
                         .ApplyReproductionSelector(c => c.ApplyElitistReproductionSelector())
                         .Crossover(s => s.Rate(0.85f).RegisterSingle(o => o.OnePointCrossover()))
-                        .ApplyReplacementStrategy(c => c.ApplyElitistReplacementStrategy())
+                        .Replacement(c => c.RegisterSingle(s => s.Elitist()))
                         .ApplyTerminationStrategies(c => c.ApplyMaximumEpochsTerminationStrategy(epochs));
 
         // Start the genetic algorithm

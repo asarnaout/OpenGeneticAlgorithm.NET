@@ -8,14 +8,14 @@ public class ElitistReplacementStrategyTests
     [InlineData(-0.1f)]
     [InlineData(1.1f)]
     [InlineData(2.0f)]
-    public void ApplyElitistReplacementStrategy_WithInvalidElitePercentage_ShouldThrowException(float invalidPercentage)
+    public void Elitist_WithInvalidElitePercentage_ShouldThrowException(float invalidPercentage)
     {
         // Arrange
         var configuration = new ReplacementStrategyConfiguration<int>();
 
         // Act & Assert
         var exception = Assert.Throws<ArgumentOutOfRangeException>(() => 
-            configuration.ApplyElitistReplacementStrategy(invalidPercentage));
+            configuration.Elitist(invalidPercentage));
         
         Assert.Contains("Elite percentage must be between 0.0 and 1.0", exception.Message);
     }

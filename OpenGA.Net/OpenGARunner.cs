@@ -25,11 +25,9 @@ public class OpenGARunner<T>
 
     private readonly CrossoverStrategyRegistration<T> _crossoverStrategyRegistration = new();
 
-    private readonly ReplacementStrategyConfiguration<T> _replacementStrategyConfig = new();
+    private readonly ReplacementStrategyRegistration<T> _replacementStrategyRegistration = new();
 
     private readonly TerminationStrategyConfiguration<T> _terminationStrategyConfig = new();
-
-    private float? _customOffspringGenerationRate = null;
 
     private Chromosome<T>[] Population { get; set; } = [];
 
@@ -103,28 +101,6 @@ public class OpenGARunner<T>
         return this;
     }
 
-    /// <summary>
-    /// Sets a custom offspring generation rate that overrides the automatic rate that is based on the chosen replacement strategy.
-    /// This allows fine-tuning of the genetic algorithm's behavior for specific use cases by controlling
-    /// how many offspring are generated relative to the population size.
-    /// 
-    /// For example, 0.5 generates offspring equal to 50% of population size, while 1.5 generates 150% of population size.
-    /// Values above 1.0 generate more offspring than the population size, which can increase selection pressure.
-    /// </summary>
-    /// <param name="generationRate">The rate of offspring generation relative to population size (0.0 to 2.0). </param>
-    /// <returns>The OpenGARunner instance for method chaining</returns>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when generationRate is not between 0.0 and 2.0</exception>
-    public OpenGARunner<T> OverrideOffspringGenerationRate(float generationRate)
-    {
-        if (generationRate <= 0.0f || generationRate > 2.0f)
-        {
-            throw new ArgumentOutOfRangeException(nameof(generationRate), "Offspring generation rate must be between 0.0 and 2.0.");
-        }
-
-        _customOffspringGenerationRate = generationRate;
-        return this;
-    }
-
     public OpenGARunner<T> ApplyReproductionSelector(Action<ReproductionSelectorConfiguration<T>> selectorConfigurator)
     {
         ArgumentNullException.ThrowIfNull(selectorConfigurator, nameof(selectorConfigurator));
@@ -141,11 +117,11 @@ public class OpenGARunner<T>
         return this;
     }
 
-    public OpenGARunner<T> ApplyReplacementStrategy(Action<ReplacementStrategyConfiguration<T>> replacementStrategyConfigurator)
+    public OpenGARunner<T> Replacement(Action<ReplacementStrategyRegistration<T>> replacementStrategyRegistration)
     {
-        ArgumentNullException.ThrowIfNull(replacementStrategyConfigurator, nameof(replacementStrategyConfigurator));
+        ArgumentNullException.ThrowIfNull(replacementStrategyRegistration, nameof(replacementStrategyRegistration));
 
-        replacementStrategyConfigurator(_replacementStrategyConfig);
+        replacementStrategyRegistration(_replacementStrategyRegistration);
 
         return this;
     }
@@ -191,9 +167,9 @@ public class OpenGARunner<T>
             _crossoverStrategyRegistration.RegisterSingle(s => s.OnePointCrossover());
         }
 
-        if (_replacementStrategyConfig.ReplacementStrategy is null)
+        if (_replacementStrategyRegistration.GetRegisteredReplacementStrategies() is [])
         {
-            _replacementStrategyConfig.ApplyElitistReplacementStrategy();
+            _replacementStrategyRegistration.RegisterSingle(s => s.Elitist());
         }
 
         if (_terminationStrategyConfig.TerminationStrategies is [])
@@ -234,6 +210,41 @@ public class OpenGARunner<T>
 
         _crossoverStrategyRegistration.GetCrossoverSelectionPolicy()!
             .ApplyOperators([.._crossoverStrategyRegistration.GetRegisteredCrossoverStrategies()]);
+
+        // Setup replacement strategy operator selection policy
+        if (_replacementStrategyRegistration.GetRegisteredReplacementStrategies() is { Count: 1 })
+        {
+            _replacementStrategyRegistration.WithPolicy(p => p.ApplyFirstChoicePolicy());
+        }
+        else
+        {
+            var hasCustomWeights = _replacementStrategyRegistration.GetRegisteredReplacementStrategies()
+                .Any(strategy => strategy.CustomWeight > 0);
+
+            if (_replacementStrategyRegistration.GetReplacementSelectionPolicy() is not null)
+            {
+                if (hasCustomWeights && _replacementStrategyRegistration.GetReplacementSelectionPolicy() is not CustomWeightPolicy)
+                {
+                    throw new OperatorSelectionPolicyConflictException(
+                        @"Cannot apply a non-CustomWeight operator selection policy when replacement strategies 
+                        have custom weights. Either remove the custom weights using WithCustomWeight(0) or use 
+                        ApplyCustomWeightPolicy().");
+                }
+            }
+            else if (hasCustomWeights)
+            {
+                // Auto-apply CustomWeightPolicy when weights are detected and no policy is explicitly set
+                _replacementStrategyRegistration.WithPolicy(p => p.ApplyCustomWeightPolicy());
+            }
+            else
+            {
+                // If multiple replacement strategies and no operator policy specified then default to round robin
+                _replacementStrategyRegistration.WithPolicy(p => p.ApplyRoundRobinPolicy());
+            }
+        }
+
+        _replacementStrategyRegistration.GetReplacementSelectionPolicy()!
+            .ApplyOperators([.._replacementStrategyRegistration.GetRegisteredReplacementStrategies()]);
     }
 
     /// <summary>
@@ -313,7 +324,9 @@ public class OpenGARunner<T>
 
             List<Chromosome<T>> offspring = [];
 
-            var requiredNumberOfOffspring = CalculateOptimalOffspringCount();
+            var replacementStrategy = (BaseReplacementStrategy<T>)_replacementStrategyRegistration.GetReplacementSelectionPolicy().SelectOperator(_random, CurrentEpoch);
+
+            var requiredNumberOfOffspring = CalculateOptimalOffspringCount(replacementStrategy);
 
             var maxCouplesPerBatch = Math.Max(requiredNumberOfOffspring, _maxNumberOfChromosomes);
 
@@ -359,7 +372,7 @@ public class OpenGARunner<T>
                 }
             }
 
-            Population = _replacementStrategyConfig.ReplacementStrategy.ApplyReplacement(Population, [.. offspring], _random, CurrentEpoch);
+            Population = replacementStrategy.ApplyReplacement(Population, [.. offspring], _random, CurrentEpoch);
 
             foreach (var chromosome in Population)
             {
@@ -385,18 +398,19 @@ public class OpenGARunner<T>
         return Population.OrderByDescending(c => c.Fitness).First();
     }
 
-    private int CalculateOptimalOffspringCount()
+    private int CalculateOptimalOffspringCount(BaseReplacementStrategy<T> replacementStrategy)
     {
         int result;
         var currentPopulationSize = Population.Length;
 
-        if (_customOffspringGenerationRate.HasValue)
+        var customOverride = _replacementStrategyRegistration.GetOffspringGenerationRateOverride();
+        if (customOverride.HasValue)
         {
-            result = Math.Max(1, (int)(currentPopulationSize * _customOffspringGenerationRate.Value));
+            result = Math.Max(1, (int)(currentPopulationSize * customOverride.Value));
         }
         else
         {
-            result = Math.Max(1, (int)(currentPopulationSize * _replacementStrategyConfig.ReplacementStrategy.RecommendedOffspringGenerationRate));
+            result = Math.Max(1, (int)(currentPopulationSize * replacementStrategy.RecommendedOffspringGenerationRate));
         }
 
         // Ensure the result respects population bounds

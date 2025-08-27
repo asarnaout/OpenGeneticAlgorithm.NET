@@ -4,7 +4,7 @@ namespace OpenGA.Net.ReplacementStrategies;
 /// Base class for all replacement strategies. Replacement strategies determine which chromosomes
 /// from the current population should be eliminated to make room for new offspring.
 /// </summary>
-public abstract class BaseReplacementStrategy<T>
+public abstract class BaseReplacementStrategy<T> : BaseOperator
 {
     /// <summary>
     /// The recommended offspring generation rate for this specific replacement strategy.
