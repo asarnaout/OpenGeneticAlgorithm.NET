@@ -184,25 +184,25 @@ Control when the genetic algorithm stops evolving:
 .ApplyReproductionSelector(c => c.ApplyElitistReproductionSelector())
 .ApplyCrossoverStrategies(c => c.ApplyOnePointCrossoverStrategy())
 .ApplyReplacementStrategy(c => c.ApplyElitistReplacementStrategy())
-.ApplyTerminationStrategies(c => c.ApplyMaximumEpochsTerminationStrategy(maxEpochs: 100))
+.Termination(c => c.MaximumEpochs(maxEpochs: 100))
 
 // Exploratory search (avoiding local optima)
 .ApplyReproductionSelector(c => c.ApplyTournamentReproductionSelector(tournamentSize: 5))
 .ApplyCrossoverStrategies(c => c.ApplyUniformCrossoverStrategy())
 .ApplyReplacementStrategy(c => c.ApplyGenerationalReplacementStrategy())
-.ApplyTerminationStrategies(c => c.ApplyTargetStandardDeviationTerminationStrategy(targetStandardDeviation: 0.001))
+.Termination(c => c.TargetStandardDeviation(targetStandardDeviation: 0.001))
 
 // Production system (time-constrained)
 .ApplyReproductionSelector(c => c.ApplyTournamentReproductionSelector())
 .ApplyCrossoverStrategies(c => c.ApplyOnePointCrossoverStrategy())
 .ApplyReplacementStrategy(c => c.ApplyElitistReplacementStrategy())
-.ApplyTerminationStrategies(c => c.ApplyMaximumDurationTerminationStrategy(TimeSpan.FromMinutes(5)))
+.Termination(c => c.MaximumDuration(TimeSpan.FromMinutes(5)))
 
 // Quality-focused research (target standard deviation termination)
 .ApplyReproductionSelector(c => c.ApplyBoltzmannReproductionSelector(temperature: 100))
 .ApplyCrossoverStrategies(c => c.ApplyKPointCrossoverStrategy(k: 3))
 .ApplyReplacementStrategy(c => c.ApplyAgeBasedReplacementStrategy())
-.ApplyTerminationStrategies(c => c.ApplyTargetStandardDeviationTerminationStrategy(targetStandardDeviation: 0.001, window: 10))
+.Termination(c => c.TargetStandardDeviation(targetStandardDeviation: 0.001, window: 10))
 ```
 
 ---
@@ -337,7 +337,7 @@ var result = OpenGARunner<MyGeneType>
     .ApplyReproductionSelector(c => c.ApplyCustomReproductionSelector(new MyReproductionSelector<MyGeneType>()))
     .ApplyCrossoverStrategies(c => c.ApplyCustomCrossoverStrategy(new MyCustomCrossover<MyGeneType>()))
     .ApplyReplacementStrategy(c => c.ApplyCustomReplacementStrategy(new MyReplacementStrategy<MyGeneType>()))
-    .ApplyTerminationStrategies(c => c.ApplyCustomTerminationStrategy(new MyTerminationStrategy<MyGeneType>(50)))
+    .Termination(c => c.Custom(new MyTerminationStrategy<MyGeneType>(50)))
     .RunToCompletion();
 ```
 

@@ -8,7 +8,7 @@ public class TerminationStrategyConfiguration<T>
     /// Adds a termination strategy that stops the genetic algorithm when the maximum number of epochs is reached.
     /// </summary>
     /// <returns>The configured termination strategy instance.</returns>
-    public BaseTerminationStrategy<T> ApplyMaximumEpochsTerminationStrategy(int maxEpochs)
+    public BaseTerminationStrategy<T> MaximumEpochs(int maxEpochs)
     {
         if (maxEpochs <= 0)
         {
@@ -25,7 +25,7 @@ public class TerminationStrategyConfiguration<T>
     /// </summary>
     /// <param name="maximumDuration">The maximum time the algorithm should run before terminating.</param>
     /// <returns>The configured termination strategy instance.</returns>
-    public BaseTerminationStrategy<T> ApplyMaximumDurationTerminationStrategy(TimeSpan maximumDuration)
+    public BaseTerminationStrategy<T> MaximumDuration(TimeSpan maximumDuration)
     {
         var strategy = new MaximumDurationTerminationStrategy<T>(maximumDuration);
         TerminationStrategies.Add(strategy);
@@ -39,7 +39,7 @@ public class TerminationStrategyConfiguration<T>
     /// <param name="targetStandardDeviation">The minimum standard deviation threshold. When the standard deviation of recent fitness values falls below this value, the algorithm terminates.</param>
     /// <param name="window">The number of recent fitness values to track for calculating standard deviation. Defaults to 5.</param>
     /// <returns>The configured termination strategy instance.</returns>
-    public BaseTerminationStrategy<T> ApplyTargetStandardDeviationTerminationStrategy(double targetStandardDeviation, int window = 5)
+    public BaseTerminationStrategy<T> TargetStandardDeviation(double targetStandardDeviation, int window = 5)
     {
         var strategy = new TargetStandardDeviationTerminationStrategy<T>(targetStandardDeviation, window);
         TerminationStrategies.Add(strategy);
@@ -52,7 +52,7 @@ public class TerminationStrategyConfiguration<T>
     /// </summary>
     /// <param name="terminationStrategy">The custom termination strategy to add.</param>
     /// <returns>The provided termination strategy instance.</returns>
-    public BaseTerminationStrategy<T> ApplyCustomTerminationStrategy(BaseTerminationStrategy<T> terminationStrategy)
+    public BaseTerminationStrategy<T> Custom(BaseTerminationStrategy<T> terminationStrategy)
     {
         ArgumentNullException.ThrowIfNull(terminationStrategy, nameof(terminationStrategy));
         TerminationStrategies.Add(terminationStrategy);

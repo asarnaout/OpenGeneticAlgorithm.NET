@@ -126,7 +126,31 @@ public class OpenGARunner<T>
         return this;
     }
 
-    public OpenGARunner<T> ApplyTerminationStrategies(params Action<TerminationStrategyConfiguration<T>>[] terminationStrategyConfigurators)
+    /// <summary>
+    /// Configures termination strategies that determine when the genetic algorithm should stop.
+    /// </summary>
+    /// <param name="terminationStrategyConfigurators">One or more configuration actions for termination strategies.</param>
+    /// <returns>The OpenGARunner instance for method chaining.</returns>
+    /// <remarks>
+    /// Termination strategies define the conditions under which the genetic algorithm should halt execution.
+    /// Multiple strategies can be configured, and the algorithm will stop when any of them are met.
+    /// 
+    /// Available termination strategies include:
+    /// - Maximum epochs: Stop after a specified number of generations
+    /// - Maximum duration: Stop after a specified time period
+    /// - Target standard deviation: Stop when population diversity drops below a threshold
+    /// - Target fitness: Stop when a chromosome achieves the desired fitness value
+    /// 
+    /// Example usage:
+    /// <code>
+    /// .Termination(config => config.MaximumEpochs(100))
+    /// .Termination(
+    ///     config => config.MaximumEpochs(500),
+    ///     config => config.MaximumDuration(TimeSpan.FromMinutes(5))
+    /// )
+    /// </code>
+    /// </remarks>
+    public OpenGARunner<T> Termination(params Action<TerminationStrategyConfiguration<T>>[] terminationStrategyConfigurators)
     {
         ArgumentNullException.ThrowIfNull(terminationStrategyConfigurators, nameof(terminationStrategyConfigurators));
 
@@ -174,7 +198,7 @@ public class OpenGARunner<T>
 
         if (_terminationStrategyConfig.TerminationStrategies is [])
         {
-            _terminationStrategyConfig.ApplyMaximumEpochsTerminationStrategy(100);
+            _terminationStrategyConfig.MaximumEpochs(100);
         }
 
         if (_crossoverStrategyRegistration.GetRegisteredCrossoverStrategies() is { Count: 1 })

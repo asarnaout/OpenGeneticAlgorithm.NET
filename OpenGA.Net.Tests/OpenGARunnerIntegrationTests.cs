@@ -178,7 +178,7 @@ public class OpenGARunnerIntegrationTests
         var population = CreateDiversePopulation(5);
         var runner = OpenGARunner<int>.Initialize(population)
             .Replacement(config => config.RegisterSingle(s => s.Generational()))
-            .ApplyTerminationStrategies(config => config.ApplyMaximumEpochsTerminationStrategy(5));
+            .Termination(config => config.MaximumEpochs(5));
 
         // Act & Assert - Should not throw, should use default Tournament reproduction selector
         var result = runner.RunToCompletion();
@@ -192,7 +192,7 @@ public class OpenGARunnerIntegrationTests
         var population = CreateDiversePopulation(5);
         var runner = OpenGARunner<int>.Initialize(population)
             .ApplyReproductionSelector(config => config.ApplyRandomReproductionSelector())
-            .ApplyTerminationStrategies(config => config.ApplyMaximumEpochsTerminationStrategy(5));
+            .Termination(config => config.MaximumEpochs(5));
 
         // Act & Assert - Should not throw, should use default Elitist replacement strategy
         var result = runner.RunToCompletion();
@@ -207,7 +207,7 @@ public class OpenGARunnerIntegrationTests
         var runner = OpenGARunner<int>.Initialize(population)
             .ApplyReproductionSelector(config => config.ApplyRandomReproductionSelector())
             .Replacement(config => config.RegisterSingle(s => s.Generational()))
-            .ApplyTerminationStrategies(config => config.ApplyMaximumEpochsTerminationStrategy(3));
+            .Termination(config => config.MaximumEpochs(3));
 
         // Act & Assert - Should not throw, should use default OnePoint crossover
         var result = runner.RunToCompletion();
@@ -256,7 +256,7 @@ public class OpenGARunnerIntegrationTests
         var runner = OpenGARunner<int>.Initialize(population)
             .ApplyReproductionSelector(config => config.ApplyRandomReproductionSelector())
             .Replacement(config => config.RegisterSingle(s => s.Elitist(0.2f)))
-            .ApplyTerminationStrategies(config => config.ApplyMaximumEpochsTerminationStrategy(10))
+            .Termination(config => config.MaximumEpochs(10))
             .MutationRate(0.3f)
             .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.Rate(0.8f); });
 
@@ -281,7 +281,7 @@ public class OpenGARunnerIntegrationTests
         var runner = OpenGARunner<int>.Initialize(population)
             .ApplyReproductionSelector(config => config.ApplyFitnessWeightedRouletteWheelReproductionSelector())
             .Replacement(config => config.RegisterSingle(s => s.Elitist(0.1f)))
-            .ApplyTerminationStrategies(config => config.ApplyMaximumEpochsTerminationStrategy(15))
+            .Termination(config => config.MaximumEpochs(15))
             .MutationRate(0.2f)
             .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.Rate(0.9f); });
 
@@ -305,7 +305,7 @@ public class OpenGARunnerIntegrationTests
         var runner = OpenGARunner<int>.Initialize(population)
             .ApplyReproductionSelector(config => config.ApplyElitistReproductionSelector(0.3f, 0.1f, true))
             .Replacement(config => config.RegisterSingle(s => s.Elitist(0.2f)))
-            .ApplyTerminationStrategies(config => config.ApplyMaximumEpochsTerminationStrategy(12))
+            .Termination(config => config.MaximumEpochs(12))
             .MutationRate(0.1f)
             .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.Rate(0.8f); });
 
@@ -328,7 +328,7 @@ public class OpenGARunnerIntegrationTests
         var runner = OpenGARunner<int>.Initialize(population)
             .ApplyReproductionSelector(config => config.ApplyTournamentReproductionSelector(true))
             .Replacement(config => config.RegisterSingle(s => s.Random()))
-            .ApplyTerminationStrategies(config => config.ApplyMaximumEpochsTerminationStrategy(8))
+            .Termination(config => config.MaximumEpochs(8))
             .MutationRate(0.25f)
             .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.Rate(0.7f); });
 
@@ -354,7 +354,7 @@ public class OpenGARunnerIntegrationTests
         var runner = OpenGARunner<int>.Initialize(population)
             .ApplyReproductionSelector(config => config.ApplyRandomReproductionSelector())
             .Replacement(config => config.RegisterSingle(s => s.Generational()))
-            .ApplyTerminationStrategies(config => config.ApplyMaximumEpochsTerminationStrategy(5))
+            .Termination(config => config.MaximumEpochs(5))
             .MutationRate(0.3f)
             .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.Rate(0.8f); });
 
@@ -377,7 +377,7 @@ public class OpenGARunnerIntegrationTests
         var runner = OpenGARunner<int>.Initialize(population)
             .ApplyReproductionSelector(config => config.ApplyFitnessWeightedRouletteWheelReproductionSelector())
             .Replacement(config => config.RegisterSingle(s => s.Elitist(0.3f))) // Protect top 30%
-            .ApplyTerminationStrategies(config => config.ApplyMaximumEpochsTerminationStrategy(10))
+            .Termination(config => config.MaximumEpochs(10))
             .MutationRate(0.2f)
             .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.Rate(0.9f); });
 
@@ -400,7 +400,7 @@ public class OpenGARunnerIntegrationTests
         var runner = OpenGARunner<int>.Initialize(population)
             .ApplyReproductionSelector(config => config.ApplyRandomReproductionSelector())
             .Replacement(config => config.RegisterSingle(s => s.Tournament(4, true)))
-            .ApplyTerminationStrategies(config => config.ApplyMaximumEpochsTerminationStrategy(8))
+            .Termination(config => config.MaximumEpochs(8))
             .MutationRate(0.3f)
             .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.Rate(0.7f); });
 
@@ -421,7 +421,7 @@ public class OpenGARunnerIntegrationTests
         var runner = OpenGARunner<int>.Initialize(population)
             .ApplyReproductionSelector(config => config.ApplyRandomReproductionSelector())
             .Replacement(config => config.RegisterSingle(s => s.AgeBased()))
-            .ApplyTerminationStrategies(config => config.ApplyMaximumEpochsTerminationStrategy(8))
+            .Termination(config => config.MaximumEpochs(8))
             .MutationRate(0.25f)
             .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.Rate(0.8f); });
 
@@ -447,7 +447,7 @@ public class OpenGARunnerIntegrationTests
         var runner = OpenGARunner<int>.Initialize(population)
             .ApplyReproductionSelector(config => config.ApplyRandomReproductionSelector())
             .Replacement(config => config.RegisterSingle(s => s.Generational()))
-            .ApplyTerminationStrategies(config => config.ApplyMaximumEpochsTerminationStrategy(maxEpochs))
+            .Termination(config => config.MaximumEpochs(maxEpochs))
             .MutationRate(0.2f)
             .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.Rate(0.8f); });
 
@@ -473,7 +473,7 @@ public class OpenGARunnerIntegrationTests
         var runner = OpenGARunner<int>.Initialize(population)
             .ApplyReproductionSelector(config => config.ApplyRandomReproductionSelector())
             .Replacement(config => config.RegisterSingle(s => s.Generational()))
-            .ApplyTerminationStrategies(config => config.ApplyMaximumDurationTerminationStrategy(maxDuration))
+            .Termination(config => config.MaximumDuration(maxDuration))
             .MutationRate(0.2f)
             .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.Rate(0.8f); });
 
@@ -498,7 +498,7 @@ public class OpenGARunnerIntegrationTests
         var runner = OpenGARunner<int>.Initialize(population)
             .ApplyReproductionSelector(config => config.ApplyRandomReproductionSelector())
             .Replacement(config => config.RegisterSingle(s => s.Elitist(0.5f))) // High elitism
-            .ApplyTerminationStrategies(config => config.ApplyTargetStandardDeviationTerminationStrategy(5.0, 3))
+            .Termination(config => config.TargetStandardDeviation(5.0, 3))
             .MutationRate(0.05f) // Low mutation to maintain convergence
             .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.Rate(0.6f); });
 
@@ -523,9 +523,9 @@ public class OpenGARunnerIntegrationTests
         var runner = OpenGARunner<int>.Initialize(population)
             .ApplyReproductionSelector(config => config.ApplyRandomReproductionSelector())
             .Replacement(config => config.RegisterSingle(s => s.Generational()))
-            .ApplyTerminationStrategies(
-                config => config.ApplyMaximumEpochsTerminationStrategy(3), // Should trigger first
-                config => config.ApplyMaximumDurationTerminationStrategy(TimeSpan.FromMinutes(1))
+            .Termination(
+                config => config.MaximumEpochs(3), // Should trigger first
+                config => config.MaximumDuration(TimeSpan.FromMinutes(1))
             )
             .MutationRate(0.2f)
             .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.Rate(0.8f); });
@@ -558,7 +558,7 @@ public class OpenGARunnerIntegrationTests
         var runner = OpenGARunner<int>.Initialize(population)
             .ApplyReproductionSelector(config => config.ApplyRandomReproductionSelector())
             .Replacement(config => config.RegisterSingle(s => s.Elitist(0.2f)))
-            .ApplyTerminationStrategies(config => config.ApplyMaximumEpochsTerminationStrategy(5))
+            .Termination(config => config.MaximumEpochs(5))
             .MutationRate(0.2f)
             .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.Rate(0.8f); });
 
@@ -585,7 +585,7 @@ public class OpenGARunnerIntegrationTests
                 config.RegisterSingle(s => s.Generational());
                 config.OverrideOffspringGenerationRate(generationRate);
             })
-            .ApplyTerminationStrategies(config => config.ApplyMaximumEpochsTerminationStrategy(5))
+            .Termination(config => config.MaximumEpochs(5))
             .MutationRate(0.2f)
             .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.Rate(0.8f); });
 
@@ -606,7 +606,7 @@ public class OpenGARunnerIntegrationTests
         var runner = OpenGARunner<int>.Initialize(population, 0.5f, 1.5f) // min 50%, max 150% (15 from 10)
             .ApplyReproductionSelector(config => config.ApplyRandomReproductionSelector())
             .Replacement(config => config.RegisterSingle(s => s.Elitist(0.3f)))
-            .ApplyTerminationStrategies(config => config.ApplyMaximumEpochsTerminationStrategy(6))
+            .Termination(config => config.MaximumEpochs(6))
             .MutationRate(0.3f)
             .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.Rate(0.9f); });
 
@@ -635,7 +635,7 @@ public class OpenGARunnerIntegrationTests
                 s.Rate(0.8f); 
             })
             .Replacement(config => config.RegisterSingle(s => s.Generational()))
-            .ApplyTerminationStrategies(config => config.ApplyMaximumEpochsTerminationStrategy(6))
+            .Termination(config => config.MaximumEpochs(6))
             .MutationRate(0.2f);
 
         // Act
@@ -659,7 +659,7 @@ public class OpenGARunnerIntegrationTests
                 s.Rate(0.8f); 
             })
             .Replacement(config => config.RegisterSingle(s => s.Generational()))
-            .ApplyTerminationStrategies(config => config.ApplyMaximumEpochsTerminationStrategy(6))
+            .Termination(config => config.MaximumEpochs(6))
             .MutationRate(0.2f);
 
         // Act
@@ -683,7 +683,7 @@ public class OpenGARunnerIntegrationTests
                 s.Rate(0.8f); 
             })
             .Replacement(config => config.RegisterSingle(s => s.Generational()))
-            .ApplyTerminationStrategies(config => config.ApplyMaximumEpochsTerminationStrategy(6))
+            .Termination(config => config.MaximumEpochs(6))
             .MutationRate(0.2f);
 
         // Act
@@ -716,9 +716,9 @@ public class OpenGARunnerIntegrationTests
                 config.RegisterSingle(s => s.Elitist(0.15f));
                 config.OverrideOffspringGenerationRate(0.8f);
             })
-            .ApplyTerminationStrategies(
-                config => config.ApplyMaximumEpochsTerminationStrategy(15),
-                config => config.ApplyMaximumDurationTerminationStrategy(TimeSpan.FromSeconds(10))
+            .Termination(
+                config => config.MaximumEpochs(15),
+                config => config.MaximumDuration(TimeSpan.FromSeconds(10))
             );
 
         // Act
@@ -749,7 +749,7 @@ public class OpenGARunnerIntegrationTests
             .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.Rate(0.95f); }) // High crossover
             .ApplyReproductionSelector(config => config.ApplyFitnessWeightedRouletteWheelReproductionSelector())
             .Replacement(config => config.RegisterSingle(s => s.Elitist(0.25f)))
-            .ApplyTerminationStrategies(config => config.ApplyMaximumEpochsTerminationStrategy(10));
+            .Termination(config => config.MaximumEpochs(10));
 
         // Act
         var result = runner.RunToCompletion();
@@ -771,7 +771,7 @@ public class OpenGARunnerIntegrationTests
             .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.Rate(0.5f); }) // Lower crossover
             .ApplyReproductionSelector(config => config.ApplyRandomReproductionSelector())
             .Replacement(config => config.RegisterSingle(s => s.Random()))
-            .ApplyTerminationStrategies(config => config.ApplyMaximumEpochsTerminationStrategy(8));
+            .Termination(config => config.MaximumEpochs(8));
 
         // Act
         var result = runner.RunToCompletion();
@@ -795,7 +795,7 @@ public class OpenGARunnerIntegrationTests
             var runner = OpenGARunner<int>.Initialize(CreateDiversePopulation(10))
                 .ApplyReproductionSelector(config => config.ApplyRandomReproductionSelector())
                 .Replacement(config => config.RegisterSingle(s => s.Generational()))
-                .ApplyTerminationStrategies(config => config.ApplyMaximumEpochsTerminationStrategy(5))
+                .Termination(config => config.MaximumEpochs(5))
                 .MutationRate(0.2f)
                 .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.Rate(0.8f); });
 
@@ -826,7 +826,7 @@ public class OpenGARunnerIntegrationTests
         var runner = OpenGARunner<int>.Initialize(population)
             .ApplyReproductionSelector(config => config.ApplyRandomReproductionSelector())
             .Replacement(config => config.RegisterSingle(s => s.Generational()))
-            .ApplyTerminationStrategies(config => config.ApplyMaximumEpochsTerminationStrategy(3))
+            .Termination(config => config.MaximumEpochs(3))
             .MutationRate(0.3f)
             .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.Rate(0.8f); });
 
@@ -847,7 +847,7 @@ public class OpenGARunnerIntegrationTests
         var runner = OpenGARunner<int>.Initialize(population)
             .ApplyReproductionSelector(config => config.ApplyRandomReproductionSelector())
             .Replacement(config => config.RegisterSingle(s => s.Elitist(1.0f))) // Protect the only chromosome
-            .ApplyTerminationStrategies(config => config.ApplyMaximumEpochsTerminationStrategy(3))
+            .Termination(config => config.MaximumEpochs(3))
             .MutationRate(0.2f)
             .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.Rate(0.8f); });
 

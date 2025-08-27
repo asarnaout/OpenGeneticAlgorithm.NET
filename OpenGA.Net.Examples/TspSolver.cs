@@ -280,7 +280,7 @@ public static class TspSolver
                         .ApplyReproductionSelector(c => c.ApplyElitistReproductionSelector())
                         .Crossover(s => s.Rate(0.85f).RegisterSingle(o => o.OnePointCrossover()))
                         .Replacement(c => c.RegisterSingle(o => o.Elitist()))
-                        .ApplyTerminationStrategies(c => c.ApplyMaximumEpochsTerminationStrategy(epochs))
+                        .Termination(c => c.MaximumEpochs(epochs))
                         ;
 
         // Run the genetic algorithm
@@ -349,7 +349,7 @@ public static class TspSolver
                         .ApplyReproductionSelector(c => c.ApplyElitistReproductionSelector())
                         .Crossover(s => s.Rate(0.85f).RegisterSingle(o => o.OnePointCrossover()))
                         .Replacement(c => c.RegisterSingle(s => s.Elitist()))
-                        .ApplyTerminationStrategies(c => c.ApplyMaximumEpochsTerminationStrategy(epochs));
+                        .Termination(c => c.MaximumEpochs(epochs));
 
         // Start the genetic algorithm
         var bestChromosome = runner.RunToCompletion() as TspChromosome;
