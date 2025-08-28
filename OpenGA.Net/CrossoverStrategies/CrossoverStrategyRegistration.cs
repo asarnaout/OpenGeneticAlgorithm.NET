@@ -13,6 +13,7 @@ namespace OpenGA.Net.CrossoverStrategies;
 public class CrossoverStrategyRegistration<T>
 {
     private readonly CrossoverStrategyConfiguration<T> _singleCrossoverStrategyConfig = new();
+    
     private readonly MultiCrossoverStrategyConfiguration<T> _multiCrossoverStrategyConfig = new();
 
     private float _crossoverRate = 0.9f;

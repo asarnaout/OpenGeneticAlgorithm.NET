@@ -26,11 +26,12 @@ public class KPointCrossoverIntegrationTests
 
         // Configure K-Point crossover strategy via configuration
         var config = new CrossoverStrategyConfiguration<int>();
-        var strategy = config.KPointCrossover(3);
+        config.KPointCrossover(3);
+        var strategy = config.CrossoverStrategy;
 
         // Perform crossover
         var random = new Random(42);
-        var offspring = strategy.Crossover(couple, random).ToList();
+        var offspring = strategy!.Crossover(couple, random).ToList();
 
         // Verify results
         Assert.Equal(2, offspring.Count);
@@ -74,10 +75,11 @@ public class KPointCrossoverIntegrationTests
         var couple = Couple<int>.Pair(parentA, parentB);
 
         var config = new CrossoverStrategyConfiguration<int>();
-        var strategy = config.KPointCrossover(numberOfPoints);
+        config.KPointCrossover(numberOfPoints);
+        var strategy = config.CrossoverStrategy;
 
         var random = new Random(42);
-        var offspring = strategy.Crossover(couple, random).ToList();
+        var offspring = strategy!.Crossover(couple, random).ToList();
 
         Assert.Equal(2, offspring.Count);
         
@@ -93,7 +95,8 @@ public class KPointCrossoverIntegrationTests
     public void KPointCrossover_MultipleGenerations_ShouldMaintainGeneticDiversity()
     {
         var config = new CrossoverStrategyConfiguration<int>();
-        var strategy = config.KPointCrossover(2);
+        config.KPointCrossover(2);
+        var strategy = config.CrossoverStrategy;
         var random = new Random(42);
 
         // Initial population
@@ -120,7 +123,7 @@ public class KPointCrossoverIntegrationTests
                 var parentB = currentGeneration[(i + 1) % currentGeneration.Count];
                 var couple = Couple<int>.Pair(parentA, parentB);
 
-                var offspring = strategy.Crossover(couple, random).ToList();
+                var offspring = strategy!.Crossover(couple, random).ToList();
                 nextGeneration.AddRange(offspring.Cast<DummyChromosome>());
             }
 
@@ -145,16 +148,16 @@ public class KPointCrossoverIntegrationTests
         var config = new CrossoverStrategyConfiguration<int>();
         
         // Configure for 2-point crossover
-        var strategy2Point = config.KPointCrossover(2);
+        config.KPointCrossover(2);
+        var strategy2Point = config.CrossoverStrategy;
         Assert.IsType<KPointCrossoverStrategy<int>>(strategy2Point);
         
         // Reconfigure for 4-point crossover
-        var strategy4Point = config.KPointCrossover(4);
+        config.KPointCrossover(4);
+        var strategy4Point = config.CrossoverStrategy;
         Assert.IsType<KPointCrossoverStrategy<int>>(strategy4Point);
 
-        // Verify the configuration was updated
-        Assert.Equal(strategy2Point, config.CrossoverStrategies.First());
-        Assert.Equal(strategy4Point, config.CrossoverStrategies.Last());
+        // Verify the strategies are different instances
         Assert.NotEqual(strategy2Point, strategy4Point);
         
         // Test both strategies work
@@ -163,8 +166,8 @@ public class KPointCrossoverIntegrationTests
         var couple = Couple<int>.Pair(parentA, parentB);
         var random = new Random(42);
         
-        var offspring2Point = strategy2Point.Crossover(couple, random).ToList();
-        var offspring4Point = strategy4Point.Crossover(couple, random).ToList();
+        var offspring2Point = strategy2Point!.Crossover(couple, random).ToList();
+        var offspring4Point = strategy4Point!.Crossover(couple, random).ToList();
         
         Assert.Equal(2, offspring2Point.Count);
         Assert.Equal(2, offspring4Point.Count);
