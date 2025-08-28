@@ -13,10 +13,11 @@ namespace OpenGA.Net.CrossoverStrategies;
 public class CrossoverStrategyRegistration<T>
 {
     private readonly CrossoverStrategyConfiguration<T> _singleCrossoverStrategyConfig = new();
-    
+
     private readonly MultiCrossoverStrategyConfiguration<T> _multiCrossoverStrategyConfig = new();
 
     private float _crossoverRate = 0.9f;
+
     private bool _isMultiRegistration = false;
 
     /// <summary>
@@ -85,7 +86,7 @@ public class CrossoverStrategyRegistration<T>
     /// .Crossover(c => c.RegisterMulti(m => m
     ///     .OnePointCrossover(0.6f)
     ///     .UniformCrossover(0.4f)
-    ///     .WithPolicy(p => p.ApplyAdaptivePursuitPolicy())
+    ///     .WithPolicy(p => p.AdaptivePursuit())
     /// ).WithCrossoverRate(0.8f))
     /// </code>
     /// </example>

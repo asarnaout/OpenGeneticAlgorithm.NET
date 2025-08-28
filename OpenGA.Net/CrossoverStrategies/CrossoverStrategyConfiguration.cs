@@ -55,7 +55,7 @@ public class CrossoverStrategyConfiguration<T>
     {
         CrossoverStrategy ??= new OnePointCrossoverStrategy<T>();
 
-        _policyConfig.ApplyFirstChoicePolicy();
+        _policyConfig.FirstChoice();
 
         _policyConfig.Policy!.ApplyOperators([CrossoverStrategy]);
     }

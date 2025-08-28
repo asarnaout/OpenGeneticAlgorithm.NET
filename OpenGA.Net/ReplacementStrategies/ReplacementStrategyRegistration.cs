@@ -114,7 +114,7 @@ public class ReplacementStrategyRegistration<T>
     /// </summary>
     /// <param name="policyConfigurator">
     /// A configuration action that sets up the operator selection policy.
-    /// Examples: p => p.ApplyAdaptivePursuitPolicy(), p => p.ApplyCustomWeightPolicy()
+    /// Examples: p => p.AdaptivePursuit(), p => p.CustomWeights()
     /// </param>
     /// <exception cref="ArgumentNullException">Thrown when policyConfigurator is null</exception>
     /// <exception cref="OperatorSelectionPolicyConflictException">
@@ -125,7 +125,7 @@ public class ReplacementStrategyRegistration<T>
     /// .Replacement(r => r.RegisterMulti(m => {
     ///     m.Elitist();
     ///     m.Tournament();
-    /// }).WithPolicy(p => p.ApplyAdaptivePursuitPolicy()))
+    /// }).WithPolicy(p => p.AdaptivePursuit()))
     /// </code>
     /// </example>
     public void WithPolicy(Action<OperatorSelectionPolicyConfiguration> policyConfigurator)

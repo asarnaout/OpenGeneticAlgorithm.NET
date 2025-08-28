@@ -201,7 +201,7 @@ public class OpenGARunner<T>
         // Setup replacement strategy operator selection policy
         if (_replacementStrategyRegistration.GetRegisteredReplacementStrategies() is { Count: 1 })
         {
-            _replacementStrategyRegistration.WithPolicy(p => p.ApplyFirstChoicePolicy());
+            _replacementStrategyRegistration.WithPolicy(p => p.FirstChoice());
         }
         else
         {
@@ -215,18 +215,18 @@ public class OpenGARunner<T>
                     throw new OperatorSelectionPolicyConflictException(
                         @"Cannot apply a non-CustomWeight operator selection policy when replacement strategies 
                         have custom weights. Either remove the custom weights using WithCustomWeight(0) or use 
-                        ApplyCustomWeightPolicy().");
+                        CustomWeights().");
                 }
             }
             else if (hasCustomWeights)
             {
                 // Auto-apply CustomWeightPolicy when weights are detected and no policy is explicitly set
-                _replacementStrategyRegistration.WithPolicy(p => p.ApplyCustomWeightPolicy());
+                _replacementStrategyRegistration.WithPolicy(p => p.CustomWeights());
             }
             else
             {
                 // If multiple replacement strategies and no operator policy specified then default to round robin
-                _replacementStrategyRegistration.WithPolicy(p => p.ApplyRoundRobinPolicy());
+                _replacementStrategyRegistration.WithPolicy(p => p.RoundRobin());
             }
         }
 

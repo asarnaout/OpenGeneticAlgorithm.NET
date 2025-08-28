@@ -26,7 +26,7 @@ public class OperatorSelectionPolicyConfiguration
     /// <param name="warmupRuns">Number of warm-up runs before adaptation begins (default: 10). These runs are part of the total maximum epochs, not additional to them. During warmup, operators are selected using round-robin to ensure equal initial usage.</param>
     /// <returns>The configured AdaptivePursuitPolicy instance</returns>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when parameter values are outside valid ranges</exception>
-    public OperatorSelectionPolicy ApplyAdaptivePursuitPolicy(
+    public OperatorSelectionPolicy AdaptivePursuit(
         double learningRate = 0.1,
         double minimumProbability = 0.05,
         int rewardWindowSize = 10,
@@ -70,7 +70,7 @@ public class OperatorSelectionPolicyConfiguration
     /// is preferred over adaptive strategies.
     /// </summary>
     /// <returns>The configured FirstChoicePolicy instance</returns>
-    public OperatorSelectionPolicy ApplyFirstChoicePolicy()
+    public OperatorSelectionPolicy FirstChoice()
     {
         var result = new FirstChoicePolicy();
         Policy = result;
@@ -86,7 +86,7 @@ public class OperatorSelectionPolicyConfiguration
     /// specific operators.
     /// </summary>
     /// <returns>The configured RoundRobinPolicy instance</returns>
-    public OperatorSelectionPolicy ApplyRoundRobinPolicy()
+    public OperatorSelectionPolicy RoundRobin()
     {
         var result = new RoundRobinPolicy();
         Policy = result;
@@ -102,7 +102,7 @@ public class OperatorSelectionPolicyConfiguration
     /// deterministic selection patterns.
     /// </summary>
     /// <returns>The configured RandomChoicePolicy instance</returns>
-    public OperatorSelectionPolicy ApplyRandomChoicePolicy()
+    public OperatorSelectionPolicy Random()
     {
         var result = new RandomChoicePolicy();
         Policy = result;
@@ -124,10 +124,80 @@ public class OperatorSelectionPolicyConfiguration
     /// automatically applied during execution, so explicit configuration is not required.
     /// </summary>
     /// <returns>The configured CustomWeightPolicy instance</returns>
-    public OperatorSelectionPolicy ApplyCustomWeightPolicy()
+    public OperatorSelectionPolicy CustomWeights()
     {
         var result = new CustomWeightPolicy();
         Policy = result;
         return result;
+    }
+
+    // Backward compatibility methods - these maintain the old naming convention
+    // for existing code that hasn't been updated to the new naming
+
+    /// <summary>
+    /// [Obsolete] Use AdaptivePursuit() instead. This method is maintained for backward compatibility.
+    /// Configures the Adaptive Pursuit policy for dynamic operator selection.
+    /// </summary>
+    /// <param name="learningRate">Rate at which probabilities adapt (0.0 to 1.0, default: 0.1)</param>
+    /// <param name="minimumProbability">Minimum probability for any operator to ensure exploration (default: 0.05)</param>
+    /// <param name="rewardWindowSize">Number of recent rewards to consider for temporal weighting (default: 10)</param>
+    /// <param name="diversityWeight">Weight given to diversity bonus in reward calculation (default: 0.1)</param>
+    /// <param name="minimumUsageBeforeAdaptation">Minimum times each operator must be used before adaptation begins (default: 5)</param>
+    /// <param name="warmupRuns">Number of warm-up runs before adaptation begins (default: 10)</param>
+    /// <returns>The configured AdaptivePursuitPolicy instance</returns>
+    [Obsolete("Use AdaptivePursuit() instead. This method will be removed in a future version.")]
+    public OperatorSelectionPolicy ApplyAdaptivePursuitPolicy(
+        double learningRate = 0.1,
+        double minimumProbability = 0.05,
+        int rewardWindowSize = 10,
+        double diversityWeight = 0.1,
+        int minimumUsageBeforeAdaptation = 5,
+        int warmupRuns = 10)
+    {
+        return AdaptivePursuit(learningRate, minimumProbability, rewardWindowSize, diversityWeight, minimumUsageBeforeAdaptation, warmupRuns);
+    }
+
+    /// <summary>
+    /// [Obsolete] Use FirstChoice() instead. This method is maintained for backward compatibility.
+    /// Configures the First Choice policy for deterministic operator selection.
+    /// </summary>
+    /// <returns>The configured FirstChoicePolicy instance</returns>
+    [Obsolete("Use FirstChoice() instead. This method will be removed in a future version.")]
+    public OperatorSelectionPolicy ApplyFirstChoicePolicy()
+    {
+        return FirstChoice();
+    }
+
+    /// <summary>
+    /// [Obsolete] Use RoundRobin() instead. This method is maintained for backward compatibility.
+    /// Configures the Round Robin policy for balanced operator selection.
+    /// </summary>
+    /// <returns>The configured RoundRobinPolicy instance</returns>
+    [Obsolete("Use RoundRobin() instead. This method will be removed in a future version.")]
+    public OperatorSelectionPolicy ApplyRoundRobinPolicy()
+    {
+        return RoundRobin();
+    }
+
+    /// <summary>
+    /// [Obsolete] Use Random() instead. This method is maintained for backward compatibility.
+    /// Configures the Random Choice policy for stochastic operator selection.
+    /// </summary>
+    /// <returns>The configured RandomChoicePolicy instance</returns>
+    [Obsolete("Use Random() instead. This method will be removed in a future version.")]
+    public OperatorSelectionPolicy ApplyRandomChoicePolicy()
+    {
+        return Random();
+    }
+
+    /// <summary>
+    /// [Obsolete] Use CustomWeights() instead. This method is maintained for backward compatibility.
+    /// Configures the Custom Weight policy for weighted operator selection.
+    /// </summary>
+    /// <returns>The configured CustomWeightPolicy instance</returns>
+    [Obsolete("Use CustomWeights() instead. This method will be removed in a future version.")]
+    public OperatorSelectionPolicy ApplyCustomWeightPolicy()
+    {
+        return CustomWeights();
     }
 }

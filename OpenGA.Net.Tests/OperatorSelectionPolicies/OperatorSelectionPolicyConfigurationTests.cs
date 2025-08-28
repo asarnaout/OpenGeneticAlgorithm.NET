@@ -8,13 +8,13 @@ namespace OpenGA.Net.Tests.OperatorSelectionPolicies;
 public class OperatorSelectionPolicyConfigurationTests
 {
     [Fact]
-    public void ApplyFirstChoicePolicy_ReturnsFirstChoicePolicy()
+    public void FirstChoice_ReturnsFirstChoicePolicy()
     {
         // Arrange
         var configuration = new OperatorSelectionPolicyConfiguration();
 
         // Act
-        var policy = configuration.ApplyFirstChoicePolicy();
+        var policy = configuration.FirstChoice();
 
         // Assert
         Assert.IsType<FirstChoicePolicy>(policy);
@@ -22,13 +22,13 @@ public class OperatorSelectionPolicyConfigurationTests
     }
 
     [Fact]
-    public void ApplyRoundRobinPolicy_ReturnsRoundRobinPolicy()
+    public void RoundRobin_ReturnsRoundRobinPolicy()
     {
         // Arrange
         var configuration = new OperatorSelectionPolicyConfiguration();
 
         // Act
-        var policy = configuration.ApplyRoundRobinPolicy();
+        var policy = configuration.RoundRobin();
 
         // Assert
         Assert.IsType<RoundRobinPolicy>(policy);
@@ -36,13 +36,13 @@ public class OperatorSelectionPolicyConfigurationTests
     }
 
     [Fact]
-    public void ApplyRandomChoicePolicy_ReturnsRandomChoicePolicy()
+    public void Random_ReturnsRandomChoicePolicy()
     {
         // Arrange
         var configuration = new OperatorSelectionPolicyConfiguration();
 
         // Act
-        var policy = configuration.ApplyRandomChoicePolicy();
+        var policy = configuration.Random();
 
         // Assert
         Assert.IsType<RandomChoicePolicy>(policy);
@@ -50,13 +50,13 @@ public class OperatorSelectionPolicyConfigurationTests
     }
 
     [Fact]
-    public void ApplyCustomWeightPolicy_ReturnsCustomWeightPolicy()
+    public void CustomWeights_ReturnsCustomWeightPolicy()
     {
         // Arrange
         var configuration = new OperatorSelectionPolicyConfiguration();
 
         // Act
-        var policy = configuration.ApplyCustomWeightPolicy();
+        var policy = configuration.CustomWeights();
 
         // Assert
         Assert.IsType<CustomWeightPolicy>(policy);
@@ -64,13 +64,13 @@ public class OperatorSelectionPolicyConfigurationTests
     }
 
     [Fact]
-    public void ApplyAdaptivePursuitPolicy_ReturnsAdaptivePursuitPolicy()
+    public void AdaptivePursuit_ReturnsAdaptivePursuitPolicy()
     {
         // Arrange
         var configuration = new OperatorSelectionPolicyConfiguration();
 
         // Act
-        var policy = configuration.ApplyAdaptivePursuitPolicy();
+        var policy = configuration.AdaptivePursuit();
 
         // Assert
         Assert.IsType<AdaptivePursuitPolicy>(policy);
@@ -78,14 +78,14 @@ public class OperatorSelectionPolicyConfigurationTests
     }
 
     [Fact]
-    public void ApplyRandomChoicePolicy_OverridesPreviousPolicy()
+    public void Random_OverridesPreviousPolicy()
     {
         // Arrange
         var configuration = new OperatorSelectionPolicyConfiguration();
         
         // Act - Apply first policy, then override with random choice
-        var firstPolicy = configuration.ApplyFirstChoicePolicy();
-        var randomChoicePolicy = configuration.ApplyRandomChoicePolicy();
+        var firstPolicy = configuration.FirstChoice();
+        var randomChoicePolicy = configuration.Random();
 
         // Assert
         Assert.IsType<RandomChoicePolicy>(configuration.Policy);
@@ -94,14 +94,14 @@ public class OperatorSelectionPolicyConfigurationTests
     }
 
     [Fact]
-    public void ApplyRoundRobinPolicy_OverridesPreviousPolicy()
+    public void RoundRobin_OverridesPreviousPolicy()
     {
         // Arrange
         var configuration = new OperatorSelectionPolicyConfiguration();
         
         // Act - Apply first policy, then override with round robin
-        var firstPolicy = configuration.ApplyFirstChoicePolicy();
-        var roundRobinPolicy = configuration.ApplyRoundRobinPolicy();
+        var firstPolicy = configuration.FirstChoice();
+        var roundRobinPolicy = configuration.RoundRobin();
 
         // Assert
         Assert.IsType<RoundRobinPolicy>(configuration.Policy);
@@ -110,14 +110,14 @@ public class OperatorSelectionPolicyConfigurationTests
     }
 
     [Fact]
-    public void ApplyFirstChoicePolicy_OverridesRoundRobinPolicy()
+    public void FirstChoice_OverridesRoundRobinPolicy()
     {
         // Arrange
         var configuration = new OperatorSelectionPolicyConfiguration();
         
         // Act - Apply round robin policy, then override with first choice
-        var roundRobinPolicy = configuration.ApplyRoundRobinPolicy();
-        var firstChoicePolicy = configuration.ApplyFirstChoicePolicy();
+        var roundRobinPolicy = configuration.RoundRobin();
+        var firstChoicePolicy = configuration.FirstChoice();
 
         // Assert
         Assert.IsType<FirstChoicePolicy>(configuration.Policy);

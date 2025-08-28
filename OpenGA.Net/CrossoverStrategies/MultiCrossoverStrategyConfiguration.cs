@@ -105,7 +105,7 @@ public class MultiCrossoverStrategyConfiguration<T>
     /// </summary>
     /// <param name="policyConfigurator">
     /// A configuration action that sets up the operator selection policy.
-    /// Examples: p => p.ApplyAdaptivePursuitPolicy(), p => p.ApplyCustomWeightPolicy()
+    /// Examples: p => p.AdaptivePursuit(), p => p.CustomWeights()
     /// </param>
     /// <exception cref="ArgumentNullException">Thrown when policyConfigurator is null</exception>
     /// <exception cref="OperatorSelectionPolicyConflictException">
@@ -116,7 +116,7 @@ public class MultiCrossoverStrategyConfiguration<T>
     /// .Crossover(c => c.RegisterMulti(m => m
     ///     .OnePointCrossover()
     ///     .UniformCrossover()
-    ///     .WithPolicy(p => p.ApplyAdaptivePursuitPolicy())
+    ///     .WithPolicy(p => p.AdaptivePursuit())
     /// ))
     /// </code>
     /// </example>
@@ -139,18 +139,18 @@ public class MultiCrossoverStrategyConfiguration<T>
                 throw new OperatorSelectionPolicyConflictException(
                     @"Cannot apply a non-CustomWeight operator selection policy when crossover strategies 
                         have custom weights. Either remove the custom weights using WithCustomWeight(0) or use 
-                        ApplyCustomWeightPolicy().");
+                        CustomWeights().");
             }
         }
         else if (hasCustomWeights)
         {
             // Auto-apply CustomWeightPolicy when weights are detected and no policy is explicitly set
-            _policyConfig.ApplyCustomWeightPolicy();
+            _policyConfig.CustomWeights();
         }
         else
         {
             // If multiple crossover strategies and no operator policy specified then default to adaptive pursuit
-            _policyConfig.ApplyAdaptivePursuitPolicy();
+            _policyConfig.AdaptivePursuit();
         }
 
         _policyConfig.Policy!.ApplyOperators([..CrossoverStrategies]);
