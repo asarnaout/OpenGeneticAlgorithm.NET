@@ -515,6 +515,30 @@ public class OpenGARunnerIntegrationTests
     }
 
     [Fact]
+    public void RunToCompletion_WithTargetFitnessTermination_StopsWhenFitnessReached()
+    {
+        // Arrange - Create a population with diverse fitness levels
+        var population = CreateDiversePopulation(10);
+        var targetFitness = 80.0; // Set target that's achievable but requires some evolution
+        
+        var runner = OpenGARunner<int>.Initialize(population)
+            .ApplyReproductionSelector(config => config.ApplyRandomReproductionSelector())
+            .Replacement(config => config.RegisterSingle(s => s.Elitist(0.2f))) // Keep best chromosomes
+            .Termination(config => config.TargetFitness(targetFitness))
+            .MutationRate(0.1f)
+            .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.WithCrossoverRate(0.8f); });
+
+        // Act
+        var result = runner.RunToCompletion();
+
+        // Assert
+        Assert.NotNull(result);
+        // The best chromosome should have reached or exceeded the target fitness
+        Assert.True(result.Fitness >= targetFitness, 
+            $"Expected fitness >= {targetFitness}, but got {result.Fitness}");
+    }
+
+    [Fact]
     public void RunToCompletion_WithMultipleTerminationStrategies_RespectsFirstToTrigger()
     {
         // Arrange
@@ -523,9 +547,9 @@ public class OpenGARunnerIntegrationTests
         var runner = OpenGARunner<int>.Initialize(population)
             .ApplyReproductionSelector(config => config.ApplyRandomReproductionSelector())
             .Replacement(config => config.RegisterSingle(s => s.Generational()))
-            .Termination(
-                config => config.MaximumEpochs(3), // Should trigger first
-                config => config.MaximumDuration(TimeSpan.FromMinutes(1))
+            .Termination(config => config
+                .MaximumEpochs(3) // Should trigger first
+                .MaximumDuration(TimeSpan.FromMinutes(1))
             )
             .MutationRate(0.2f)
             .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.WithCrossoverRate(0.8f); });
@@ -716,9 +740,9 @@ public class OpenGARunnerIntegrationTests
                 config.RegisterSingle(s => s.Elitist(0.15f));
                 config.OverrideOffspringGenerationRate(0.8f);
             })
-            .Termination(
-                config => config.MaximumEpochs(15),
-                config => config.MaximumDuration(TimeSpan.FromSeconds(10))
+            .Termination(config => config
+                .MaximumEpochs(15)
+                .MaximumDuration(TimeSpan.FromSeconds(10))
             );
 
         // Act

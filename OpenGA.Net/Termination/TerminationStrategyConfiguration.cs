@@ -44,6 +44,18 @@ public class TerminationStrategyConfiguration<T>
     }
 
     /// <summary>
+    /// Adds a termination strategy that stops the genetic algorithm when the highest fitness chromosome
+    /// reaches or exceeds the specified target fitness value.
+    /// </summary>
+    /// <param name="targetFitness">The target fitness value. When the highest fitness in the population reaches or exceeds this value, the algorithm terminates.</param>
+    public TerminationStrategyConfiguration<T> TargetFitness(double targetFitness)
+    {
+        var strategy = new TargetFitnessTerminationStrategy<T>(targetFitness);
+        TerminationStrategies.Add(strategy);
+        return this;
+    }
+
+    /// <summary>
     /// Adds a custom termination strategy. Requires an instance of a subclass of <see cref="BaseTerminationStrategy{T}">BaseTerminationStrategy&lt;T&gt;</see>
     /// to dictate when the genetic algorithm should terminate.
     /// </summary>
