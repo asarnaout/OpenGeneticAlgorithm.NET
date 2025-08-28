@@ -13,23 +13,6 @@ namespace OpenGA.Net.OperatorSelectionPolicies;
 /// </summary>
 public class RandomChoicePolicy : OperatorSelectionPolicy
 {
-    private IList<BaseOperator> _operators = [];
-
-    /// <summary>
-    /// Configures the policy with the available operators.
-    /// </summary>
-    /// <param name="operators">The list of operators to randomly select from</param>
-    /// <exception cref="ArgumentException">Thrown when no operators are provided</exception>
-    public override void ApplyOperators(IList<BaseOperator> operators)
-    {
-        if (operators is not { Count: > 0 })
-        {
-            throw new ArgumentException("At least one operator must be provided.", nameof(operators));
-        }
-
-        _operators = operators;
-    }
-
     /// <summary>
     /// Randomly selects an operator from the available operators.
     /// 
@@ -44,7 +27,7 @@ public class RandomChoicePolicy : OperatorSelectionPolicy
     /// <exception cref="ArgumentNullException">Thrown when random parameter is null</exception>
     public override BaseOperator SelectOperator(Random random, int epoch)
     {
-        if (_operators.Count == 0)
+        if (Operators.Count == 0)
         {
             throw new InvalidOperationException("No operators available for selection.");
         }
@@ -54,7 +37,7 @@ public class RandomChoicePolicy : OperatorSelectionPolicy
             throw new ArgumentNullException(nameof(random), "Random number generator cannot be null.");
         }
 
-        var randomIndex = random.Next(_operators.Count);
-        return _operators[randomIndex];
+        var randomIndex = random.Next(Operators.Count);
+        return Operators[randomIndex];
     }
 }

@@ -13,6 +13,8 @@ namespace OpenGA.Net.OperatorSelectionPolicies;
 /// </summary>
 public abstract class OperatorSelectionPolicy
 {
+    protected IList<BaseOperator> Operators = [];
+
     /// <summary>
     /// Selects an operator based on the policy's selection mechanism.
     /// </summary>
@@ -28,5 +30,13 @@ public abstract class OperatorSelectionPolicy
     /// with the list of operators it can choose from during evolution.
     /// </summary>
     /// <param name="operators">The list of available operators for selection</param>
-    public abstract void ApplyOperators(IList<BaseOperator> operators);
+    protected internal virtual void ApplyOperators(IList<BaseOperator> operators)
+    {
+        if (operators is not { Count: > 0 })
+        {
+            throw new ArgumentException("At least one operator must be provided.", nameof(operators));
+        }
+
+        Operators = operators;
+    }
 }

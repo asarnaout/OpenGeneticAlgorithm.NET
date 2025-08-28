@@ -28,8 +28,6 @@ public class AdaptivePursuitPolicy(
     private Dictionary<BaseOperator, double> _operatorRewards = [];
     private Dictionary<BaseOperator, int> _operatorUsageCount = [];
     private Dictionary<BaseOperator, Queue<double>> _recentRewards = [];
-
-    private IList<BaseOperator> _operators = [];
     
     private readonly double _learningRate = learningRate;
     private readonly double _minimumProbability = minimumProbability;
@@ -39,19 +37,14 @@ public class AdaptivePursuitPolicy(
     private readonly int _warmupRuns = warmupRuns;
     private int _roundRobinIndex = 0;
 
-    public override void ApplyOperators(IList<BaseOperator> operators)
+    protected internal override void ApplyOperators(IList<BaseOperator> operators)
     {
-        if (operators is not { Count: > 0 })
-        {
-            throw new ArgumentException("At least one operator must be provided.", nameof(operators));
-        }
+        base.ApplyOperators(operators);
 
         if (_minimumProbability * operators.Count > 1.0)
         {
             throw new ArgumentException("Minimum probability times number of operators cannot exceed 1.0.");
         }
-
-        _operators = operators;
 
         var initialProbability = 1.0 / operators.Count;
         _operatorProbabilities = operators.ToDictionary(op => op, _ => initialProbability);
@@ -76,8 +69,8 @@ public class AdaptivePursuitPolicy(
         // During warmup period, use round-robin selection to ensure fair initial usage
         if (epoch <= _warmupRuns)
         {
-            var selectedOperator = _operators[_roundRobinIndex];
-            _roundRobinIndex = (_roundRobinIndex + 1) % _operators.Count;
+            var selectedOperator = Operators[_roundRobinIndex];
+            _roundRobinIndex = (_roundRobinIndex + 1) % Operators.Count;
             _operatorUsageCount[selectedOperator]++;
             return selectedOperator;
         }

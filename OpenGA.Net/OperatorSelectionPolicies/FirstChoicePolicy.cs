@@ -13,18 +13,6 @@ namespace OpenGA.Net.OperatorSelectionPolicies;
 /// </summary>
 public class FirstChoicePolicy : OperatorSelectionPolicy
 {
-    private IList<BaseOperator> _operators = [];
-
-    /// <summary>
-    /// Configures the policy with the available operators.
-    /// </summary>
-    /// <param name="operators">The list of operators to select from</param>
-    /// <exception cref="ArgumentException">Thrown when no operators are provided</exception>
-    public override void ApplyOperators(IList<BaseOperator> operators)
-    {
-        _operators = operators;
-    }
-
     /// <summary>
     /// Selects the first operator from the configured list.
     /// </summary>
@@ -34,11 +22,11 @@ public class FirstChoicePolicy : OperatorSelectionPolicy
     /// <exception cref="InvalidOperationException">Thrown when no operators are available for selection</exception>
     public override BaseOperator SelectOperator(Random random, int epoch)
     {
-        if (_operators.Count == 0)
+        if (Operators.Count == 0)
         {
             throw new InvalidOperationException("No operators available for selection.");
         }
 
-        return _operators[0];
+        return Operators[0];
     }
 }

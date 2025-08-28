@@ -19,24 +19,19 @@ public class CustomWeightPolicy : OperatorSelectionPolicy
     /// </summary>
     /// <param name="operators">The list of operators to select from based on their custom weights</param>
     /// <exception cref="ArgumentException">Thrown when no operators are provided</exception>
-    public override void ApplyOperators(IList<BaseOperator> operators)
+    protected internal override void ApplyOperators(IList<BaseOperator> operators)
     {
-        if (operators is not { Count: > 0 })
-        {
-            throw new ArgumentException("At least one operator must be provided.", nameof(operators));
-        }
+        base.ApplyOperators(operators);
 
         // Check if all weights are zero - if so, use uniform weights
         var hasNonZeroWeights = operators.Any(op => op.CustomWeight > 0);
         
         if (hasNonZeroWeights)
         {
-            // Use custom weights for selection
             _rouletteWheel = WeightedRouletteWheel<BaseOperator>.Init(operators, op => op.CustomWeight);
         }
         else
         {
-            // Fallback to uniform weights when all custom weights are zero
             _rouletteWheel = WeightedRouletteWheel<BaseOperator>.InitWithUniformWeights(operators);
         }
     }

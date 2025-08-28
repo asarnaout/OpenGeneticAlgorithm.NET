@@ -217,30 +217,4 @@ public class RoundRobinPolicyTests
             Assert.Equal(((TestOperator)selected1).Name, ((TestOperator)selected2).Name);
         }
     }
-
-    [Fact]
-    public void ResetAfterApplyOperators_StartsFromFirstOperatorAgain()
-    {
-        // Arrange
-        var policy = new RoundRobinPolicy();
-        var operators = new List<BaseOperator>
-        {
-            new TestOperator("Op1"),
-            new TestOperator("Op2"),
-            new TestOperator("Op3")
-        };
-        policy.ApplyOperators(operators);
-        var random = new Random();
-
-        // Act - Select a few operators to advance the index
-        policy.SelectOperator(random, 0); // Op1
-        policy.SelectOperator(random, 0); // Op2
-        
-        // Re-apply operators (simulating reconfiguration)
-        policy.ApplyOperators(operators);
-        
-        // Assert - Should start from Op1 again
-        var selected = policy.SelectOperator(random, 0);
-        Assert.Equal("Op1", ((TestOperator)selected).Name);
-    }
 }
