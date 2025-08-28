@@ -192,9 +192,6 @@ public class OpenGARunner<T>
     /// <summary>
     /// Updates the Adaptive Pursuit Policy algorithm with performance feedback from a crossover operation.
     /// </summary>
-    /// <param name="crossoverStrategy">The crossover strategy that was used</param>
-    /// <param name="couple">The parent couple involved in crossover</param>
-    /// <param name="offspring">The offspring produced by crossover</param>
     private void UpdateAdaptivePursuitReward(
         AdaptivePursuitPolicy adaptivePursuit,
         BaseCrossoverStrategy<T> crossoverStrategy,
@@ -226,6 +223,47 @@ public class OpenGARunner<T>
             bestOffspringFitness,
             populationFitnessRange,
             offspringDiversity);
+    }
+
+    /// <summary>
+    /// Updates the Adaptive Pursuit Policy with performance feedback from a replacement operation.
+    /// 
+    /// Rationale:
+    /// - Replacement quality is better captured by changes in the population as a whole, not only the single best individual.
+    /// - We therefore use mean fitness improvement from pre- to post-replacement as the primary reward signal.
+    /// - To encourage maintaining healthy exploration, we add a diversity component based on the change in fitness standard deviation.
+    /// - Metrics are computed immediately after replacement and before mutation/repair to isolate the replacement effect.
+    /// </summary>
+    private static void UpdateAdaptivePursuitRewardForReplacement(
+        AdaptivePursuitPolicy adaptivePursuit,
+        BaseReplacementStrategy<T> replacementStrategy,
+        Chromosome<T>[] preReplacementPopulation,
+        Chromosome<T>[] postReplacementPopulation)
+    {
+        // Fitness arrays
+        var preFitnesses = preReplacementPopulation.Select(c => c.Fitness).ToArray();
+        var postFitnesses = postReplacementPopulation.Select(c => c.Fitness).ToArray();
+
+        // Primary signal: mean fitness improvement across the whole population
+        var preMean = preFitnesses.Average();
+        var postMean = postFitnesses.Average();
+
+        // Normalization scale: use the fitness range of the pre-replacement population to keep scale consistent
+        var preRange = preFitnesses.Max() - preFitnesses.Min();
+
+        // Diversity component: change in standard deviation (positive favors exploration)
+        var preStd = preFitnesses.StandardDeviation();
+        var postStd = postFitnesses.StandardDeviation();
+        var diversityDelta = postStd - preStd;
+
+        // Feed the signals to Adaptive Pursuit. We map mean improvement to the primary reward path,
+        // and use diversity change as the auxiliary term (internally weighted by diversityWeight).
+        adaptivePursuit.UpdateReward(
+            replacementStrategy,
+            preMean,
+            postMean,
+            preRange,
+            diversityDelta);
     }
 
     /// <summary>
@@ -266,7 +304,8 @@ public class OpenGARunner<T>
 
             List<Chromosome<T>> offspring = [];
 
-            var replacementStrategy = (BaseReplacementStrategy<T>)_replacementStrategyRegistration.GetReplacementSelectionPolicy().SelectOperator(_random, CurrentEpoch);
+            var replacementSelectionPolicy = _replacementStrategyRegistration.GetReplacementSelectionPolicy();
+            var replacementStrategy = (BaseReplacementStrategy<T>)replacementSelectionPolicy.SelectOperator(_random, CurrentEpoch);
 
             var requiredNumberOfOffspring = CalculateOptimalOffspringCount(replacementStrategy);
 
@@ -318,7 +357,16 @@ public class OpenGARunner<T>
                 }
             }
 
+            // Keep a snapshot to isolate replacement impact (copy array to avoid in-place modifications)
+            var preReplacementPopulation = Population.ToArray();
+
             Population = replacementStrategy.ApplyReplacement(Population, [.. offspring], _random, CurrentEpoch);
+
+            // Update Adaptive Pursuit for replacement based on immediate post-replacement population (before mutation)
+            if (replacementSelectionPolicy is AdaptivePursuitPolicy adaptiveReplacement)
+            {
+                UpdateAdaptivePursuitRewardForReplacement(adaptiveReplacement, replacementStrategy, preReplacementPopulation, Population);
+            }
 
             foreach (var chromosome in Population)
             {
