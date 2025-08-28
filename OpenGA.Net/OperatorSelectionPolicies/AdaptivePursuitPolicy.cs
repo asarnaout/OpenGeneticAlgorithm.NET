@@ -103,37 +103,37 @@ public class AdaptivePursuitPolicy(
     }
     
     /// <summary>
-    /// Updates the reward for a specific operator based on its performance.
-    /// Step 1: Calculates the reward as the improvement in fitness by subtracting the best parent's fitness from the best offspring's fitness.
-    /// Step 2: Normalizes the reward by the population's fitness range.
-    /// Step 3: Adds a diversity bonus to get the 'total reward'
-    /// Step 4: Adds the 'total reward' to the recent rewards queue for that specific operator. If the queue grows beyond a max window size, then the oldest reward is removed.
-    /// Step 5: Uses the recent rewards queue for that specific operator to calculate a weighted average reward. This weighted average emphasizes recent weights more than older ones.
-    /// Step 6: Updates the probabilities if the operator has been used a sufficient number of times.
+    /// Updates the reward for a specific operator based on its observed effect.
+    /// Steps:
+    /// 1) Compute fitness improvement as (postFitnessMetric - preFitnessMetric)
+    /// 2) Normalize by a problem-scale factor (normalizationRange)
+    /// 3) Add a diversity component (diversitySignal) to encourage exploration
+    /// 4) Push into a recent-rewards window and compute a recency-weighted average
+    /// 5) Adapt operator probabilities when minimum usage thresholds are met
     /// </summary>
-    /// <param name="operator">The operator that was used</param>
-    /// <param name="bestParentFitness">Fitness of the best parent before operator application</param>
-    /// <param name="bestOffspringFitness">Fitness of the best offspring after operator application</param>
-    /// <param name="populationFitnessRange">Current fitness range in the population for normalization</param>
-    /// <param name="offspringDiversity">Measure of diversity among the offspring (optional)</param>
+    /// <param name="appliedOperator">The operator that was applied</param>
+    /// <param name="preFitnessMetric">Fitness metric before applying the operator</param>
+    /// <param name="postFitnessMetric">Fitness metric after applying the operator</param>
+    /// <param name="normalizationRange">Scale used to normalize fitness improvement (e.g., population fitness range)</param>
+    /// <param name="diversitySignal">Auxiliary diversity signal (e.g., offspring std-dev or diversity delta)</param>
     public void UpdateReward(
-        BaseOperator @operator,
-        double bestParentFitness,
-        double bestOffspringFitness,
-        double populationFitnessRange,
-        double offspringDiversity)
+        BaseOperator appliedOperator,
+        double preFitnessMetric,
+        double postFitnessMetric,
+        double normalizationRange,
+        double diversitySignal)
     {
-        if (!_operatorProbabilities.ContainsKey(@operator))
+        if (!_operatorProbabilities.ContainsKey(appliedOperator))
         {
-            throw new ArgumentException("Unknown operator.", nameof(@operator));
+            throw new ArgumentException("Unknown operator.", nameof(appliedOperator));
         }
         
         // Calculate primary fitness improvement reward
-        var fitnessImprovement = bestOffspringFitness - bestParentFitness;
+        var fitnessImprovement = postFitnessMetric - preFitnessMetric;
         
         // Normalize by population fitness range to handle different problem scales
-        var normalizedReward = populationFitnessRange > 0 
-            ? fitnessImprovement / populationFitnessRange 
+        var normalizedReward = normalizationRange > 0 
+            ? fitnessImprovement / normalizationRange 
             : fitnessImprovement;
 
         /*
@@ -142,10 +142,10 @@ public class AdaptivePursuitPolicy(
          * genetic combinations, maintaining population diversity which is crucial for finding
          * global optima rather than getting stuck in local optima
          */
-        var diversityBonus = _diversityWeight * offspringDiversity;
+        var diversityBonus = _diversityWeight * diversitySignal;
         var totalReward = normalizedReward + diversityBonus;
         
-        var recentQueue = _recentRewards[@operator];
+        var recentQueue = _recentRewards[appliedOperator];
         recentQueue.Enqueue(totalReward);
         if (recentQueue.Count > _rewardWindowSize)
         {
@@ -153,7 +153,7 @@ public class AdaptivePursuitPolicy(
         }
         
         var weightedReward = CalculateWeightedReward(recentQueue);
-        _operatorRewards[@operator] = weightedReward;
+        _operatorRewards[appliedOperator] = weightedReward;
 
         /*
          * Update probabilities if minimum usage threshold is met. We update probabilities only if all
