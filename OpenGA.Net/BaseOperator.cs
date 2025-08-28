@@ -48,7 +48,7 @@ public abstract class BaseOperator : IEquatable<BaseOperator>
     /// var strategies = new[] { onePointCrossover, uniformCrossover };
     /// </code>
     /// </example>
-    public BaseOperator WithCustomWeight(float weight)
+    internal BaseOperator WithCustomWeight(float weight)
     {
         if (weight < 0)
         {
