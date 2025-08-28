@@ -310,9 +310,9 @@ public class MyTerminationStrategy<T> : BaseTerminationStrategy<T>
 var result = OpenGARunner<MyGeneType>
     .Initialize(initialPopulation)
     .ApplyReproductionSelector(c => c.ApplyCustomReproductionSelector(new MyReproductionSelector<MyGeneType>()))
-    .ApplyCrossoverStrategies(c => c.ApplyCustomCrossoverStrategy(new MyCustomCrossover<MyGeneType>()))
-    .ApplyReplacementStrategy(c => c.ApplyCustomReplacementStrategy(new MyReplacementStrategy<MyGeneType>()))
-    .Termination(c => c.Custom(new MyTerminationStrategy<MyGeneType>(50)))
+    .Crossover(c => c.RegisterSingle(s => s.CustomCrossover(new MyCustomCrossover<MyGeneType>())))
+    .Replacement(r => r.RegisterSingle(s => s.Custom(new MyReplacementStrategy<MyGeneType>())))
+    .Termination(t => t.Custom(new MyTerminationStrategy<MyGeneType>(50)))
     .RunToCompletion();
 ```
 
