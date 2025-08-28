@@ -1,19 +1,22 @@
+using OpenGA.Net.OperatorSelectionPolicies;
+
 namespace OpenGA.Net.ReplacementStrategies;
 
 public class ReplacementStrategyConfiguration<T>
 {
-    internal IList<BaseReplacementStrategy<T>> ReplacementStrategies = [];
+    internal BaseReplacementStrategy<T>? ReplacementStrategy { get; private set; }
+
+    private readonly OperatorSelectionPolicyConfiguration _policyConfig = new();
 
     /// <summary>
     /// Apply random elimination replacement strategy. Eliminates chromosomes randomly from the population 
     /// to make room for offspring, ensuring population size is maintained.
     /// Each chromosome has an equal chance of being eliminated.
     /// </summary>
-    public BaseReplacementStrategy<T> Random()
+    public void Random()
     {
         var result = new RandomEliminationReplacementStrategy<T>();
-        ReplacementStrategies.Add(result);
-        return result;
+        ReplacementStrategy = result;
     }
 
     /// <summary>
@@ -21,11 +24,10 @@ public class ReplacementStrategyConfiguration<T>
     /// In this strategy, no parent chromosomes survive to the next generation - the entire population
     /// is renewed with the offspring generation.
     /// </summary>
-    public BaseReplacementStrategy<T> Generational()
+    public void Generational()
     {
         var result = new GenerationalReplacementStrategy<T>();
-        ReplacementStrategies.Add(result);
-        return result;
+        ReplacementStrategy = result;
     }
 
     /// <summary>
@@ -40,7 +42,7 @@ public class ReplacementStrategyConfiguration<T>
     /// <exception cref="ArgumentOutOfRangeException">
     /// Thrown when elitePercentage is not between 0.0 and 1.0.
     /// </exception>
-    public BaseReplacementStrategy<T> Elitist(float elitePercentage = 0.1f)
+    public void Elitist(float elitePercentage = 0.1f)
     {
         if (elitePercentage < 0.0f || elitePercentage > 1.0f)
         {
@@ -51,8 +53,7 @@ public class ReplacementStrategyConfiguration<T>
         }
 
         var result = new ElitistReplacementStrategy<T>(elitePercentage);
-        ReplacementStrategies.Add(result);
-        return result;
+        ReplacementStrategy = result;
     }
 
     /// <summary>
@@ -70,7 +71,7 @@ public class ReplacementStrategyConfiguration<T>
     /// <exception cref="ArgumentOutOfRangeException">
     /// Thrown when tournamentSize is less than 3.
     /// </exception>
-    public BaseReplacementStrategy<T> Tournament(int tournamentSize = 3, bool stochasticTournament = true)
+    public void Tournament(int tournamentSize = 3, bool stochasticTournament = true)
     {
         if (tournamentSize < 3)
         {
@@ -81,8 +82,7 @@ public class ReplacementStrategyConfiguration<T>
         }
 
         var result = new TournamentReplacementStrategy<T>(tournamentSize, stochasticTournament);
-        ReplacementStrategies.Add(result);
-        return result;
+        ReplacementStrategy = result;
     }
 
     /// <summary>
@@ -90,11 +90,10 @@ public class ReplacementStrategyConfiguration<T>
     /// roulette wheel where older chromosomes have higher probability of being eliminated.
     /// This encourages population turnover while maintaining some genetic diversity.
     /// </summary>
-    public BaseReplacementStrategy<T> AgeBased()
+    public void AgeBased()
     {
         var result = new AgeBasedReplacementStrategy<T>();
-        ReplacementStrategies.Add(result);
-        return result;
+        ReplacementStrategy = result;
     }
 
     /// <summary>
@@ -102,11 +101,10 @@ public class ReplacementStrategyConfiguration<T>
     /// to dictate how chromosomes are eliminated from the population to make room for offspring.
     /// </summary>
     /// <param name="replacementStrategy">The custom replacement strategy to apply</param>
-    public BaseReplacementStrategy<T> Custom(BaseReplacementStrategy<T> replacementStrategy)
+    public void Custom(BaseReplacementStrategy<T> replacementStrategy)
     {
         ArgumentNullException.ThrowIfNull(replacementStrategy, nameof(replacementStrategy));
-        ReplacementStrategies.Add(replacementStrategy);
-        return replacementStrategy;
+        ReplacementStrategy = replacementStrategy;
     }
 
     /// <summary>
@@ -121,7 +119,7 @@ public class ReplacementStrategyConfiguration<T>
     /// <param name="initialTemperature">The starting temperature value. Higher values promote more exploration initially.
     /// Must be greater than 0. Defaults to 1.0.</param>
     /// <exception cref="ArgumentException">Thrown when temperatureDecayRate is less than 0 or initialTemperature is less than or equal to 0.</exception>
-    public BaseReplacementStrategy<T> Boltzmann(double temperatureDecayRate = 0.05, double initialTemperature = 1.0)
+    public void Boltzmann(double temperatureDecayRate = 0.05, double initialTemperature = 1.0)
     {
         if (temperatureDecayRate < 0)
         {
@@ -134,8 +132,7 @@ public class ReplacementStrategyConfiguration<T>
         }
         
         var result = new BoltzmannReplacementStrategy<T>(temperatureDecayRate, initialTemperature, useExponentialDecay: true);
-        ReplacementStrategies.Add(result);
-        return result;
+        ReplacementStrategy = result;
     }
 
     /// <summary>
@@ -150,7 +147,7 @@ public class ReplacementStrategyConfiguration<T>
     /// <param name="initialTemperature">The starting temperature value. Higher values promote more exploration initially.
     /// Must be greater than 0. Defaults to 1.0.</param>
     /// <exception cref="ArgumentException">Thrown when temperatureDecayRate is less than 0 or initialTemperature is less than or equal to 0.</exception>
-    public BaseReplacementStrategy<T> BoltzmannWithLinearDecay(double temperatureDecayRate = 0.01, double initialTemperature = 1.0)
+    public void BoltzmannWithLinearDecay(double temperatureDecayRate = 0.01, double initialTemperature = 1.0)
     {
         if (temperatureDecayRate < 0)
         {
@@ -163,7 +160,23 @@ public class ReplacementStrategyConfiguration<T>
         }
         
         var result = new BoltzmannReplacementStrategy<T>(temperatureDecayRate, initialTemperature, useExponentialDecay: false);
-        ReplacementStrategies.Add(result);
-        return result;
+        ReplacementStrategy = result;
+    }
+
+    internal void ValidateAndDefault()
+    {
+        if (ReplacementStrategy is null)
+        {
+            Elitist();
+        }
+
+        _policyConfig.FirstChoice();
+
+        _policyConfig.Policy!.ApplyOperators([ReplacementStrategy!]);
+    }
+
+    internal OperatorSelectionPolicy GetReplacementSelectionPolicy()
+    {
+        return _policyConfig.Policy;
     }
 }

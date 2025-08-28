@@ -179,52 +179,14 @@ public class OpenGARunner<T>
             _reproductionSelectorConfig.ApplyTournamentReproductionSelector();
         }
 
-        if (_replacementStrategyRegistration.GetRegisteredReplacementStrategies() is [])
-        {
-            _replacementStrategyRegistration.RegisterSingle(s => s.Elitist());
-        }
-
         if (_terminationStrategyConfig.TerminationStrategies is [])
         {
             _terminationStrategyConfig.MaximumEpochs(100);
         }
 
         _crossoverStrategyRegistration.ValidateAndDefault();
-
-        // Setup replacement strategy operator selection policy
-        if (_replacementStrategyRegistration.GetRegisteredReplacementStrategies() is { Count: 1 })
-        {
-            _replacementStrategyRegistration.WithPolicy(p => p.FirstChoice());
-        }
-        else
-        {
-            var hasCustomWeights = _replacementStrategyRegistration.GetRegisteredReplacementStrategies()
-                .Any(strategy => strategy.CustomWeight > 0);
-
-            if (_replacementStrategyRegistration.GetReplacementSelectionPolicy() is not null)
-            {
-                if (hasCustomWeights && _replacementStrategyRegistration.GetReplacementSelectionPolicy() is not CustomWeightPolicy)
-                {
-                    throw new OperatorSelectionPolicyConflictException(
-                        @"Cannot apply a non-CustomWeight operator selection policy when replacement strategies 
-                        have custom weights. Either remove the custom weights using WithCustomWeight(0) or use 
-                        CustomWeights().");
-                }
-            }
-            else if (hasCustomWeights)
-            {
-                // Auto-apply CustomWeightPolicy when weights are detected and no policy is explicitly set
-                _replacementStrategyRegistration.WithPolicy(p => p.CustomWeights());
-            }
-            else
-            {
-                // If multiple replacement strategies and no operator policy specified then default to round robin
-                _replacementStrategyRegistration.WithPolicy(p => p.RoundRobin());
-            }
-        }
-
-        _replacementStrategyRegistration.GetReplacementSelectionPolicy()!
-            .ApplyOperators([.._replacementStrategyRegistration.GetRegisteredReplacementStrategies()]);
+        
+        _replacementStrategyRegistration.ValidateAndDefault();
     }
 
     /// <summary>

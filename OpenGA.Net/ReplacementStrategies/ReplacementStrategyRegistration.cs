@@ -12,11 +12,13 @@ namespace OpenGA.Net.ReplacementStrategies;
 /// <typeparam name="T">The type of gene values contained within chromosomes</typeparam>
 public class ReplacementStrategyRegistration<T>
 {
-    private readonly ReplacementStrategyConfiguration<T> _replacementStrategyConfig = new();
+    private readonly ReplacementStrategyConfiguration<T> _singleReplacementStrategyConfig = new();
 
-    private readonly OperatorSelectionPolicyConfiguration _replacementSelectionPolicyConfig = new();
+    private readonly MultiReplacementStrategyConfiguration<T> _multiReplacementStrategyConfig = new();
 
     private float? _offspringGenerationRate;
+
+    private bool _isMultiRegistration = false;
 
     /// <summary>
     /// Registers a single replacement strategy for use in the genetic algorithm.
@@ -32,24 +34,27 @@ public class ReplacementStrategyRegistration<T>
     /// </param>
     /// <exception cref="ArgumentNullException">Thrown when singleRegistration is null</exception>
     /// <exception cref="InvalidOperationException">
-    /// Thrown when multiple replacement strategies are found at the last step of this method's execution.
-    /// Use RegisterMulti for multiple strategy registration.
+    /// Thrown when no replacement strategy is found at the last step of this method's execution.
     /// </exception>
     /// <example>
     /// <code>
     /// .Replacement(r => r.RegisterSingle(s => s.Elitist(0.1f)))
     /// </code>
     /// </example>
-    public void RegisterSingle(Action<ReplacementStrategyConfiguration<T>> singleRegistration)
+    public ReplacementStrategyRegistration<T> RegisterSingle(Action<ReplacementStrategyConfiguration<T>> singleRegistration)
     {
         ArgumentNullException.ThrowIfNull(singleRegistration, nameof(singleRegistration));
 
-        singleRegistration(_replacementStrategyConfig);
-        
-        if (_replacementStrategyConfig.ReplacementStrategies.Count > 1)
+        singleRegistration(_singleReplacementStrategyConfig);
+
+        if (_singleReplacementStrategyConfig.ReplacementStrategy is null)
         {
-            throw new InvalidOperationException("Multiple replacement strategies registered. Use RegisterMulti for multiple registrations.");
+            throw new InvalidOperationException("No replacement strategy was registered.");
         }
+
+        _isMultiRegistration = false;
+
+        return this;
     }
 
     /// <summary>
@@ -72,67 +77,25 @@ public class ReplacementStrategyRegistration<T>
     /// </param>
     /// <returns>
     /// The ReplacementStrategyRegistration instance for method chaining, allowing
-    /// further configuration such as OffspringGenerationRate() or WithPolicy() calls.
+    /// further configuration such as OffspringGenerationRate() calls.
     /// </returns>
     /// <exception cref="ArgumentNullException">Thrown when configurator is null</exception>
     /// <example>
     /// <code>
-    /// .Replacement(r => r.RegisterMulti(m => {
-    ///     m.Elitist(0.1f).WithCustomWeight(0.7f);
-    ///     m.Tournament(3, true).WithCustomWeight(0.3f);
-    /// }).OffspringGenerationRate(0.5f))
+    /// .Replacement(r => r.RegisterMulti(m => m
+    ///     .Elitist(0.1f, 0.7f)
+    ///     .Tournament(3, true, 0.3f)
+    /// ).OverrideOffspringGenerationRate(0.5f))
     /// </code>
     /// </example>
-    public ReplacementStrategyRegistration<T> RegisterMulti(Action<ReplacementStrategyConfiguration<T>> configurator)
+    public ReplacementStrategyRegistration<T> RegisterMulti(Action<MultiReplacementStrategyConfiguration<T>> configurator)
     {
         ArgumentNullException.ThrowIfNull(configurator, nameof(configurator));
 
-        configurator(_replacementStrategyConfig);
+        configurator(_multiReplacementStrategyConfig);
+        _isMultiRegistration = true;
 
         return this;
-    }
-
-    /// <summary>
-    /// Configures the operator selection policy that determines how replacement strategies are chosen
-    /// when multiple strategies are registered.
-    /// 
-    /// This method allows explicit configuration of the operator selection policy, overriding
-    /// OpenGARunner's automatic defaults. However, there are important interaction rules:
-    /// 
-    /// - If replacement strategies have custom weights (> 0) but a non-CustomWeight policy is applied,
-    ///   OpenGARunner will throw an OperatorSelectionPolicyConflictException during DefaultMissingStrategies()
-    /// - If only one replacement strategy is registered, OpenGARunner will override any policy with FirstChoicePolicy
-    /// - If multiple strategies exist without custom weights and no policy is specified, AdaptivePursuitPolicy is applied
-    /// - If custom weights are detected without an explicit policy, CustomWeightPolicy is automatically applied
-    /// 
-    /// Common policies include:
-    /// - FirstChoicePolicy: Always selects the first registered strategy (automatic for single strategies)
-    /// - RandomChoicePolicy: Randomly selects between strategies with equal probability
-    /// - AdaptivePursuitPolicy: Adapts selection based on performance feedback (default for multiple strategies)
-    /// - CustomWeightPolicy: Selects based on configured weights (automatic when weights are detected)
-    /// - RoundRobinPolicy: Cycles through strategies in order
-    /// </summary>
-    /// <param name="policyConfigurator">
-    /// A configuration action that sets up the operator selection policy.
-    /// Examples: p => p.AdaptivePursuit(), p => p.CustomWeights()
-    /// </param>
-    /// <exception cref="ArgumentNullException">Thrown when policyConfigurator is null</exception>
-    /// <exception cref="OperatorSelectionPolicyConflictException">
-    /// Thrown by OpenGARunner if custom weights are configured but a non-CustomWeight policy is applied
-    /// </exception>
-    /// <example>
-    /// <code>
-    /// .Replacement(r => r.RegisterMulti(m => {
-    ///     m.Elitist();
-    ///     m.Tournament();
-    /// }).WithPolicy(p => p.AdaptivePursuit()))
-    /// </code>
-    /// </example>
-    public void WithPolicy(Action<OperatorSelectionPolicyConfiguration> policyConfigurator)
-    {
-        ArgumentNullException.ThrowIfNull(policyConfigurator, nameof(policyConfigurator));
-
-        policyConfigurator(_replacementSelectionPolicyConfig);
     }
 
     /// <summary>
@@ -180,10 +143,10 @@ public class ReplacementStrategyRegistration<T>
     ///                    .OverrideOffspringGenerationRate(0.4f))
     /// 
     /// // With multiple strategies, still using the same override rate
-    /// .Replacement(r => r.RegisterMulti(m => {
-    ///     m.Elitist().WithCustomWeight(0.7f);
-    ///     m.Tournament().WithCustomWeight(0.3f);
-    /// }).OverrideOffspringGenerationRate(0.6f))
+    /// .Replacement(r => r.RegisterMulti(m => m
+    ///     .Elitist().WithCustomWeight(0.7f)
+    ///     .Tournament().WithCustomWeight(0.3f)
+    /// ).OverrideOffspringGenerationRate(0.6f))
     /// </code>
     /// </example>
     public ReplacementStrategyRegistration<T> OverrideOffspringGenerationRate(float offspringGenerationRate)
@@ -202,13 +165,29 @@ public class ReplacementStrategyRegistration<T>
         return _offspringGenerationRate;
     }
 
+    internal void ValidateAndDefault()
+    {
+        if (_isMultiRegistration)
+        {
+            _multiReplacementStrategyConfig.ValidateAndDefault();
+        }
+        else
+        {
+            _singleReplacementStrategyConfig.ValidateAndDefault();
+        }
+    }
+
     internal IList<BaseReplacementStrategy<T>> GetRegisteredReplacementStrategies()
     {
-        return _replacementStrategyConfig.ReplacementStrategies;
+        return _isMultiRegistration
+            ? _multiReplacementStrategyConfig.ReplacementStrategies
+            : [_singleReplacementStrategyConfig.ReplacementStrategy!];
     }
 
     internal OperatorSelectionPolicy GetReplacementSelectionPolicy()
     {
-        return _replacementSelectionPolicyConfig.Policy;
+        return _isMultiRegistration
+            ? _multiReplacementStrategyConfig.GetReplacementSelectionPolicy()
+            : _singleReplacementStrategyConfig.GetReplacementSelectionPolicy();
     }
 }

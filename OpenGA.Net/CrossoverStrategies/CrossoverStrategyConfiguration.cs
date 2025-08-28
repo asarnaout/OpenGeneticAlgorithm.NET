@@ -53,11 +53,14 @@ public class CrossoverStrategyConfiguration<T>
 
     internal void ValidateAndDefault()
     {
-        CrossoverStrategy ??= new OnePointCrossoverStrategy<T>();
-
+        if (CrossoverStrategy is null)
+        {
+            OnePointCrossover();
+        }
+        
         _policyConfig.FirstChoice();
 
-        _policyConfig.Policy!.ApplyOperators([CrossoverStrategy]);
+        _policyConfig.Policy!.ApplyOperators([CrossoverStrategy!]);
     }
 
     internal OperatorSelectionPolicy GetCrossoverSelectionPolicy()

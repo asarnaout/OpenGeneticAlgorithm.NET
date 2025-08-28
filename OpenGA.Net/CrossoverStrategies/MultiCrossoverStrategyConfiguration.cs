@@ -130,27 +130,35 @@ public class MultiCrossoverStrategyConfiguration<T>
 
     internal void ValidateAndDefault()
     {
-        var hasCustomWeights = CrossoverStrategies.Any(strategy => strategy.CustomWeight > 0);
-
-        if (_policyConfig.Policy is not null)
+        if (CrossoverStrategies is [])
         {
-            if (hasCustomWeights && _policyConfig.Policy is not CustomWeightPolicy)
-            {
-                throw new OperatorSelectionPolicyConflictException(
-                    @"Cannot apply a non-CustomWeight operator selection policy when crossover strategies 
-                        have custom weights. Either remove the custom weights using WithCustomWeight(0) or use 
-                        CustomWeights().");
-            }
-        }
-        else if (hasCustomWeights)
-        {
-            // Auto-apply CustomWeightPolicy when weights are detected and no policy is explicitly set
-            _policyConfig.CustomWeights();
+            OnePointCrossover();
+            _policyConfig.FirstChoice();
         }
         else
         {
-            // If multiple crossover strategies and no operator policy specified then default to adaptive pursuit
-            _policyConfig.AdaptivePursuit();
+            var hasCustomWeights = CrossoverStrategies.Any(strategy => strategy.CustomWeight > 0);
+
+            if (_policyConfig.Policy is not null)
+            {
+                if (hasCustomWeights && _policyConfig.Policy is not CustomWeightPolicy)
+                {
+                    throw new OperatorSelectionPolicyConflictException(
+                        @"Cannot apply a non-CustomWeight operator selection policy when crossover strategies 
+                            have custom weights. Either remove the custom weights using WithCustomWeight(0) or use 
+                            CustomWeights().");
+                }
+            }
+            else if (hasCustomWeights)
+            {
+                // Auto-apply CustomWeightPolicy when weights are detected and no policy is explicitly set
+                _policyConfig.CustomWeights();
+            }
+            else
+            {
+                // If multiple crossover strategies and no operator policy specified then default to adaptive pursuit
+                _policyConfig.AdaptivePursuit();
+            }
         }
 
         _policyConfig.Policy!.ApplyOperators([..CrossoverStrategies]);
