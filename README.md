@@ -107,8 +107,8 @@ Your solution candidates. Strongly typed and extensible. Each `Chromosome<T>` su
 
 Tip: See the TSP chromosome in the Quick Start above for a concrete example. The pattern is the same for any problem: choose a gene representation, define a fitness function, add a simple mutation, and optionally repair to enforce constraints.
 
-### 🎯 **Reproduction Selectors**
-Choose the best parents for the next generation:
+### 🎯 **Parent Selection Strategies**
+Choose the best parents to participate in mating/crossover:
 
 | Strategy | When to Use | Problem Characteristics | Population Size | Fitness Landscape |
 |----------|-------------|------------------------|-----------------|-------------------|
