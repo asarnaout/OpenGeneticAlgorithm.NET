@@ -145,7 +145,7 @@ public class OpenGARunnerIntegrationTests
             OpenGARunner<int>.Initialize(population)
                 .Crossover(s => {
                     s.RegisterSingle(c => c.OnePointCrossover());
-                    s.Rate(invalidRate);
+                    s.WithCrossoverRate(invalidRate);
                 }));
     }
 
@@ -225,7 +225,7 @@ public class OpenGARunnerIntegrationTests
             .MutationRate(0.1f)
             .Crossover(s => {
                 s.RegisterSingle(c => c.OnePointCrossover());
-                s.Rate(0.8f);
+                s.WithCrossoverRate(0.8f);
             });
 
         // Act - Should use default 100 epochs but we need to ensure it doesn't run too long
@@ -258,7 +258,7 @@ public class OpenGARunnerIntegrationTests
             .Replacement(config => config.RegisterSingle(s => s.Elitist(0.2f)))
             .Termination(config => config.MaximumEpochs(10))
             .MutationRate(0.3f)
-            .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.Rate(0.8f); });
+            .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.WithCrossoverRate(0.8f); });
 
         // Act
         var result = runner.RunToCompletion();
@@ -283,7 +283,7 @@ public class OpenGARunnerIntegrationTests
             .Replacement(config => config.RegisterSingle(s => s.Elitist(0.1f)))
             .Termination(config => config.MaximumEpochs(15))
             .MutationRate(0.2f)
-            .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.Rate(0.9f); });
+            .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.WithCrossoverRate(0.9f); });
 
         // Act
         var result = runner.RunToCompletion();
@@ -307,7 +307,7 @@ public class OpenGARunnerIntegrationTests
             .Replacement(config => config.RegisterSingle(s => s.Elitist(0.2f)))
             .Termination(config => config.MaximumEpochs(12))
             .MutationRate(0.1f)
-            .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.Rate(0.8f); });
+            .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.WithCrossoverRate(0.8f); });
 
         // Act
         var result = runner.RunToCompletion();
@@ -330,7 +330,7 @@ public class OpenGARunnerIntegrationTests
             .Replacement(config => config.RegisterSingle(s => s.Random()))
             .Termination(config => config.MaximumEpochs(8))
             .MutationRate(0.25f)
-            .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.Rate(0.7f); });
+            .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.WithCrossoverRate(0.7f); });
 
         // Act
         var result = runner.RunToCompletion();
@@ -356,7 +356,7 @@ public class OpenGARunnerIntegrationTests
             .Replacement(config => config.RegisterSingle(s => s.Generational()))
             .Termination(config => config.MaximumEpochs(5))
             .MutationRate(0.3f)
-            .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.Rate(0.8f); });
+            .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.WithCrossoverRate(0.8f); });
 
         // Act
         var result = runner.RunToCompletion();
@@ -379,7 +379,7 @@ public class OpenGARunnerIntegrationTests
             .Replacement(config => config.RegisterSingle(s => s.Elitist(0.3f))) // Protect top 30%
             .Termination(config => config.MaximumEpochs(10))
             .MutationRate(0.2f)
-            .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.Rate(0.9f); });
+            .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.WithCrossoverRate(0.9f); });
 
         // Act
         var result = runner.RunToCompletion();
@@ -402,7 +402,7 @@ public class OpenGARunnerIntegrationTests
             .Replacement(config => config.RegisterSingle(s => s.Tournament(4, true)))
             .Termination(config => config.MaximumEpochs(8))
             .MutationRate(0.3f)
-            .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.Rate(0.7f); });
+            .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.WithCrossoverRate(0.7f); });
 
         // Act
         var result = runner.RunToCompletion();
@@ -423,7 +423,7 @@ public class OpenGARunnerIntegrationTests
             .Replacement(config => config.RegisterSingle(s => s.AgeBased()))
             .Termination(config => config.MaximumEpochs(8))
             .MutationRate(0.25f)
-            .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.Rate(0.8f); });
+            .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.WithCrossoverRate(0.8f); });
 
         // Act
         var result = runner.RunToCompletion();
@@ -449,7 +449,7 @@ public class OpenGARunnerIntegrationTests
             .Replacement(config => config.RegisterSingle(s => s.Generational()))
             .Termination(config => config.MaximumEpochs(maxEpochs))
             .MutationRate(0.2f)
-            .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.Rate(0.8f); });
+            .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.WithCrossoverRate(0.8f); });
 
         // Act
         var startTime = DateTime.UtcNow;
@@ -475,7 +475,7 @@ public class OpenGARunnerIntegrationTests
             .Replacement(config => config.RegisterSingle(s => s.Generational()))
             .Termination(config => config.MaximumDuration(maxDuration))
             .MutationRate(0.2f)
-            .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.Rate(0.8f); });
+            .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.WithCrossoverRate(0.8f); });
 
         // Act
         var startTime = DateTime.UtcNow;
@@ -500,7 +500,7 @@ public class OpenGARunnerIntegrationTests
             .Replacement(config => config.RegisterSingle(s => s.Elitist(0.5f))) // High elitism
             .Termination(config => config.TargetStandardDeviation(5.0, 3))
             .MutationRate(0.05f) // Low mutation to maintain convergence
-            .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.Rate(0.6f); });
+            .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.WithCrossoverRate(0.6f); });
 
         // Act
         var startTime = DateTime.UtcNow;
@@ -528,7 +528,7 @@ public class OpenGARunnerIntegrationTests
                 config => config.MaximumDuration(TimeSpan.FromMinutes(1))
             )
             .MutationRate(0.2f)
-            .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.Rate(0.8f); });
+            .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.WithCrossoverRate(0.8f); });
 
         // Act
         var startTime = DateTime.UtcNow;
@@ -560,7 +560,7 @@ public class OpenGARunnerIntegrationTests
             .Replacement(config => config.RegisterSingle(s => s.Elitist(0.2f)))
             .Termination(config => config.MaximumEpochs(5))
             .MutationRate(0.2f)
-            .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.Rate(0.8f); });
+            .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.WithCrossoverRate(0.8f); });
 
         // Act
         var result = runner.RunToCompletion();
@@ -587,7 +587,7 @@ public class OpenGARunnerIntegrationTests
             })
             .Termination(config => config.MaximumEpochs(5))
             .MutationRate(0.2f)
-            .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.Rate(0.8f); });
+            .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.WithCrossoverRate(0.8f); });
 
         // Act
         var result = runner.RunToCompletion();
@@ -608,7 +608,7 @@ public class OpenGARunnerIntegrationTests
             .Replacement(config => config.RegisterSingle(s => s.Elitist(0.3f)))
             .Termination(config => config.MaximumEpochs(6))
             .MutationRate(0.3f)
-            .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.Rate(0.9f); });
+            .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.WithCrossoverRate(0.9f); });
 
         // Act
         var result = runner.RunToCompletion();
@@ -632,7 +632,7 @@ public class OpenGARunnerIntegrationTests
             .ApplyReproductionSelector(config => config.ApplyRandomReproductionSelector())
             .Crossover(s => { 
                 s.RegisterSingle(config => config.OnePointCrossover()); 
-                s.Rate(0.8f); 
+                s.WithCrossoverRate(0.8f); 
             })
             .Replacement(config => config.RegisterSingle(s => s.Generational()))
             .Termination(config => config.MaximumEpochs(6))
@@ -656,7 +656,7 @@ public class OpenGARunnerIntegrationTests
             .ApplyReproductionSelector(config => config.ApplyRandomReproductionSelector())
             .Crossover(s => { 
                 s.RegisterSingle(config => config.UniformCrossover()); 
-                s.Rate(0.8f); 
+                s.WithCrossoverRate(0.8f); 
             })
             .Replacement(config => config.RegisterSingle(s => s.Generational()))
             .Termination(config => config.MaximumEpochs(6))
@@ -680,7 +680,7 @@ public class OpenGARunnerIntegrationTests
             .ApplyReproductionSelector(config => config.ApplyRandomReproductionSelector())
             .Crossover(s => { 
                 s.RegisterSingle(config => config.KPointCrossover(2)); 
-                s.Rate(0.8f); 
+                s.WithCrossoverRate(0.8f); 
             })
             .Replacement(config => config.RegisterSingle(s => s.Generational()))
             .Termination(config => config.MaximumEpochs(6))
@@ -710,7 +710,7 @@ public class OpenGARunnerIntegrationTests
             .ApplyReproductionSelector(config => config.ApplyElitistReproductionSelector(0.2f, 0.1f, true))
             .Crossover(s => { 
                 s.RegisterSingle(config => config.KPointCrossover(2)); 
-                s.Rate(0.85f); 
+                s.WithCrossoverRate(0.85f); 
             })
             .Replacement(config => {
                 config.RegisterSingle(s => s.Elitist(0.15f));
@@ -746,7 +746,7 @@ public class OpenGARunnerIntegrationTests
         
         var runner = OpenGARunner<int>.Initialize(population)
             .MutationRate(0.05f) // Low mutation
-            .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.Rate(0.95f); }) // High crossover
+            .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.WithCrossoverRate(0.95f); }) // High crossover
             .ApplyReproductionSelector(config => config.ApplyFitnessWeightedRouletteWheelReproductionSelector())
             .Replacement(config => config.RegisterSingle(s => s.Elitist(0.25f)))
             .Termination(config => config.MaximumEpochs(10));
@@ -768,7 +768,7 @@ public class OpenGARunnerIntegrationTests
         
         var runner = OpenGARunner<int>.Initialize(population)
             .MutationRate(0.4f) // High mutation
-            .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.Rate(0.5f); }) // Lower crossover
+            .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.WithCrossoverRate(0.5f); }) // Lower crossover
             .ApplyReproductionSelector(config => config.ApplyRandomReproductionSelector())
             .Replacement(config => config.RegisterSingle(s => s.Random()))
             .Termination(config => config.MaximumEpochs(8));
@@ -797,7 +797,7 @@ public class OpenGARunnerIntegrationTests
                 .Replacement(config => config.RegisterSingle(s => s.Generational()))
                 .Termination(config => config.MaximumEpochs(5))
                 .MutationRate(0.2f)
-                .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.Rate(0.8f); });
+                .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.WithCrossoverRate(0.8f); });
 
             var result = runner.RunToCompletion();
             results.Add(result);
@@ -828,7 +828,7 @@ public class OpenGARunnerIntegrationTests
             .Replacement(config => config.RegisterSingle(s => s.Generational()))
             .Termination(config => config.MaximumEpochs(3))
             .MutationRate(0.3f)
-            .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.Rate(0.8f); });
+            .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.WithCrossoverRate(0.8f); });
 
         // Act
         var result = runner.RunToCompletion();
@@ -849,7 +849,7 @@ public class OpenGARunnerIntegrationTests
             .Replacement(config => config.RegisterSingle(s => s.Elitist(1.0f))) // Protect the only chromosome
             .Termination(config => config.MaximumEpochs(3))
             .MutationRate(0.2f)
-            .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.Rate(0.8f); });
+            .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.WithCrossoverRate(0.8f); });
 
         // Act
         var result = runner.RunToCompletion();

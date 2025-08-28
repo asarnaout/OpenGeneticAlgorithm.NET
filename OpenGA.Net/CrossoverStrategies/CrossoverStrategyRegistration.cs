@@ -72,7 +72,7 @@ public class CrossoverStrategyRegistration<T>
     /// </param>
     /// <returns>
     /// The CrossoverStrategyRegistration instance for method chaining, allowing
-    /// further configuration such as Rate() or WithPolicy() calls.
+    /// further configuration such as WithCrossoverRate() or WithPolicy() calls.
     /// </returns>
     /// <exception cref="ArgumentNullException">Thrown when configurator is null</exception>
     /// <example>
@@ -80,7 +80,7 @@ public class CrossoverStrategyRegistration<T>
     /// .Crossover(c => c.RegisterMulti(m => {
     ///     m.OnePointCrossover().WithCustomWeight(0.6f);
     ///     m.UniformCrossover().WithCustomWeight(0.4f);
-    /// }).Rate(0.8f))
+    /// }).WithCrossoverRate(0.8f))
     /// </code>
     /// </example>
     public CrossoverStrategyRegistration<T> RegisterMulti(Action<CrossoverStrategyConfiguration<T>> configurator)
@@ -136,37 +136,26 @@ public class CrossoverStrategyRegistration<T>
     }
 
     /// <summary>
-    /// Sets the crossover rate that determines the likelihood of two mating parents producing offspring.
+    /// Sets the global crossover rate that determines the likelihood that a selected couple will produce offspring.
     /// 
-    /// The crossover rate is a fundamental parameter in genetic algorithms that controls reproduction
-    /// frequency. During each generation, when a couple is selected for mating, a random number is
-    /// generated and compared against this rate to determine if crossover should occur.
+    /// During each generation, a random number is compared against this rate to decide if crossover occurs.
+    /// Individual strategies can override this value using BaseCrossoverStrategy.OverrideCrossoverRate().
     /// 
-    /// - Higher rates (close to 1.0) result in more offspring generation and faster convergence
-    /// - Lower rates (close to 0.0) result in less genetic mixing and may slow evolution
-    /// - The default value of 0.9 (90%) is commonly used and provides a good balance
-    /// 
-    /// This rate works in conjunction with the mutation rate and replacement strategy to control
-    /// the genetic algorithm's evolutionary pressure and population dynamics.
+    /// - Higher values (near 1.0) produce more offspring and speed up convergence
+    /// - Lower values (near 0.0) reduce genetic mixing and may slow evolution
+    /// - Default is 0.9 (90%)
     /// </summary>
     /// <param name="crossoverRate">
-    /// Value between 0 and 1, where:
-    /// - 0 indicates no chance of crossover (no offspring will be produced)
-    /// - 1 indicates 100% chance of crossover (all selected couples will produce offspring)
-    /// - Default: 0.9 (90% chance)
+    /// A value between 0 and 1 (inclusive). 0 means never crossover; 1 means always crossover.
     /// </param>
-    /// <returns>
-    /// The CrossoverStrategyRegistration instance for method chaining
-    /// </returns>
-    /// <exception cref="ArgumentOutOfRangeException">
-    /// Thrown when crossoverRate is not between 0 and 1 (inclusive)
-    /// </exception>
+    /// <returns>The CrossoverStrategyRegistration instance for chaining.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when value is outside [0,1].</exception>
     /// <example>
     /// <code>
-    /// .Crossover(c => c.RegisterSingle(s => s.OnePointCrossover()).Rate(0.8f))
+    /// .Crossover(c => c.RegisterSingle(s => s.OnePointCrossover()).WithCrossoverRate(0.8f))
     /// </code>
     /// </example>
-    public CrossoverStrategyRegistration<T> Rate(float crossoverRate)
+    public CrossoverStrategyRegistration<T> WithCrossoverRate(float crossoverRate)
     {
         if (crossoverRate < 0 || crossoverRate > 1)
         {

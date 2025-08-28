@@ -369,10 +369,12 @@ public class OpenGARunner<T>
                         break;
                     }
 
-                    if (_random.NextDouble() <= _crossoverStrategyRegistration.GetCrossoverRate())
-                    {
-                        var crossoverStrategy = (BaseCrossoverStrategy<T>)_crossoverStrategyRegistration.GetCrossoverSelectionPolicy().SelectOperator(_random, CurrentEpoch);
+                    var crossoverStrategy = (BaseCrossoverStrategy<T>)_crossoverStrategyRegistration.GetCrossoverSelectionPolicy().SelectOperator(_random, CurrentEpoch);
 
+                    var crossoverRate = crossoverStrategy.CrossoverRateOverride ?? _crossoverStrategyRegistration.GetCrossoverRate();
+
+                    if (_random.NextDouble() <= crossoverRate)
+                    {
                         var newOffspring = crossoverStrategy.Crossover(couple, _random);
 
                         foreach (var child in newOffspring)
