@@ -101,7 +101,7 @@ public class OpenGARunner<T>
         return this;
     }
 
-    public OpenGARunner<T> ApplyParentSelector(Action<ParentSelectorConfiguration<T>> selectorConfigurator)
+    public OpenGARunner<T> ParentSelection(Action<ParentSelectorConfiguration<T>> selectorConfigurator)
     {
         ArgumentNullException.ThrowIfNull(selectorConfigurator, nameof(selectorConfigurator));
 

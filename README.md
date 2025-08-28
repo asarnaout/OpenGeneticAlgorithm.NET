@@ -156,25 +156,25 @@ Control when the genetic algorithm stops evolving:
 
 ```csharp
 // High-performance optimization (fast convergence needed)
-.ApplyParentSelector(c => c.ApplyTournamentParentSelector())
+.ParentSelection(c => c.ApplyTournamentParentSelector())
 .Crossover(c => c.RegisterSingle(s => s.OnePointCrossover()))
 .Replacement(r => r.RegisterSingle(s => s.Elitist()))
 .Termination(t => t.MaximumEpochs(100))
 
 // Exploratory search (avoiding local optima)
-.ApplyParentSelector(c => c.ApplyTournamentParentSelector())
+.ParentSelection(c => c.ApplyTournamentParentSelector())
 .Crossover(c => c.RegisterSingle(s => s.UniformCrossover()))
 .Replacement(r => r.RegisterSingle(s => s.Generational()))
 .Termination(t => t.TargetStandardDeviation(stdDev: 0.001))
 
 // Production system (time-constrained)
-.ApplyParentSelector(c => c.ApplyTournamentParentSelector())
+.ParentSelection(c => c.ApplyTournamentParentSelector())
 .Crossover(c => c.RegisterSingle(s => s.OnePointCrossover()))
 .Replacement(r => r.RegisterSingle(s => s.Elitist()))
 .Termination(t => t.MaximumDuration(TimeSpan.FromMinutes(5)))
 
 // Quality-focused research (target fitness termination)
-.ApplyParentSelector(c => c.ApplyFitnessWeightedRouletteWheelParentSelector())
+.ParentSelection(c => c.ApplyFitnessWeightedRouletteWheelParentSelector())
 .Crossover(c => c.RegisterSingle(s => s.KPointCrossover(3)))
 .Replacement(r => r.RegisterSingle(s => s.Elitist(0.2f)))
 .Termination(t => t.TargetFitness(0.95).TargetStandardDeviation(stdDev: 0.001, window: 10))
@@ -254,7 +254,7 @@ public class MyTerminationStrategy<T> : BaseTerminationStrategy<T>
 // Using your custom strategies
 var result = OpenGARunner<MyGeneType>
     .Initialize(initialPopulation)
-    .ApplyParentSelector(c => c.ApplyCustomParentSelector(new MyParentSelector<MyGeneType>()))
+    .ParentSelection(c => c.ApplyCustomParentSelector(new MyParentSelector<MyGeneType>()))
     .Crossover(c => c.RegisterSingle(s => s.CustomCrossover(new MyCustomCrossover<MyGeneType>())))
     .Replacement(r => r.RegisterSingle(s => s.Custom(new MyReplacementStrategy<MyGeneType>())))
     .Termination(t => t.Custom(new MyTerminationStrategy<MyGeneType>(50)))
