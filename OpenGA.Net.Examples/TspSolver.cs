@@ -277,13 +277,13 @@ public static class TspSolver
         var runner = OpenGARunner<int>
                         .Initialize(initialPopulation, 0.5f, 1.0f) // min 50%, max 100% (same as initial)
                         .MutationRate(0.15f)
-                        .ApplyReproductionSelector(c => c.ApplyElitistReproductionSelector())
+                        .ApplyParentSelector(c => c.ApplyElitistParentSelector())
                         .Crossover(s => s
                                     .WithCrossoverRate(0.85f)
                                     .RegisterSingle(o => o.OnePointCrossover())
                                 )
                         .Replacement(c => c.RegisterSingle(o => o.Elitist()))
-                        .Termination(c => c.MaximumEpochs(epochs))
+                        .Termination(c => c.MaximumEpochs(epochs).MaximumDuration(TimeSpan.FromMinutes(1)))
                         ;
 
         // Run the genetic algorithm
@@ -349,10 +349,10 @@ public static class TspSolver
         var runner = OpenGARunner<int>
                         .Initialize(initialPopulation, 0.5f, 1.0f) // min 50%, max 100% (same as initial)
                         .MutationRate(mutationRate)
-                        .ApplyReproductionSelector(c => c.ApplyElitistReproductionSelector())
+                        .ApplyParentSelector(c => c.ApplyElitistParentSelector())
                         .Crossover(s => s.WithCrossoverRate(0.85f).RegisterSingle(o => o.OnePointCrossover()))
                         .Replacement(c => c.RegisterSingle(s => s.Elitist()))
-                        .Termination(c => c.MaximumEpochs(epochs));
+                        .Termination(c => c.MaximumEpochs(epochs).MaximumDuration(TimeSpan.FromMinutes(1)));
 
         // Start the genetic algorithm
         var bestChromosome = runner.RunToCompletion() as TspChromosome;

@@ -1,5 +1,5 @@
 using OpenGA.Net.Exceptions;
-using OpenGA.Net.ReproductionSelectors;
+using OpenGA.Net.ParentSelectors;
 using OpenGA.Net.CrossoverStrategies;
 using OpenGA.Net.ReplacementStrategies;
 using OpenGA.Net.Termination;
@@ -21,7 +21,7 @@ public class OpenGARunner<T>
 
     private float _mutationRate = 0.2f;
 
-    private readonly ReproductionSelectorConfiguration<T> _reproductionSelectorConfig = new();
+    private readonly ParentSelectorConfiguration<T> _parentSelectorConfig = new();
 
     private readonly CrossoverStrategyRegistration<T> _crossoverStrategyRegistration = new();
 
@@ -101,11 +101,11 @@ public class OpenGARunner<T>
         return this;
     }
 
-    public OpenGARunner<T> ApplyReproductionSelector(Action<ReproductionSelectorConfiguration<T>> selectorConfigurator)
+    public OpenGARunner<T> ApplyParentSelector(Action<ParentSelectorConfiguration<T>> selectorConfigurator)
     {
         ArgumentNullException.ThrowIfNull(selectorConfigurator, nameof(selectorConfigurator));
 
-        selectorConfigurator(_reproductionSelectorConfig);
+        selectorConfigurator(_parentSelectorConfig);
 
         return this;
     }
@@ -174,9 +174,9 @@ public class OpenGARunner<T>
     /// </exception>
     private void DefaultMissingStrategies()
     {
-        if (_reproductionSelectorConfig.ReproductionSelector is null)
+        if (_parentSelectorConfig.ParentSelector is null)
         {
-            _reproductionSelectorConfig.ApplyTournamentReproductionSelector();
+            _parentSelectorConfig.ApplyTournamentParentSelector();
         }
 
         if (_terminationStrategyConfig.TerminationStrategies is [])
@@ -270,7 +270,7 @@ public class OpenGARunner<T>
     /// Executes the genetic algorithm until one of the configured termination conditions is met.
     /// 
     /// This method runs the complete genetic algorithm process, including:
-    /// - Validating that all required strategies (reproduction selector, crossover, replacement) are configured
+    /// - Validating that all required strategies (parent selection, crossover, replacement) are configured
     /// - Applying a default termination strategy (100 epochs) if none is specified
     /// - Iteratively evolving the population through selection, crossover, mutation, and replacement
     /// - Tracking algorithm state including current epoch, duration, and fitness metrics
@@ -315,7 +315,7 @@ public class OpenGARunner<T>
             {
                 var remainingOffspringNeeded = requiredNumberOfOffspring - offspring.Count;
                 var couplesForThisBatch = Math.Min(maxCouplesPerBatch, remainingOffspringNeeded * 2); // Generate extra to account for failed crossovers
-                var couples = _reproductionSelectorConfig.ReproductionSelector.SelectMatingPairs(Population, _random, couplesForThisBatch, CurrentEpoch);
+                var couples = _parentSelectorConfig.ParentSelector.SelectMatingPairs(Population, _random, couplesForThisBatch, CurrentEpoch);
 
                 var offspringGeneratedInBatch = 0;
 

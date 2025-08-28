@@ -1,5 +1,5 @@
 using OpenGA.Net.Termination;
-using OpenGA.Net.ReproductionSelectors;
+using OpenGA.Net.ParentSelectors;
 using OpenGA.Net.CrossoverStrategies;
 using OpenGA.Net.ReplacementStrategies;
 using System.Diagnostics;

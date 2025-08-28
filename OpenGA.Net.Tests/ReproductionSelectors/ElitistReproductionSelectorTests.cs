@@ -1,8 +1,8 @@
-using OpenGA.Net.ReproductionSelectors;
+using OpenGA.Net.ParentSelectors;
 
-namespace OpenGA.Net.Tests.ReproductionSelectors;
+namespace OpenGA.Net.Tests.ParentSelectors;
 
-public class ElitistReproductionSelectorTests
+public class ElitistParentSelectorTests
 {
     [Theory]
     [InlineData(100, 0.2, 20, 100, 100)]
@@ -28,7 +28,7 @@ public class ElitistReproductionSelectorTests
     [InlineData(1, 0.9, 1, 100, 0)] //Case of interest
     public void OnlyElitesAllowedToMate(int populationSize, float proportionOfElites, int exactNumberOfElites, int minimumNumberOfCouples, int expectedMinimumNumberOfCouples)
     {
-        var selector = new ElitistReproductionSelector<int>(false, proportionOfElites, 0.0f);
+    var selector = new ElitistParentSelector<int>(false, proportionOfElites, 0.0f);
 
         var random = new Random();
 
@@ -78,7 +78,7 @@ public class ElitistReproductionSelectorTests
     [InlineData(1, 0.9, 1, 0.1, 0, 0)] //Case of interest
     public void NonElitesAllowedToMateWithElites(int populationSize, float proportionOfElites, int exactNumberOfElites, float proportionOfNonElitesAllowedToMate, int minimumNumberOfCouples, int expectedMinimumNumberOfCouples)
     {
-        var selector = new ElitistReproductionSelector<int>(true, proportionOfElites, proportionOfNonElitesAllowedToMate);
+    var selector = new ElitistParentSelector<int>(true, proportionOfElites, proportionOfNonElitesAllowedToMate);
 
         var random = new Random();
 
@@ -123,7 +123,7 @@ public class ElitistReproductionSelectorTests
     [InlineData(1, 0.9, 1, 0.1, 0, 0)]
     public void NonElitesRestrictedFromMatingWithElites(int populationSize, float proportionOfElites, int exactNumberOfElites, float proportionOfNonElitesAllowedToMate, int minimumNumberOfCouples, int expectedMinimumNumberOfCouples)
     {
-        var selector = new ElitistReproductionSelector<int>(false, proportionOfElites, proportionOfNonElitesAllowedToMate);
+    var selector = new ElitistParentSelector<int>(false, proportionOfElites, proportionOfNonElitesAllowedToMate);
 
         var random = new Random();
 
@@ -160,7 +160,7 @@ public class ElitistReproductionSelectorTests
     [Fact]
     public void WillProduceUniformCouplesIfOnlyTwoMembersExistInThePopulation()
     {
-        var selector = new ElitistReproductionSelector<int>(false, 0.3f, 0.2f);
+    var selector = new ElitistParentSelector<int>(false, 0.3f, 0.2f);
 
         var random = new Random();
 

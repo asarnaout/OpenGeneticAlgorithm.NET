@@ -1,13 +1,13 @@
-using OpenGA.Net.ReproductionSelectors;
+using OpenGA.Net.ParentSelectors;
 
-namespace OpenGA.Net.Tests.ReproductionSelectors;
+namespace OpenGA.Net.Tests.ParentSelectors;
 
-public class FitnessWeightedRouletteWheelReproductionSelectorTests
+public class FitnessWeightedRouletteWheelParentSelectorTests
 {
     [Fact]
     public void WillFailIfThereThereIsLessThanTwoIndividuals()
     {
-        var selector = new FitnessWeightedRouletteWheelReproductionSelector<int>();
+    var selector = new FitnessWeightedRouletteWheelParentSelector<int>();
 
         var random = new Random();
 
@@ -21,7 +21,7 @@ public class FitnessWeightedRouletteWheelReproductionSelectorTests
     [Fact]
     public void WillProduceUniformCouplesIfOnlyTwoMembersExistInThePopulation()
     {
-        var selector = new FitnessWeightedRouletteWheelReproductionSelector<int>();
+    var selector = new FitnessWeightedRouletteWheelParentSelector<int>();
 
         var random = new Random();
 
@@ -43,7 +43,7 @@ public class FitnessWeightedRouletteWheelReproductionSelectorTests
     [Fact]
     public void RouletteWheelWillPreferTheMostFitChromosomesOverALargeNumberOfRuns()
     {
-        var selector = new FitnessWeightedRouletteWheelReproductionSelector<int>();
+    var selector = new FitnessWeightedRouletteWheelParentSelector<int>();
 
         var random = new Random();
 

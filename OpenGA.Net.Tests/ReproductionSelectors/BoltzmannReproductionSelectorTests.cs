@@ -1,48 +1,48 @@
-using OpenGA.Net.ReproductionSelectors;
+using OpenGA.Net.ParentSelectors;
 
-namespace OpenGA.Net.Tests.ReproductionSelectors;
+namespace OpenGA.Net.Tests.ParentSelectors;
 
-public class BoltzmannReproductionSelectorTests
+public class BoltzmannParentSelectorTests
 {
     [Fact]
     public void Constructor_WithValidDecayRate_ShouldCreateInstance()
     {
-        var selector = new BoltzmannReproductionSelector<int>(0.01);
+    var selector = new BoltzmannParentSelector<int>(0.01);
         Assert.NotNull(selector);
     }
 
     [Fact]
     public void Constructor_WithZeroDecayRate_ShouldCreateInstance()
     {
-        var selector = new BoltzmannReproductionSelector<int>(0.0);
+    var selector = new BoltzmannParentSelector<int>(0.0);
         Assert.NotNull(selector);
     }
 
     [Fact]
     public void Constructor_WithCustomInitialTemperature_ShouldCreateInstance()
     {
-        var selector = new BoltzmannReproductionSelector<int>(0.01, 2.0);
+    var selector = new BoltzmannParentSelector<int>(0.01, 2.0);
         Assert.NotNull(selector);
     }
 
     [Fact]
     public void Constructor_WithLinearDecay_ShouldCreateInstance()
     {
-        var selector = new BoltzmannReproductionSelector<int>(0.01, 1.0, useExponentialDecay: false);
+    var selector = new BoltzmannParentSelector<int>(0.01, 1.0, useExponentialDecay: false);
         Assert.NotNull(selector);
     }
 
     [Fact]
     public void Constructor_WithExponentialDecay_ShouldCreateInstance()
     {
-        var selector = new BoltzmannReproductionSelector<int>(0.01, 1.0, useExponentialDecay: true);
+    var selector = new BoltzmannParentSelector<int>(0.01, 1.0, useExponentialDecay: true);
         Assert.NotNull(selector);
     }
 
     [Fact]
     public void SelectMatingPairs_WithEmptyPopulation_ShouldReturnEmptyResult()
     {
-        var selector = new BoltzmannReproductionSelector<int>(0.01);
+    var selector = new BoltzmannParentSelector<int>(0.01);
         var random = new Random();
         var population = Array.Empty<DummyChromosome>();
 
@@ -54,7 +54,7 @@ public class BoltzmannReproductionSelectorTests
     [Fact]
     public void SelectMatingPairs_WithSingleIndividual_ShouldReturnEmptyResult()
     {
-        var selector = new BoltzmannReproductionSelector<int>(0.01);
+    var selector = new BoltzmannParentSelector<int>(0.01);
         var random = new Random();
         var population = GenerateRandomPopulation(1, random);
 
@@ -66,7 +66,7 @@ public class BoltzmannReproductionSelectorTests
     [Fact]
     public void SelectMatingPairs_WithTwoIndividuals_ShouldProduceUniformCouples()
     {
-        var selector = new BoltzmannReproductionSelector<int>(0.01);
+    var selector = new BoltzmannParentSelector<int>(0.01);
         var random = new Random();
         var population = GenerateRandomPopulation(2, random);
         var minimumNumberOfCouples = 100;
@@ -85,7 +85,7 @@ public class BoltzmannReproductionSelectorTests
     [Fact]
     public void SelectMatingPairs_ShouldReturnRequestedNumberOfCouples()
     {
-        var selector = new BoltzmannReproductionSelector<int>(0.01);
+    var selector = new BoltzmannParentSelector<int>(0.01);
         var random = new Random();
         var population = GenerateRandomPopulation(10, random);
         var minimumNumberOfCouples = 50;
@@ -98,7 +98,7 @@ public class BoltzmannReproductionSelectorTests
     [Fact]
     public void SelectMatingPairs_ShouldProduceDistinctParentsInEachCouple()
     {
-        var selector = new BoltzmannReproductionSelector<int>(0.01);
+    var selector = new BoltzmannParentSelector<int>(0.01);
         var random = new Random();
         var population = GenerateRandomPopulation(10, random);
         var minimumNumberOfCouples = 100;
@@ -114,7 +114,7 @@ public class BoltzmannReproductionSelectorTests
     [Fact]
     public void SelectMatingPairs_AtEpochZero_ShouldUseInitialTemperature()
     {
-        var selector = new BoltzmannReproductionSelector<int>(0.1); // High decay rate
+    var selector = new BoltzmannParentSelector<int>(0.1); // High decay rate
         var random = new Random(42); // Fixed seed for reproducibility
 
         // Create population with clear fitness hierarchy
@@ -164,7 +164,7 @@ public class BoltzmannReproductionSelectorTests
     [Fact]
     public void SelectMatingPairs_AtLaterEpochs_ShouldShowIncreasedSelectionPressure()
     {
-        var selector = new BoltzmannReproductionSelector<int>(0.1); // Decay rate of 0.1 per epoch
+    var selector = new BoltzmannParentSelector<int>(0.1); // Decay rate of 0.1 per epoch
         var random = new Random(42); // Fixed seed for reproducibility
 
         // Create population with clear fitness hierarchy
@@ -206,7 +206,7 @@ public class BoltzmannReproductionSelectorTests
     [Fact]
     public void SelectMatingPairs_WithZeroDecayRate_ShouldMaintainConstantTemperature()
     {
-        var selector = new BoltzmannReproductionSelector<int>(0.0); // No decay
+    var selector = new BoltzmannParentSelector<int>(0.0); // No decay
         var random = new Random(42);
         
         // Create population with clear fitness hierarchy
@@ -243,8 +243,8 @@ public class BoltzmannReproductionSelectorTests
     [Fact]
     public void SelectMatingPairs_ExponentialDecayVsLinearDecay_ShouldShowDifferentBehavior()
     {
-        var exponentialSelector = new BoltzmannReproductionSelector<int>(0.1, 1.0, useExponentialDecay: true);
-        var linearSelector = new BoltzmannReproductionSelector<int>(0.1, 1.0, useExponentialDecay: false);
+    var exponentialSelector = new BoltzmannParentSelector<int>(0.1, 1.0, useExponentialDecay: true);
+    var linearSelector = new BoltzmannParentSelector<int>(0.1, 1.0, useExponentialDecay: false);
         var random = new Random(42);
         
         // Create population with clear fitness hierarchy
@@ -277,7 +277,7 @@ public class BoltzmannReproductionSelectorTests
     [Fact]
     public void SelectMatingPairs_WithZeroFitnessChromosomes_ShouldHandleGracefully()
     {
-        var selector = new BoltzmannReproductionSelector<int>(0.01);
+    var selector = new BoltzmannParentSelector<int>(0.01);
         var random = new Random();
         
         // Create chromosomes with zero fitness
@@ -304,7 +304,7 @@ public class BoltzmannReproductionSelectorTests
     [Fact]
     public void SelectMatingPairs_WithoutEpochParameter_ShouldDefaultToEpochZero()
     {
-        var selector = new BoltzmannReproductionSelector<int>(0.1);
+    var selector = new BoltzmannParentSelector<int>(0.1);
         var random = new Random(42);
         
         // Create simple population
@@ -331,29 +331,29 @@ public class BoltzmannReproductionSelectorTests
     [Fact]
     public void Configuration_WithInvalidInitialTemperature_ShouldThrowException()
     {
-        var config = new ReproductionSelectorConfiguration<int>();
+    var config = new ParentSelectorConfiguration<int>();
         
-        Assert.Throws<ArgumentException>(() => config.ApplyBoltzmannReproductionSelector(0.01, -1.0));
-        Assert.Throws<ArgumentException>(() => config.ApplyBoltzmannReproductionSelector(0.01, 0.0));
-        Assert.Throws<ArgumentException>(() => config.ApplyBoltzmannReproductionSelectorWithLinearDecay(0.01, -1.0));
-        Assert.Throws<ArgumentException>(() => config.ApplyBoltzmannReproductionSelectorWithLinearDecay(0.01, 0.0));
+    Assert.Throws<ArgumentException>(() => config.ApplyBoltzmannParentSelector(0.01, -1.0));
+    Assert.Throws<ArgumentException>(() => config.ApplyBoltzmannParentSelector(0.01, 0.0));
+    Assert.Throws<ArgumentException>(() => config.ApplyBoltzmannParentSelectorWithLinearDecay(0.01, -1.0));
+    Assert.Throws<ArgumentException>(() => config.ApplyBoltzmannParentSelectorWithLinearDecay(0.01, 0.0));
     }
 
     [Fact]
     public void Configuration_WithValidParameters_ShouldCreateSelector()
     {
-        var config = new ReproductionSelectorConfiguration<int>();
+    var config = new ParentSelectorConfiguration<int>();
         
-        var exponentialSelector = config.ApplyBoltzmannReproductionSelector(); // Exponential defaults
+    var exponentialSelector = config.ApplyBoltzmannParentSelector(); // Exponential defaults
         Assert.NotNull(exponentialSelector);
         
-        var linearSelector = config.ApplyBoltzmannReproductionSelectorWithLinearDecay(); // Linear defaults
+    var linearSelector = config.ApplyBoltzmannParentSelectorWithLinearDecay(); // Linear defaults
         Assert.NotNull(linearSelector);
         
-        var customExponentialSelector = config.ApplyBoltzmannReproductionSelector(0.1, 2.0); // Custom exponential
+    var customExponentialSelector = config.ApplyBoltzmannParentSelector(0.1, 2.0); // Custom exponential
         Assert.NotNull(customExponentialSelector);
         
-        var customLinearSelector = config.ApplyBoltzmannReproductionSelectorWithLinearDecay(0.05, 3.0); // Custom linear
+    var customLinearSelector = config.ApplyBoltzmannParentSelectorWithLinearDecay(0.05, 3.0); // Custom linear
         Assert.NotNull(customLinearSelector);
     }
 

@@ -1,13 +1,13 @@
-using OpenGA.Net.ReproductionSelectors;
+using OpenGA.Net.ParentSelectors;
 
-namespace OpenGA.Net.Tests.ReproductionSelectors;
+namespace OpenGA.Net.Tests.ParentSelectors;
 
-public class RandomReproductionSelectorTests
+public class RandomParentSelectorTests
 {
     [Fact]
     public void WillFailIfThereThereIsLessThanTwoIndividuals()
     {
-        var selector = new RandomReproductionSelector<int>();
+    var selector = new RandomParentSelector<int>();
 
         var random = new Random();
 
@@ -21,7 +21,7 @@ public class RandomReproductionSelectorTests
     [Fact]
     public void WillProduceUniformCouplesIfOnlyTwoMembersExistInThePopulation()
     {
-        var selector = new RandomReproductionSelector<int>();
+    var selector = new RandomParentSelector<int>();
 
         var random = new Random();
 
@@ -43,7 +43,7 @@ public class RandomReproductionSelectorTests
     [Fact]
     public void WillSucceedOtherwise()
     {
-        var selector = new RandomReproductionSelector<int>();
+    var selector = new RandomParentSelector<int>();
 
         var random = new Random();
 
