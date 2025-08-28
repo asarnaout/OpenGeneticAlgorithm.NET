@@ -280,8 +280,7 @@ public static class TspSolver
                         .ApplyReproductionSelector(c => c.ApplyElitistReproductionSelector())
                         .Crossover(s => s
                                     .WithCrossoverRate(0.85f)
-                                    .RegisterMulti(o => o.OnePointCrossover().UniformCrossover())
-                                    .WithPolicy(p => p.ApplyAdaptivePursuitPolicy())
+                                    .RegisterSingle(o => o.OnePointCrossover())
                                 )
                         .Replacement(c => c.RegisterSingle(o => o.Elitist()))
                         .Termination(c => c.MaximumEpochs(epochs))

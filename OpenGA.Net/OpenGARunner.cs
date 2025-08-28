@@ -186,11 +186,6 @@ public class OpenGARunner<T>
             _reproductionSelectorConfig.ApplyTournamentReproductionSelector();
         }
 
-        if (_crossoverStrategyRegistration.GetRegisteredCrossoverStrategies() is [])
-        {
-            _crossoverStrategyRegistration.RegisterSingle(s => s.OnePointCrossover());
-        }
-
         if (_replacementStrategyRegistration.GetRegisteredReplacementStrategies() is [])
         {
             _replacementStrategyRegistration.RegisterSingle(s => s.Elitist());
@@ -201,39 +196,7 @@ public class OpenGARunner<T>
             _terminationStrategyConfig.MaximumEpochs(100);
         }
 
-        if (_crossoverStrategyRegistration.GetRegisteredCrossoverStrategies() is { Count: 1 })
-        {
-            _crossoverStrategyRegistration.WithPolicy(p => p.ApplyFirstChoicePolicy());
-        }
-        else
-        {
-            var hasCustomWeights = _crossoverStrategyRegistration.GetRegisteredCrossoverStrategies()
-                .Any(strategy => strategy.CustomWeight > 0);
-
-            if (_crossoverStrategyRegistration.GetCrossoverSelectionPolicy() is not null)
-            {
-                if (hasCustomWeights && _crossoverStrategyRegistration.GetCrossoverSelectionPolicy() is not CustomWeightPolicy)
-                {
-                    throw new OperatorSelectionPolicyConflictException(
-                        @"Cannot apply a non-CustomWeight operator selection policy when crossover strategies 
-                        have custom weights. Either remove the custom weights using WithCustomWeight(0) or use 
-                        ApplyCustomWeightPolicy().");
-                }
-            }
-            else if (hasCustomWeights)
-            {
-                // Auto-apply CustomWeightPolicy when weights are detected and no policy is explicitly set
-                _crossoverStrategyRegistration.WithPolicy(p => p.ApplyCustomWeightPolicy());
-            }
-            else
-            {
-                // If multiple crossover strategies and no operator policy specified then default to adaptive pursuit
-                _crossoverStrategyRegistration.WithPolicy(p => p.ApplyAdaptivePursuitPolicy());
-            }
-        }
-
-        _crossoverStrategyRegistration.GetCrossoverSelectionPolicy()!
-            .ApplyOperators([.._crossoverStrategyRegistration.GetRegisteredCrossoverStrategies()]);
+        _crossoverStrategyRegistration.ValidateAndDefault();
 
         // Setup replacement strategy operator selection policy
         if (_replacementStrategyRegistration.GetRegisteredReplacementStrategies() is { Count: 1 })
@@ -369,7 +332,9 @@ public class OpenGARunner<T>
                         break;
                     }
 
-                    var crossoverStrategy = (BaseCrossoverStrategy<T>)_crossoverStrategyRegistration.GetCrossoverSelectionPolicy().SelectOperator(_random, CurrentEpoch);
+                    var crossoverPolicy = _crossoverStrategyRegistration.GetCrossoverSelectionPolicy();
+
+                    var crossoverStrategy = (BaseCrossoverStrategy<T>)crossoverPolicy.SelectOperator(_random, CurrentEpoch);
 
                     var crossoverRate = crossoverStrategy.CrossoverRateOverride ?? _crossoverStrategyRegistration.GetCrossoverRate();
 
@@ -382,7 +347,7 @@ public class OpenGARunner<T>
                             child.InvalidateFitness();
                         }
 
-                        if (_crossoverStrategyRegistration.GetCrossoverSelectionPolicy() is AdaptivePursuitPolicy adaptivePursuit)
+                        if (crossoverPolicy is AdaptivePursuitPolicy adaptivePursuit)
                         {
                             UpdateAdaptivePursuitReward(adaptivePursuit, crossoverStrategy, couple, newOffspring);
                         }

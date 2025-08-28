@@ -1,5 +1,8 @@
 namespace OpenGA.Net.CrossoverStrategies;
 
+using OpenGA.Net.Exceptions;
+using OpenGA.Net.OperatorSelectionPolicies;
+
 /// <summary>
 /// Configuration class specifically for multiple crossover strategies with weight support.
 /// This class provides the same crossover strategy methods as CrossoverStrategyConfiguration
@@ -9,6 +12,8 @@ namespace OpenGA.Net.CrossoverStrategies;
 public class MultiCrossoverStrategyConfiguration<T>
 {
     internal IList<BaseCrossoverStrategy<T>> CrossoverStrategies = [];
+
+    private readonly OperatorSelectionPolicyConfiguration _policyConfig = new();
 
     /// <summary>
     /// A point is chosen at random, and all the genes following that point are swapped between both parent chromosomes to produce two new child chromosomes
@@ -78,5 +83,81 @@ public class MultiCrossoverStrategyConfiguration<T>
         
         CrossoverStrategies.Add(crossoverStrategy);
         return this;
+    }
+
+    /// <summary>
+    /// Configures the operator selection policy that determines how crossover strategies are chosen
+    /// when multiple strategies are registered.
+    /// 
+    /// This method allows explicit configuration of the operator selection policy, overriding
+    /// OpenGARunner's automatic defaults. However, there are important interaction rules:
+    /// 
+    /// - If crossover strategies have custom weights (> 0) but a non-CustomWeight policy is applied,
+    ///   OpenGARunner will throw an OperatorSelectionPolicyConflictException during DefaultMissingStrategies()
+    /// - If multiple strategies exist without custom weights and no policy is specified, AdaptivePursuitPolicy is applied
+    /// - If custom weights are detected without an explicit policy, CustomWeightPolicy is automatically applied
+    /// 
+    /// Common policies include:
+    /// - RandomChoicePolicy: Randomly selects between strategies with equal probability
+    /// - AdaptivePursuitPolicy: Adapts selection based on performance feedback (default for multiple strategies)
+    /// - CustomWeightPolicy: Selects based on configured weights (automatic when weights are detected)
+    /// - RoundRobinPolicy: Cycles through strategies in order
+    /// </summary>
+    /// <param name="policyConfigurator">
+    /// A configuration action that sets up the operator selection policy.
+    /// Examples: p => p.ApplyAdaptivePursuitPolicy(), p => p.ApplyCustomWeightPolicy()
+    /// </param>
+    /// <exception cref="ArgumentNullException">Thrown when policyConfigurator is null</exception>
+    /// <exception cref="OperatorSelectionPolicyConflictException">
+    /// Thrown by OpenGARunner if custom weights are configured but a non-CustomWeight policy is applied
+    /// </exception>
+    /// <example>
+    /// <code>
+    /// .Crossover(c => c.RegisterMulti(m => m
+    ///     .OnePointCrossover()
+    ///     .UniformCrossover()
+    ///     .WithPolicy(p => p.ApplyAdaptivePursuitPolicy())
+    /// ))
+    /// </code>
+    /// </example>
+    public MultiCrossoverStrategyConfiguration<T> WithPolicy(Action<OperatorSelectionPolicyConfiguration> policyConfigurator)
+    {
+        ArgumentNullException.ThrowIfNull(policyConfigurator, nameof(policyConfigurator));
+
+        policyConfigurator(_policyConfig);
+        return this;
+    }
+
+    internal void ValidateAndDefault()
+    {
+        var hasCustomWeights = CrossoverStrategies.Any(strategy => strategy.CustomWeight > 0);
+
+        if (_policyConfig.Policy is not null)
+        {
+            if (hasCustomWeights && _policyConfig.Policy is not CustomWeightPolicy)
+            {
+                throw new OperatorSelectionPolicyConflictException(
+                    @"Cannot apply a non-CustomWeight operator selection policy when crossover strategies 
+                        have custom weights. Either remove the custom weights using WithCustomWeight(0) or use 
+                        ApplyCustomWeightPolicy().");
+            }
+        }
+        else if (hasCustomWeights)
+        {
+            // Auto-apply CustomWeightPolicy when weights are detected and no policy is explicitly set
+            _policyConfig.ApplyCustomWeightPolicy();
+        }
+        else
+        {
+            // If multiple crossover strategies and no operator policy specified then default to adaptive pursuit
+            _policyConfig.ApplyAdaptivePursuitPolicy();
+        }
+
+        _policyConfig.Policy!.ApplyOperators([..CrossoverStrategies]);
+    }
+
+    internal OperatorSelectionPolicy GetCrossoverSelectionPolicy()
+    {
+        return _policyConfig.Policy;
     }
 }

@@ -12,10 +12,8 @@ namespace OpenGA.Net.CrossoverStrategies;
 /// <typeparam name="T">The type of gene values contained within chromosomes</typeparam>
 public class CrossoverStrategyRegistration<T>
 {
-    private readonly CrossoverStrategyConfiguration<T> _crossoverStrategyConfig = new();
+    private readonly CrossoverStrategyConfiguration<T> _singleCrossoverStrategyConfig = new();
     private readonly MultiCrossoverStrategyConfiguration<T> _multiCrossoverStrategyConfig = new();
-
-    private readonly OperatorSelectionPolicyConfiguration _crossoverSelectionPolicyConfig = new();
 
     private float _crossoverRate = 0.9f;
     private bool _isMultiRegistration = false;
@@ -42,18 +40,20 @@ public class CrossoverStrategyRegistration<T>
     /// .Crossover(c => c.RegisterSingle(s => s.OnePointCrossover()))
     /// </code>
     /// </example>
-    public void RegisterSingle(Action<CrossoverStrategyConfiguration<T>> singleRegistration)
+    public CrossoverStrategyRegistration<T> RegisterSingle(Action<CrossoverStrategyConfiguration<T>> singleRegistration)
     {
         ArgumentNullException.ThrowIfNull(singleRegistration, nameof(singleRegistration));
 
-        singleRegistration(_crossoverStrategyConfig);
-        
-        if (_crossoverStrategyConfig.CrossoverStrategy == null)
+        singleRegistration(_singleCrossoverStrategyConfig);
+
+        if (_singleCrossoverStrategyConfig.CrossoverStrategy is null)
         {
             throw new InvalidOperationException("No crossover strategy was registered.");
         }
 
         _isMultiRegistration = false;
+
+        return this;
     }
 
     /// <summary>
@@ -84,6 +84,7 @@ public class CrossoverStrategyRegistration<T>
     /// .Crossover(c => c.RegisterMulti(m => m
     ///     .OnePointCrossover(0.6f)
     ///     .UniformCrossover(0.4f)
+    ///     .WithPolicy(p => p.ApplyAdaptivePursuitPolicy())
     /// ).WithCrossoverRate(0.8f))
     /// </code>
     /// </example>
@@ -95,49 +96,6 @@ public class CrossoverStrategyRegistration<T>
         _isMultiRegistration = true;
 
         return this;
-    }
-
-    /// <summary>
-    /// Configures the operator selection policy that determines how crossover strategies are chosen
-    /// when multiple strategies are registered.
-    /// 
-    /// This method allows explicit configuration of the operator selection policy, overriding
-    /// OpenGARunner's automatic defaults. However, there are important interaction rules:
-    /// 
-    /// - If crossover strategies have custom weights (> 0) but a non-CustomWeight policy is applied,
-    ///   OpenGARunner will throw an OperatorSelectionPolicyConflictException during DefaultMissingStrategies()
-    /// - If only one crossover strategy is registered, OpenGARunner will override any policy with FirstChoicePolicy
-    /// - If multiple strategies exist without custom weights and no policy is specified, AdaptivePursuitPolicy is applied
-    /// - If custom weights are detected without an explicit policy, CustomWeightPolicy is automatically applied
-    /// 
-    /// Common policies include:
-    /// - FirstChoicePolicy: Always selects the first registered strategy (automatic for single strategies)
-    /// - RandomChoicePolicy: Randomly selects between strategies with equal probability
-    /// - AdaptivePursuitPolicy: Adapts selection based on performance feedback (default for multiple strategies)
-    /// - CustomWeightPolicy: Selects based on configured weights (automatic when weights are detected)
-    /// - RoundRobinPolicy: Cycles through strategies in order
-    /// </summary>
-    /// <param name="policyConfigurator">
-    /// A configuration action that sets up the operator selection policy.
-    /// Examples: p => p.ApplyAdaptivePursuitPolicy(), p => p.ApplyCustomWeightPolicy()
-    /// </param>
-    /// <exception cref="ArgumentNullException">Thrown when policyConfigurator is null</exception>
-    /// <exception cref="OperatorSelectionPolicyConflictException">
-    /// Thrown by OpenGARunner if custom weights are configured but a non-CustomWeight policy is applied
-    /// </exception>
-    /// <example>
-    /// <code>
-    /// .Crossover(c => c.RegisterMulti(m => {
-    ///     m.OnePointCrossover();
-    ///     m.UniformCrossover();
-    /// }).WithPolicy(p => p.ApplyAdaptivePursuitPolicy()))
-    /// </code>
-    /// </example>
-    public void WithPolicy(Action<OperatorSelectionPolicyConfiguration> policyConfigurator)
-    {
-        ArgumentNullException.ThrowIfNull(policyConfigurator, nameof(policyConfigurator));
-
-        policyConfigurator(_crossoverSelectionPolicyConfig);
     }
 
     /// <summary>
@@ -176,23 +134,22 @@ public class CrossoverStrategyRegistration<T>
         return _crossoverRate;
     }
 
-    internal IList<BaseCrossoverStrategy<T>> GetRegisteredCrossoverStrategies()
+    internal void ValidateAndDefault()
     {
         if (_isMultiRegistration)
         {
-            return _multiCrossoverStrategyConfig.CrossoverStrategies;
+            _multiCrossoverStrategyConfig.ValidateAndDefault();
         }
         else
         {
-            // Convert single strategy to a list for compatibility with existing API
-            return _crossoverStrategyConfig.CrossoverStrategy != null 
-                ? new List<BaseCrossoverStrategy<T>> { _crossoverStrategyConfig.CrossoverStrategy }
-                : new List<BaseCrossoverStrategy<T>>();
+            _singleCrossoverStrategyConfig.ValidateAndDefault();
         }
     }
 
     internal OperatorSelectionPolicy GetCrossoverSelectionPolicy()
     {
-        return _crossoverSelectionPolicyConfig.Policy;
+        return _isMultiRegistration
+            ? _multiCrossoverStrategyConfig.GetCrossoverSelectionPolicy()
+            : _singleCrossoverStrategyConfig.GetCrossoverSelectionPolicy();
     }
 }
