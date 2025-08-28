@@ -34,11 +34,11 @@ public class TerminationStrategyConfiguration<T>
     /// Adds a termination strategy that stops the genetic algorithm when the standard deviation of recent fitness values
     /// falls below a specified threshold, indicating convergence.
     /// </summary>
-    /// <param name="targetStandardDeviation">The minimum standard deviation threshold. When the standard deviation of recent fitness values falls below this value, the algorithm terminates.</param>
+    /// <param name="stdDev">The minimum standard deviation threshold. When the standard deviation of recent fitness values falls below this value, the algorithm terminates.</param>
     /// <param name="window">The number of recent fitness values to track for calculating standard deviation. Defaults to 5.</param>
-    public TerminationStrategyConfiguration<T> TargetStandardDeviation(double targetStandardDeviation, int window = 5)
+    public TerminationStrategyConfiguration<T> TargetStandardDeviation(double stdDev, int window = 5)
     {
-        var strategy = new TargetStandardDeviationTerminationStrategy<T>(targetStandardDeviation, window);
+        var strategy = new TargetStandardDeviationTerminationStrategy<T>(stdDev, window);
         TerminationStrategies.Add(strategy);
         return this;
     }

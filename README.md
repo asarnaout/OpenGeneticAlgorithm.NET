@@ -129,12 +129,6 @@ Create offspring by combining parent chromosomes:
 | **Uniform** | Maximum genetic diversity | Independent genes | Exploratory search, avoid local optima | No specific gene clustering |
 | **Custom** | Domain-specific requirements | Complex constraints or structures | Specialized problem domains | Domain-specific validation |
 
-**Selection Criteria:**
-- **Gene Independence**: Use Uniform for independent genes, One-Point for clustered genes
-- **Solution Representation**: Use K-Point for structured data, Custom for complex constraints
-- **Performance**: One-Point is fastest, Uniform provides most diversity
-- **Problem Complexity**: Simple problems → One-Point, Complex → Custom or Uniform
-
 ### 🔄 **Replacement Strategies**
 Manage population evolution over generations:
 
@@ -147,12 +141,6 @@ Manage population evolution over generations:
 | **Boltzmann** | Temperature-controlled evolution | Adaptive convergence | Dynamic diversity control | Higher computational complexity |
 | **Random Elimination** | Maintain population diversity | Slowest convergence | Maximum diversity | Minimal computational overhead |
 
-**Replacement Strategy Quick Guide:**
-- **Need fast convergence?** → Elitist
-- **Avoiding local optima?** → Generational or Tournament  
-- **Long-term evolution runs?** → Age-based
-- **Limited computational resources?** → Random Elimination
-- **Need adaptive control?** → Boltzmann
 
 ### 🏁 **Termination Strategies**
 Control when the genetic algorithm stops evolving:
@@ -162,39 +150,34 @@ Control when the genetic algorithm stops evolving:
 | **Maximum Epochs** *(Default)* | Known iteration limits | Fixed number of generations | Time-constrained scenarios | Highly predictable runtime |
 | **Maximum Duration** | Real-time applications | Maximum execution duration | Production systems | Predictable time bounds |
 | **Target Standard Deviation** | Diversity monitoring | Low population diversity | Avoiding premature convergence | Adaptive stopping |
-
-**Termination Strategy Quick Guide:**
-- **Default/Most common?** → Maximum Epochs *(automatically applied)*
-- **Need predictable runtime?** → Maximum Epochs or Maximum Duration
-- **Avoiding premature convergence?** → Target Standard Deviation
-- **Production systems?** → Maximum Duration with fallback strategies
+| **Target Fitness** | Goal-oriented optimization | Specific fitness threshold reached | Known optimal solution value | Adaptive based on performance |
 
 ### 💡 **Strategy Selection Examples**
 
 ```csharp
 // High-performance optimization (fast convergence needed)
-.ApplyReproductionSelector(c => c.ApplyElitistReproductionSelector())
-.ApplyCrossoverStrategies(c => c.ApplyOnePointCrossoverStrategy())
-.ApplyReplacementStrategy(c => c.ApplyElitistReplacementStrategy())
-.Termination(c => c.MaximumEpochs(maxEpochs: 100))
+.ApplyReproductionSelector(c => c.ApplyTournamentReproductionSelector())
+.Crossover(c => c.RegisterSingle(s => s.OnePointCrossover()))
+.Replacement(r => r.RegisterSingle(s => s.Elitist()))
+.Termination(t => t.MaximumEpochs(100))
 
 // Exploratory search (avoiding local optima)
-.ApplyReproductionSelector(c => c.ApplyTournamentReproductionSelector(tournamentSize: 5))
-.ApplyCrossoverStrategies(c => c.ApplyUniformCrossoverStrategy())
-.ApplyReplacementStrategy(c => c.ApplyGenerationalReplacementStrategy())
-.Termination(c => c.TargetStandardDeviation(targetStandardDeviation: 0.001))
+.ApplyReproductionSelector(c => c.ApplyTournamentReproductionSelector())
+.Crossover(c => c.RegisterSingle(s => s.UniformCrossover()))
+.Replacement(r => r.RegisterSingle(s => s.Generational()))
+.Termination(t => t.TargetStandardDeviation(stdDev: 0.001))
 
 // Production system (time-constrained)
 .ApplyReproductionSelector(c => c.ApplyTournamentReproductionSelector())
-.ApplyCrossoverStrategies(c => c.ApplyOnePointCrossoverStrategy())
-.ApplyReplacementStrategy(c => c.ApplyElitistReplacementStrategy())
-.Termination(c => c.MaximumDuration(TimeSpan.FromMinutes(5)))
+.Crossover(c => c.RegisterSingle(s => s.OnePointCrossover()))
+.Replacement(r => r.RegisterSingle(s => s.Elitist()))
+.Termination(t => t.MaximumDuration(TimeSpan.FromMinutes(5)))
 
-// Quality-focused research (target standard deviation termination)
-.ApplyReproductionSelector(c => c.ApplyBoltzmannReproductionSelector(temperature: 100))
-.ApplyCrossoverStrategies(c => c.ApplyKPointCrossoverStrategy(k: 3))
-.ApplyReplacementStrategy(c => c.ApplyAgeBasedReplacementStrategy())
-.Termination(c => c.TargetStandardDeviation(targetStandardDeviation: 0.001, window: 10))
+// Quality-focused research (target fitness termination)
+.ApplyReproductionSelector(c => c.ApplyFitnessWeightedRouletteWheelReproductionSelector())
+.Crossover(c => c.RegisterSingle(s => s.KPointCrossover(3)))
+.Replacement(r => r.RegisterSingle(s => s.Elitist(0.2f)))
+.Termination(t => t.TargetFitness(0.95).TargetStandardDeviation(stdDev: 0.001, window: 10))
 ```
 
 ---
