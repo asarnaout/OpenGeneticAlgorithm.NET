@@ -29,15 +29,11 @@ A **Chromosome** in OpenGA.Net represents a potential solution to your optimizat
 ```csharp
 using OpenGA.Net;
 
-// A chromosome for the Traveling Salesman Problem
-// Each chromosome represents a route through cities (genes = city sequence)
+// A chromosome for the Traveling Salesman Problem. Each chromosome represents a route through cities (genes = city sequence)
 public class TspChromosome : Chromosome<int>
 {
-    private readonly double[,] _distanceMatrix;
-    
     public TspChromosome(IList<int> cities, double[,] distanceMatrix) : base(cities)
     {
-        _distanceMatrix = distanceMatrix;
     }
     
     // Calculate how "good" this route is (shorter distance = higher fitness)
@@ -45,15 +41,14 @@ public class TspChromosome : Chromosome<int>
     {
         double totalDistance = CalculateTotalDistance();
         
-        return 1.0 / (1.0 + totalDistance); // Return inverse distance (shorter routes have higher fitness)
+        return 1.0 / (1.0 + totalDistance);
     }
     
     // Randomly swap two cities in the route
     public override void Mutate()
     {
-        var random = new Random();
-        int index1 = random.Next(Genes.Count);
-        int index2 = random.Next(Genes.Count);
+        int index1 = _random.Next(Genes.Count);
+        int index2 = _random.Next(Genes.Count);
         (Genes[index1], Genes[index2]) = (Genes[index2], Genes[index1]);
     }
     
@@ -66,7 +61,6 @@ public class TspChromosome : Chromosome<int>
     // Ensure each city appears exactly once (fix any duplicates)
     public override void GeneticRepair()
     {
-        // Logic to replace duplicate cities with missing cities
     }
 }
 ```
@@ -76,10 +70,9 @@ public class TspChromosome : Chromosome<int>
 ```csharp
 // Generate initial population of random routes. The initial population represents a set of random solutions to the optimization problem.
 var initialPopulation = new TspChromosome[100];
-var random = new Random();
 for (int i = 0; i < 100; i++)
 {
-    var cities = Enumerable.Range(0, numberOfCities).OrderBy(x => random.Next()).ToList();
+    var cities = Enumerable.Range(0, numberOfCities).OrderBy(x => _random.Next()).ToList();
     initialPopulation[i] = new TspChromosome(cities, _distanceMatrix);
 }
 ```
@@ -94,7 +87,6 @@ var bestSolution = OpenGARunner<int>
 
 // Get your optimized result
 Console.WriteLine($"Best route: {string.Join(" → ", bestSolution.Genes)}");
-Console.WriteLine($"Fitness: {bestSolution.Fitness:F4}");
 ```
 
 That's it! 🎉 You just solved an optimization problem with a few lines of code.
