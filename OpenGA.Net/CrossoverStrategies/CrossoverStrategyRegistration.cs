@@ -13,10 +13,12 @@ namespace OpenGA.Net.CrossoverStrategies;
 public class CrossoverStrategyRegistration<T>
 {
     private readonly CrossoverStrategyConfiguration<T> _crossoverStrategyConfig = new();
+    private readonly MultiCrossoverStrategyConfiguration<T> _multiCrossoverStrategyConfig = new();
 
     private readonly OperatorSelectionPolicyConfiguration _crossoverSelectionPolicyConfig = new();
 
     private float _crossoverRate = 0.9f;
+    private bool _isMultiRegistration = false;
 
     /// <summary>
     /// Registers a single crossover strategy for use in the genetic algorithm.
@@ -46,10 +48,12 @@ public class CrossoverStrategyRegistration<T>
 
         singleRegistration(_crossoverStrategyConfig);
         
-        if (_crossoverStrategyConfig.CrossoverStrategies.Count > 1)
+        if (_crossoverStrategyConfig.CrossoverStrategy == null)
         {
-            throw new InvalidOperationException("Multiple crossover strategies registered. Use RegisterMulti for multiple registrations.");
+            throw new InvalidOperationException("No crossover strategy was registered.");
         }
+
+        _isMultiRegistration = false;
     }
 
     /// <summary>
@@ -77,17 +81,18 @@ public class CrossoverStrategyRegistration<T>
     /// <exception cref="ArgumentNullException">Thrown when configurator is null</exception>
     /// <example>
     /// <code>
-    /// .Crossover(c => c.RegisterMulti(m => {
-    ///     m.OnePointCrossover().WithCustomWeight(0.6f);
-    ///     m.UniformCrossover().WithCustomWeight(0.4f);
-    /// }).WithCrossoverRate(0.8f))
+    /// .Crossover(c => c.RegisterMulti(m => m
+    ///     .OnePointCrossover(0.6f)
+    ///     .UniformCrossover(0.4f)
+    /// ).WithCrossoverRate(0.8f))
     /// </code>
     /// </example>
-    public CrossoverStrategyRegistration<T> RegisterMulti(Action<CrossoverStrategyConfiguration<T>> configurator)
+    public CrossoverStrategyRegistration<T> RegisterMulti(Action<MultiCrossoverStrategyConfiguration<T>> configurator)
     {
         ArgumentNullException.ThrowIfNull(configurator, nameof(configurator));
 
-        configurator(_crossoverStrategyConfig);
+        configurator(_multiCrossoverStrategyConfig);
+        _isMultiRegistration = true;
 
         return this;
     }
@@ -173,7 +178,17 @@ public class CrossoverStrategyRegistration<T>
 
     internal IList<BaseCrossoverStrategy<T>> GetRegisteredCrossoverStrategies()
     {
-        return _crossoverStrategyConfig.CrossoverStrategies;
+        if (_isMultiRegistration)
+        {
+            return _multiCrossoverStrategyConfig.CrossoverStrategies;
+        }
+        else
+        {
+            // Convert single strategy to a list for compatibility with existing API
+            return _crossoverStrategyConfig.CrossoverStrategy != null 
+                ? new List<BaseCrossoverStrategy<T>> { _crossoverStrategyConfig.CrossoverStrategy }
+                : new List<BaseCrossoverStrategy<T>>();
+        }
     }
 
     internal OperatorSelectionPolicy GetCrossoverSelectionPolicy()

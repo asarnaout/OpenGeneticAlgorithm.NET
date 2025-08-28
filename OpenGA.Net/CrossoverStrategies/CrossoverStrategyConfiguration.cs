@@ -2,7 +2,7 @@ namespace OpenGA.Net.CrossoverStrategies;
 
 public class CrossoverStrategyConfiguration<T>
 {
-    internal IList<BaseCrossoverStrategy<T>> CrossoverStrategies = [];
+    internal BaseCrossoverStrategy<T>? CrossoverStrategy { get; private set; }
 
     /// <summary>
     /// A point is chosen at random, and all the genes following that point are swapped between both parent chromosomes to produce two new child chromosomes
@@ -10,7 +10,7 @@ public class CrossoverStrategyConfiguration<T>
     public CrossoverStrategyConfiguration<T> OnePointCrossover()
     {
         var result = new OnePointCrossoverStrategy<T>();
-        CrossoverStrategies.Add(result);
+        CrossoverStrategy = result;
         return this;
     }
 
@@ -20,7 +20,7 @@ public class CrossoverStrategyConfiguration<T>
     public CrossoverStrategyConfiguration<T> UniformCrossover()
     {
         var result = new UniformCrossoverStrategy<T>();
-        CrossoverStrategies.Add(result);
+        CrossoverStrategy = result;
         return this;
     }
 
@@ -36,7 +36,7 @@ public class CrossoverStrategyConfiguration<T>
         }
 
         var result = new KPointCrossoverStrategy<T>(numberOfPoints);
-        CrossoverStrategies.Add(result);
+        CrossoverStrategy = result;
         return this;
     }
 
@@ -47,7 +47,7 @@ public class CrossoverStrategyConfiguration<T>
     public CrossoverStrategyConfiguration<T> CustomCrossover(BaseCrossoverStrategy<T> crossoverStrategy)
     {
         ArgumentNullException.ThrowIfNull(crossoverStrategy, nameof(crossoverStrategy));
-        CrossoverStrategies.Add(crossoverStrategy);
+        CrossoverStrategy = crossoverStrategy;
 
         return this;
     }
