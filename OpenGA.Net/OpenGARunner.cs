@@ -143,21 +143,14 @@ public class OpenGARunner<T>
     /// 
     /// Example usage:
     /// <code>
-    /// .Termination(config => config.MaximumEpochs(100))
-    /// .Termination(
-    ///     config => config.MaximumEpochs(500),
-    ///     config => config.MaximumDuration(TimeSpan.FromMinutes(5))
-    /// )
+    /// .Termination(config => config.MaximumEpochs(100).MaximumDuration(TimeSpan.FromMinutes(5)))
     /// </code>
     /// </remarks>
-    public OpenGARunner<T> Termination(params Action<TerminationStrategyConfiguration<T>>[] terminationStrategyConfigurators)
+    public OpenGARunner<T> Termination(Action<TerminationStrategyConfiguration<T>> terminationStrategyConfigurator)
     {
-        ArgumentNullException.ThrowIfNull(terminationStrategyConfigurators, nameof(terminationStrategyConfigurators));
+        ArgumentNullException.ThrowIfNull(terminationStrategyConfigurator, nameof(terminationStrategyConfigurator));
 
-        foreach (var terminationStrategyConfigurator in terminationStrategyConfigurators)
-        {
-            terminationStrategyConfigurator(_terminationStrategyConfig);
-        }
+        terminationStrategyConfigurator(_terminationStrategyConfig);
 
         return this;
     }

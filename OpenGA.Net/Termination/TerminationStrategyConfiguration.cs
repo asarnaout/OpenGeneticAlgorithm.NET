@@ -7,8 +7,7 @@ public class TerminationStrategyConfiguration<T>
     /// <summary>
     /// Adds a termination strategy that stops the genetic algorithm when the maximum number of epochs is reached.
     /// </summary>
-    /// <returns>The configured termination strategy instance.</returns>
-    public BaseTerminationStrategy<T> MaximumEpochs(int maxEpochs)
+    public TerminationStrategyConfiguration<T> MaximumEpochs(int maxEpochs)
     {
         if (maxEpochs <= 0)
         {
@@ -17,19 +16,18 @@ public class TerminationStrategyConfiguration<T>
 
         var strategy = new MaximumEpochsTerminationStrategy<T>(maxEpochs);
         TerminationStrategies.Add(strategy);
-        return strategy;
+        return this;
     }
 
     /// <summary>
     /// Adds a termination strategy that stops the genetic algorithm when the maximum duration is reached.
     /// </summary>
     /// <param name="maximumDuration">The maximum time the algorithm should run before terminating.</param>
-    /// <returns>The configured termination strategy instance.</returns>
-    public BaseTerminationStrategy<T> MaximumDuration(TimeSpan maximumDuration)
+    public TerminationStrategyConfiguration<T> MaximumDuration(TimeSpan maximumDuration)
     {
         var strategy = new MaximumDurationTerminationStrategy<T>(maximumDuration);
         TerminationStrategies.Add(strategy);
-        return strategy;
+        return this;
     }
 
     /// <summary>
@@ -38,12 +36,11 @@ public class TerminationStrategyConfiguration<T>
     /// </summary>
     /// <param name="targetStandardDeviation">The minimum standard deviation threshold. When the standard deviation of recent fitness values falls below this value, the algorithm terminates.</param>
     /// <param name="window">The number of recent fitness values to track for calculating standard deviation. Defaults to 5.</param>
-    /// <returns>The configured termination strategy instance.</returns>
-    public BaseTerminationStrategy<T> TargetStandardDeviation(double targetStandardDeviation, int window = 5)
+    public TerminationStrategyConfiguration<T> TargetStandardDeviation(double targetStandardDeviation, int window = 5)
     {
         var strategy = new TargetStandardDeviationTerminationStrategy<T>(targetStandardDeviation, window);
         TerminationStrategies.Add(strategy);
-        return strategy;
+        return this;
     }
 
     /// <summary>
@@ -51,12 +48,11 @@ public class TerminationStrategyConfiguration<T>
     /// to dictate when the genetic algorithm should terminate.
     /// </summary>
     /// <param name="terminationStrategy">The custom termination strategy to add.</param>
-    /// <returns>The provided termination strategy instance.</returns>
-    public BaseTerminationStrategy<T> Custom(BaseTerminationStrategy<T> terminationStrategy)
+    public TerminationStrategyConfiguration<T> Custom(BaseTerminationStrategy<T> terminationStrategy)
     {
         ArgumentNullException.ThrowIfNull(terminationStrategy, nameof(terminationStrategy));
         TerminationStrategies.Add(terminationStrategy);
-        return terminationStrategy;
+        return this;
     }
 
     /// <summary>
