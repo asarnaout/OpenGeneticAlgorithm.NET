@@ -219,14 +219,6 @@ public class MyCustomCrossover<T> : BaseCrossoverStrategy<T>
         Couple<T> couple, Random random)
     {
         // Your custom crossover logic
-        var parent1 = couple.Parent1;
-        var parent2 = couple.Parent2;
-        
-        // Example: Custom blend crossover
-        var offspring = new MyChromosome<T>();
-        // Implement your crossover algorithm here
-        
-        yield return offspring;
     }
 }
 
@@ -237,18 +229,6 @@ public class MyReplacementStrategy<T> : BaseReplacementStrategy<T>
         Chromosome<T>[] population, Chromosome<T>[] offspring, Random random)
     {
         // Your custom replacement logic
-        // Example: Replace chromosomes based on custom criteria
-        var toEliminate = population
-            .OrderBy(c => CustomFitnessMetric(c))
-            .Take(offspring.Length);
-            
-        return toEliminate;
-    }
-    
-    private double CustomFitnessMetric<T>(Chromosome<T> chromosome)
-    {
-        // Your custom elimination criteria
-        return chromosome.Fitness;
     }
 }
 
@@ -259,50 +239,15 @@ public class MyReproductionSelector<T> : BaseReproductionSelector<T>
         Chromosome<T>[] population, int numberOfParents, Random random)
     {
         // Your custom parent selection logic
-        // Example: Custom weighted selection
-        for (int i = 0; i < numberOfParents; i++)
-        {
-            var selectedParent = CustomSelectionAlgorithm(population, random);
-            yield return selectedParent;
-        }
-    }
-    
-    private Chromosome<T> CustomSelectionAlgorithm<T>(
-        Chromosome<T>[] population, Random random)
-    {
-        // Implement your selection algorithm
-        return population[random.Next(population.Length)];
     }
 }
 
 // Custom termination strategy
 public class MyTerminationStrategy<T> : BaseTerminationStrategy<T>
-{
-    private readonly int _maxStagnantGenerations;
-    private int _stagnantCount = 0;
-    private double _lastBestFitness = double.MinValue;
-    
-    public MyTerminationStrategy(int maxStagnantGenerations)
-    {
-        _maxStagnantGenerations = maxStagnantGenerations;
-    }
-    
+{   
     public override bool Terminate(GeneticAlgorithmState state)
     {
-        var currentBestFitness = state.HighestFitness;
-        
-        // Terminate if fitness hasn't improved for specified generations
-        if (Math.Abs(currentBestFitness - _lastBestFitness) < 0.0001)
-        {
-            _stagnantCount++;
-        }
-        else
-        {
-            _stagnantCount = 0;
-            _lastBestFitness = currentBestFitness;
-        }
-        
-        return _stagnantCount >= _maxStagnantGenerations;
+        // Your custom logic to control when the GA should terminate
     }
 }
 
