@@ -11,7 +11,7 @@ namespace OpenGA.Net.Tests.CrossoverStrategies;
 public class OnePointCrossoverStrategyTests
 {
     [Fact]
-    public void CrossoverThrowsOnInvalidChromosome()
+    public async Task CrossoverThrowsOnInvalidChromosome()
     {
         var parentA = new DummyChromosome([]);
         var parentB = new DummyChromosome([6, 7, 8, 9, 10] );
@@ -20,11 +20,11 @@ public class OnePointCrossoverStrategyTests
         var strategy = new TestCrossoverStrategy(1);
         var random = new Random();
 
-        Assert.Throws<InvalidChromosomeException>(() => strategy.Crossover(couple, random).ToList());
+        await Assert.ThrowsAsync<InvalidChromosomeException>(async () => (await strategy.CrossoverAsync(couple, random)).ToList());
     }
 
     [Fact]
-    public void CrossoverEqualLengthGenesSwapsGenesCorrectly()
+    public async Task CrossoverEqualLengthGenesSwapsGenesCorrectly()
     {
         var parentA = new DummyChromosome([1, 2, 3, 4, 5] );
         var parentB = new DummyChromosome([6, 7, 8, 9, 10] );
@@ -34,7 +34,7 @@ public class OnePointCrossoverStrategyTests
         var strategy = new TestCrossoverStrategy(2);
         var random = new Random();
 
-        var offspring = strategy.Crossover(couple, random).ToList();
+        var offspring = (await strategy.CrossoverAsync(couple, random)).ToList();
 
         Assert.Equal(2, offspring.Count);
 
@@ -46,7 +46,7 @@ public class OnePointCrossoverStrategyTests
     }
 
     [Fact]
-    public void CrossoverVariableLengthGenesSwapsGenesCorrectlyCaseA()
+    public async Task CrossoverVariableLengthGenesSwapsGenesCorrectlyCaseA()
     {
         var parentA = new DummyChromosome([1, 2, 3, 4, 5] );
         var parentB = new DummyChromosome([6, 7] );
@@ -56,7 +56,7 @@ public class OnePointCrossoverStrategyTests
         var strategy = new TestCrossoverStrategy(2);
         var random = new Random();
 
-        var offspring = strategy.Crossover(couple, random).ToList();
+        var offspring = (await strategy.CrossoverAsync(couple, random)).ToList();
 
         Assert.Equal(2, offspring.Count);
 
@@ -68,7 +68,7 @@ public class OnePointCrossoverStrategyTests
     }
 
     [Fact]
-    public void CrossoverVariableLengthGenesSwapsGenesCorrectlyCaseB()
+    public async Task CrossoverVariableLengthGenesSwapsGenesCorrectlyCaseB()
     {
         var parentA = new DummyChromosome([1, 2, 3, 4, 5] );
         var parentB = new DummyChromosome([6, 7] );
@@ -78,7 +78,7 @@ public class OnePointCrossoverStrategyTests
         var strategy = new TestCrossoverStrategy(1);
         var random = new Random();
 
-        var offspring = strategy.Crossover(couple, random).ToList();
+        var offspring = (await strategy.CrossoverAsync(couple, random)).ToList();
 
         Assert.Equal(2, offspring.Count);
 
@@ -110,7 +110,7 @@ public class OnePointCrossoverStrategyTests
     }
 
     [Fact]
-    public void Crossover_ShouldPreserveGeneticMaterialCorrectly()
+    public async Task Crossover_ShouldPreserveGeneticMaterialCorrectly()
     {
         var parentA = new DummyChromosome([1, 2, 3, 4, 5]);
         var parentB = new DummyChromosome([10, 20, 30, 40, 50]);
@@ -118,7 +118,7 @@ public class OnePointCrossoverStrategyTests
         var strategy = new TestCrossoverStrategy(3); // Crossover at position 3
         var random = new Random();
 
-        var offspring = strategy.Crossover(couple, random).ToList();
+        var offspring = (await strategy.CrossoverAsync(couple, random)).ToList();
 
         // Offspring A: [1, 2, 3] from A + [40, 50] from B = [1, 2, 3, 40, 50]
         Assert.Equal([1, 2, 3, 40, 50], offspring[0].Genes);
@@ -128,7 +128,7 @@ public class OnePointCrossoverStrategyTests
     }
 
     [Fact]
-    public void Crossover_WithMinimumLengthChromosomes_ShouldWork()
+    public async Task Crossover_WithMinimumLengthChromosomes_ShouldWork()
     {
         var parentA = new DummyChromosome([1, 2]);
         var parentB = new DummyChromosome([10, 20]);
@@ -136,7 +136,7 @@ public class OnePointCrossoverStrategyTests
         var strategy = new TestCrossoverStrategy(1); // Crossover at position 1
         var random = new Random();
 
-        var offspring = strategy.Crossover(couple, random).ToList();
+        var offspring = (await strategy.CrossoverAsync(couple, random)).ToList();
 
         // Offspring A: [1] from A + [20] from B = [1, 20]
         Assert.Equal([1, 20], offspring[0].Genes);
@@ -146,7 +146,7 @@ public class OnePointCrossoverStrategyTests
     }
 
     [Fact]
-    public void Crossover_WithSingleGeneChromosomes_ShouldThrowException()
+    public async Task Crossover_WithSingleGeneChromosomes_ShouldThrowException()
     {
         var parentA = new DummyChromosome([42]);
         var parentB = new DummyChromosome([84]);
@@ -154,14 +154,14 @@ public class OnePointCrossoverStrategyTests
         var strategy = new OnePointCrossoverStrategy<int>();
         var random = new Random();
 
-        var exception = Assert.Throws<InvalidChromosomeException>(
-            () => strategy.Crossover(couple, random).ToList());
+        var exception = await Assert.ThrowsAsync<InvalidChromosomeException>(
+            async () => (await strategy.CrossoverAsync(couple, random)).ToList());
         
         Assert.Contains("at least 2 genes", exception.Message);
     }
 
     [Fact]
-    public void Crossover_WithEmptyChromosomes_ShouldThrowException()
+    public async Task Crossover_WithEmptyChromosomes_ShouldThrowException()
     {
         var parentA = new DummyChromosome([]);
         var parentB = new DummyChromosome([1, 2, 3]);
@@ -169,14 +169,14 @@ public class OnePointCrossoverStrategyTests
         var strategy = new OnePointCrossoverStrategy<int>();
         var random = new Random();
 
-        var exception = Assert.Throws<InvalidChromosomeException>(
-            () => strategy.Crossover(couple, random).ToList());
+        var exception = await Assert.ThrowsAsync<InvalidChromosomeException>(
+            async () => (await strategy.CrossoverAsync(couple, random)).ToList());
         
         Assert.Contains("at least 2 genes", exception.Message);
     }
 
     [Fact]
-    public void Crossover_ShouldNotModifyOriginalParents()
+    public async Task Crossover_ShouldNotModifyOriginalParents()
     {
         var originalA = new int[] { 1, 2, 3, 4, 5 };
         var originalB = new int[] { 10, 20, 30 };
@@ -187,7 +187,7 @@ public class OnePointCrossoverStrategyTests
         var strategy = new TestCrossoverStrategy(2);
         var random = new Random();
 
-        _ = strategy.Crossover(couple, random).ToList();
+        _ = (await strategy.CrossoverAsync(couple, random)).ToList();
 
         // Original parents should remain unchanged
         Assert.Equal(originalA, parentA.Genes);
@@ -195,7 +195,7 @@ public class OnePointCrossoverStrategyTests
     }
 
     [Fact]
-    public void Crossover_WithVeryDifferentLengths_ShouldHandleCorrectly()
+    public async Task Crossover_WithVeryDifferentLengths_ShouldHandleCorrectly()
     {
         var parentA = new DummyChromosome([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
         var parentB = new DummyChromosome([100, 200]);
@@ -203,7 +203,7 @@ public class OnePointCrossoverStrategyTests
         var strategy = new TestCrossoverStrategy(2); // Crossover at position 2
         var random = new Random();
 
-        var offspring = strategy.Crossover(couple, random).ToList();
+        var offspring = (await strategy.CrossoverAsync(couple, random)).ToList();
 
         // Offspring A: [1, 2] from A + [] from B (nothing after position 2) = [1, 2]
         Assert.Equal([1, 2], offspring[0].Genes);
@@ -213,7 +213,7 @@ public class OnePointCrossoverStrategyTests
     }
 
     [Fact]
-    public void Crossover_AlwaysProducesTwoOffspring()
+    public async Task Crossover_AlwaysProducesTwoOffspring()
     {
         var parentA = new DummyChromosome([1, 2, 3, 4]);
         var parentB = new DummyChromosome([5, 6, 7, 8]);
@@ -223,13 +223,13 @@ public class OnePointCrossoverStrategyTests
 
         for (int i = 0; i < 100; i++)
         {
-            var offspring = strategy.Crossover(couple, random).ToList();
+            var offspring = (await strategy.CrossoverAsync(couple, random)).ToList();
             Assert.Equal(2, offspring.Count);
         }
     }
 
     [Fact]
-    public void Crossover_OffspringShouldHaveCorrectTotalGeneCount()
+    public async Task Crossover_OffspringShouldHaveCorrectTotalGeneCount()
     {
         var parentA = new DummyChromosome([1, 2, 3, 4, 5]);
         var parentB = new DummyChromosome([10, 20, 30]);
@@ -237,7 +237,7 @@ public class OnePointCrossoverStrategyTests
         var strategy = new TestCrossoverStrategy(2);
         var random = new Random();
 
-        var offspring = strategy.Crossover(couple, random).ToList();
+        var offspring = (await strategy.CrossoverAsync(couple, random)).ToList();
 
         // Total genes should be preserved (though distributed differently)
         var originalTotalGenes = parentA.Genes.Count + parentB.Genes.Count;
@@ -251,7 +251,7 @@ public class OnePointCrossoverStrategyTests
     [InlineData(2)]
     [InlineData(3)]
     [InlineData(4)]
-    public void Crossover_WithDifferentCrossoverPoints_ShouldProduceValidResults(int crossoverPoint)
+    public async Task Crossover_WithDifferentCrossoverPoints_ShouldProduceValidResults(int crossoverPoint)
     {
         var parentA = new DummyChromosome([1, 2, 3, 4, 5]);
         var parentB = new DummyChromosome([10, 20, 30, 40, 50]);
@@ -259,7 +259,7 @@ public class OnePointCrossoverStrategyTests
         var strategy = new TestCrossoverStrategy(crossoverPoint);
         var random = new Random();
 
-        var offspring = strategy.Crossover(couple, random).ToList();
+        var offspring = (await strategy.CrossoverAsync(couple, random)).ToList();
 
         // Verify that each offspring has genes from both parents
         var offspringA = offspring[0];
@@ -278,7 +278,7 @@ public class OnePointCrossoverStrategyTests
     }
 
     [Fact]
-    public void CrossoverPerformance_LargeChromosomes_ShouldBeEfficient()
+    public async Task CrossoverPerformance_LargeChromosomes_ShouldBeEfficient()
     {
         // Create large chromosomes for performance testing
         var largeParentA = new DummyChromosome(Enumerable.Range(1, 10000).ToList());
@@ -292,7 +292,7 @@ public class OnePointCrossoverStrategyTests
         // Perform many crossover operations
         for (int i = 0; i < 1000; i++)
         {
-            var offspring = strategy.Crossover(couple, random).ToList();
+            var offspring = (await strategy.CrossoverAsync(couple, random)).ToList();
             Assert.Equal(2, offspring.Count);
         }
         
@@ -304,7 +304,7 @@ public class OnePointCrossoverStrategyTests
     }
 
     [Fact]
-    public void CrossoverMemoryEfficiency_ShouldNotCauseExcessiveAllocations()
+    public async Task CrossoverMemoryEfficiency_ShouldNotCauseExcessiveAllocations()
     {
         var parentA = new DummyChromosome(Enumerable.Range(1, 1000).ToList());
         var parentB = new DummyChromosome(Enumerable.Range(1001, 1000).ToList());
@@ -322,7 +322,7 @@ public class OnePointCrossoverStrategyTests
         // Perform crossover operations
         for (int i = 0; i < 100; i++)
         {
-            var offspring = strategy.Crossover(couple, random).ToList();
+            var offspring = (await strategy.CrossoverAsync(couple, random)).ToList();
             // Don't hold references to offspring to allow garbage collection
         }
         
@@ -340,7 +340,7 @@ public class OnePointCrossoverStrategyTests
     }
 
     [Fact]
-    public void CrossoverAccuracy_ResultsShouldBeConsistentWithFixedSeed()
+    public async Task CrossoverAccuracy_ResultsShouldBeConsistentWithFixedSeed()
     {
         var parentA = new DummyChromosome([1, 2, 3, 4, 5]);
         var parentB = new DummyChromosome([10, 20, 30, 40, 50]);
@@ -351,8 +351,8 @@ public class OnePointCrossoverStrategyTests
         var random1 = new Random(12345);
         var random2 = new Random(12345);
 
-        var offspring1 = strategy.Crossover(couple, random1).ToList();
-        var offspring2 = strategy.Crossover(couple, random2).ToList();
+        var offspring1 = (await strategy.CrossoverAsync(couple, random1)).ToList();
+        var offspring2 = (await strategy.CrossoverAsync(couple, random2)).ToList();
 
         // Results should be identical with the same seed
         Assert.Equal(offspring1[0].Genes, offspring2[0].Genes);

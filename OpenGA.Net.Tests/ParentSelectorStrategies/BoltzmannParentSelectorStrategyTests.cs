@@ -40,38 +40,38 @@ public class BoltzmannParentSelectorStrategyTests
     }
 
     [Fact]
-    public void SelectMatingPairs_WithEmptyPopulation_ShouldReturnEmptyResult()
+    public async Task SelectMatingPairs_WithEmptyPopulation_ShouldReturnEmptyResult()
     {
     var selector = new BoltzmannParentSelectorStrategy<int>(0.01);
         var random = new Random();
         var population = Array.Empty<DummyChromosome>();
 
-        var result = selector.SelectMatingPairs(population, random, 100).ToList();
+        var result = (await selector.SelectMatingPairsAsync(population, random, 100)).ToList();
 
         Assert.Empty(result);
     }
 
     [Fact]
-    public void SelectMatingPairs_WithSingleIndividual_ShouldReturnEmptyResult()
+    public async Task SelectMatingPairs_WithSingleIndividual_ShouldReturnEmptyResult()
     {
     var selector = new BoltzmannParentSelectorStrategy<int>(0.01);
         var random = new Random();
         var population = GenerateRandomPopulation(1, random);
 
-        var result = selector.SelectMatingPairs(population, random, 100).ToList();
+        var result = (await selector.SelectMatingPairsAsync(population, random, 100)).ToList();
 
         Assert.Empty(result);
     }
 
     [Fact]
-    public void SelectMatingPairs_WithTwoIndividuals_ShouldProduceUniformCouples()
+    public async Task SelectMatingPairs_WithTwoIndividuals_ShouldProduceUniformCouples()
     {
     var selector = new BoltzmannParentSelectorStrategy<int>(0.01);
         var random = new Random();
         var population = GenerateRandomPopulation(2, random);
         var minimumNumberOfCouples = 100;
 
-        var result = selector.SelectMatingPairs(population, random, minimumNumberOfCouples).ToList();
+        var result = (await selector.SelectMatingPairsAsync(population, random, minimumNumberOfCouples)).ToList();
 
         Assert.Equal(minimumNumberOfCouples, result.Count);
 
@@ -83,27 +83,27 @@ public class BoltzmannParentSelectorStrategyTests
     }
 
     [Fact]
-    public void SelectMatingPairs_ShouldReturnRequestedNumberOfCouples()
+    public async Task SelectMatingPairs_ShouldReturnRequestedNumberOfCouples()
     {
     var selector = new BoltzmannParentSelectorStrategy<int>(0.01);
         var random = new Random();
         var population = GenerateRandomPopulation(10, random);
         var minimumNumberOfCouples = 50;
 
-        var result = selector.SelectMatingPairs(population, random, minimumNumberOfCouples).ToList();
+        var result = (await selector.SelectMatingPairsAsync(population, random, minimumNumberOfCouples)).ToList();
 
         Assert.Equal(minimumNumberOfCouples, result.Count);
     }
 
     [Fact]
-    public void SelectMatingPairs_ShouldProduceDistinctParentsInEachCouple()
+    public async Task SelectMatingPairs_ShouldProduceDistinctParentsInEachCouple()
     {
     var selector = new BoltzmannParentSelectorStrategy<int>(0.01);
         var random = new Random();
         var population = GenerateRandomPopulation(10, random);
         var minimumNumberOfCouples = 100;
 
-        var result = selector.SelectMatingPairs(population, random, minimumNumberOfCouples).ToList();
+        var result = (await selector.SelectMatingPairsAsync(population, random, minimumNumberOfCouples)).ToList();
 
         foreach (var couple in result)
         {
@@ -112,7 +112,7 @@ public class BoltzmannParentSelectorStrategyTests
     }
 
     [Fact]
-    public void SelectMatingPairs_AtEpochZero_ShouldUseInitialTemperature()
+    public async Task SelectMatingPairs_AtEpochZero_ShouldUseInitialTemperature()
     {
     var selector = new BoltzmannParentSelectorStrategy<int>(0.1); // High decay rate
         var random = new Random(42); // Fixed seed for reproducibility
@@ -137,7 +137,7 @@ public class BoltzmannParentSelectorStrategyTests
         var numberOfCouples = 10000;
 
         // At epoch 0, temperature should be 1.0 (initial), allowing for exploration
-        var result = selector.SelectMatingPairs(populationArray, random, numberOfCouples, 0).ToList();
+        var result = (await selector.SelectMatingPairsAsync(populationArray, random, numberOfCouples, 0)).ToList();
 
         // Count how many times each chromosome was selected
         var selectionCounter = populationArray.ToDictionary(x => x.InternalIdentifier, x => 0);
@@ -162,7 +162,7 @@ public class BoltzmannParentSelectorStrategyTests
     }
 
     [Fact]
-    public void SelectMatingPairs_AtLaterEpochs_ShouldShowIncreasedSelectionPressure()
+    public async Task SelectMatingPairs_AtLaterEpochs_ShouldShowIncreasedSelectionPressure()
     {
     var selector = new BoltzmannParentSelectorStrategy<int>(0.1); // Decay rate of 0.1 per epoch
         var random = new Random(42); // Fixed seed for reproducibility
@@ -184,15 +184,15 @@ public class BoltzmannParentSelectorStrategyTests
         var numberOfCouples = 5000;
 
         // Test at epoch 0 (temperature = 1.0)
-        var epoch0Result = selector.SelectMatingPairs(populationArray, random, numberOfCouples, 0).ToList();
+        var epoch0Result = (await selector.SelectMatingPairsAsync(populationArray, random, numberOfCouples, 0)).ToList();
         var epoch0HighFitnessSelections = CountChromosomeSelections(epoch0Result, highFitnessChromosome);
 
         // Test at epoch 5 (temperature = 1.0 - 0.1*5 = 0.5)
-        var epoch5Result = selector.SelectMatingPairs(populationArray, random, numberOfCouples, 5).ToList();
+        var epoch5Result = (await selector.SelectMatingPairsAsync(populationArray, random, numberOfCouples, 5)).ToList();
         var epoch5HighFitnessSelections = CountChromosomeSelections(epoch5Result, highFitnessChromosome);
 
         // Test at epoch 10 (temperature = 1.0 - 0.1*10 = 0, which becomes epsilon)
-        var epoch10Result = selector.SelectMatingPairs(populationArray, random, numberOfCouples, 10).ToList();
+        var epoch10Result = (await selector.SelectMatingPairsAsync(populationArray, random, numberOfCouples, 10)).ToList();
         var epoch10HighFitnessSelections = CountChromosomeSelections(epoch10Result, highFitnessChromosome);
 
         // As epochs progress and temperature decreases, selection pressure should increase
@@ -204,7 +204,7 @@ public class BoltzmannParentSelectorStrategyTests
     }
 
     [Fact]
-    public void SelectMatingPairs_WithZeroDecayRate_ShouldMaintainConstantTemperature()
+    public async Task SelectMatingPairs_WithZeroDecayRate_ShouldMaintainConstantTemperature()
     {
     var selector = new BoltzmannParentSelectorStrategy<int>(0.0); // No decay
         var random = new Random(42);
@@ -226,10 +226,10 @@ public class BoltzmannParentSelectorStrategyTests
         var numberOfCouples = 5000;
 
         // Test at different epochs - should show similar behavior
-        var epoch0Result = selector.SelectMatingPairs(populationArray, random, numberOfCouples, 0).ToList();
+        var epoch0Result = (await selector.SelectMatingPairsAsync(populationArray, random, numberOfCouples, 0)).ToList();
         var epoch0HighFitnessSelections = CountChromosomeSelections(epoch0Result, highFitnessChromosome);
 
-        var epoch10Result = selector.SelectMatingPairs(populationArray, random, numberOfCouples, 10).ToList();
+        var epoch10Result = (await selector.SelectMatingPairsAsync(populationArray, random, numberOfCouples, 10)).ToList();
         var epoch10HighFitnessSelections = CountChromosomeSelections(epoch10Result, highFitnessChromosome);
 
         // With no decay, behavior should be similar across epochs (allowing for some variance due to randomness)
@@ -241,7 +241,7 @@ public class BoltzmannParentSelectorStrategyTests
     }
 
     [Fact]
-    public void SelectMatingPairs_ExponentialDecayVsLinearDecay_ShouldShowDifferentBehavior()
+    public async Task SelectMatingPairs_ExponentialDecayVsLinearDecay_ShouldShowDifferentBehavior()
     {
     var exponentialSelector = new BoltzmannParentSelectorStrategy<int>(0.1, 1.0, useExponentialDecay: true);
     var linearSelector = new BoltzmannParentSelectorStrategy<int>(0.1, 1.0, useExponentialDecay: false);
@@ -261,10 +261,10 @@ public class BoltzmannParentSelectorStrategyTests
         var numberOfCouples = 5000;
 
         // Test at epoch 10 where difference should be more pronounced
-        var exponentialResult = exponentialSelector.SelectMatingPairs(populationArray, random, numberOfCouples, 10).ToList();
+        var exponentialResult = (await exponentialSelector.SelectMatingPairsAsync(populationArray, random, numberOfCouples, 10)).ToList();
         var exponentialHighFitnessSelections = CountChromosomeSelections(exponentialResult, highFitnessChromosome);
 
-        var linearResult = linearSelector.SelectMatingPairs(populationArray, random, numberOfCouples, 10).ToList();
+        var linearResult = (await linearSelector.SelectMatingPairsAsync(populationArray, random, numberOfCouples, 10)).ToList();
         var linearHighFitnessSelections = CountChromosomeSelections(linearResult, highFitnessChromosome);
 
         // Exponential decay should maintain higher temperature at epoch 10 (1.0 * e^(-0.1*10) ≈ 0.368)
@@ -275,7 +275,7 @@ public class BoltzmannParentSelectorStrategyTests
     }
 
     [Fact]
-    public void SelectMatingPairs_WithZeroFitnessChromosomes_ShouldHandleGracefully()
+    public async Task SelectMatingPairs_WithZeroFitnessChromosomes_ShouldHandleGracefully()
     {
     var selector = new BoltzmannParentSelectorStrategy<int>(0.01);
         var random = new Random();
@@ -288,7 +288,7 @@ public class BoltzmannParentSelectorStrategyTests
             new DummyChromosome(Enumerable.Range(0, 10).Select(x => 1).ToList())  // Fitness = 1
         };
 
-        var result = selector.SelectMatingPairs(population, random, 10).ToList();
+        var result = (await selector.SelectMatingPairsAsync(population, random, 10)).ToList();
 
         Assert.Equal(10, result.Count);
         
@@ -302,7 +302,7 @@ public class BoltzmannParentSelectorStrategyTests
     }
 
     [Fact]
-    public void SelectMatingPairs_WithoutEpochParameter_ShouldDefaultToEpochZero()
+    public async Task SelectMatingPairs_WithoutEpochParameter_ShouldDefaultToEpochZero()
     {
     var selector = new BoltzmannParentSelectorStrategy<int>(0.1);
         var random = new Random(42);
@@ -318,10 +318,10 @@ public class BoltzmannParentSelectorStrategyTests
         var numberOfCouples = 100;
 
         // Call without epoch parameter (should default to epoch 0)
-        var resultWithoutEpoch = selector.SelectMatingPairs(populationArray, random, numberOfCouples).ToList();
+        var resultWithoutEpoch = (await selector.SelectMatingPairsAsync(populationArray, random, numberOfCouples)).ToList();
         
         // Call with explicit epoch 0
-        var resultWithEpoch0 = selector.SelectMatingPairs(populationArray, random, numberOfCouples, 0).ToList();
+        var resultWithEpoch0 = (await selector.SelectMatingPairsAsync(populationArray, random, numberOfCouples, 0)).ToList();
 
         // Both should have the same number of couples
         Assert.Equal(numberOfCouples, resultWithoutEpoch.Count);

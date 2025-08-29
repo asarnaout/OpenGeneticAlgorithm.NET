@@ -8,7 +8,7 @@ namespace OpenGA.Net.Tests.CrossoverStrategies;
 public class KPointCrossoverIntegrationTests
 {
     [Fact]
-    public void KPointCrossover_IntegrationTest_ShouldWorkInGeneticAlgorithmWorkflow()
+    public async Task KPointCrossover_IntegrationTest_ShouldWorkInGeneticAlgorithmWorkflow()
     {
         // Create a population of dummy chromosomes
         var population = new List<DummyChromosome>
@@ -31,7 +31,7 @@ public class KPointCrossoverIntegrationTests
 
         // Perform crossover
         var random = new Random(42);
-        var offspring = strategy!.Crossover(couple, random).ToList();
+        var offspring = (await strategy!.CrossoverAsync(couple, random)).ToList();
 
         // Verify results
         Assert.Equal(2, offspring.Count);
@@ -56,8 +56,8 @@ public class KPointCrossoverIntegrationTests
         Assert.Equal([9, 10, 11, 12, 13, 14, 15, 16], parentB.Genes);
 
         // Verify that offspring can be used for fitness calculation
-        var fitnessA = offspringA.CalculateFitness();
-        var fitnessB = offspringB.CalculateFitness();
+        var fitnessA = await offspringA.GetCachedFitnessAsync();
+        var fitnessB = await offspringB.GetCachedFitnessAsync();
         
         Assert.True(fitnessA > 0, "Offspring A should have positive fitness");
         Assert.True(fitnessB > 0, "Offspring B should have positive fitness");
@@ -68,7 +68,7 @@ public class KPointCrossoverIntegrationTests
     [InlineData(2)]
     [InlineData(3)]
     [InlineData(5)]
-    public void KPointCrossover_WithDifferentPointCounts_ShouldProduceValidOffspring(int numberOfPoints)
+    public async Task KPointCrossover_WithDifferentPointCounts_ShouldProduceValidOffspring(int numberOfPoints)
     {
         var parentA = new DummyChromosome([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
         var parentB = new DummyChromosome([11, 12, 13, 14, 15, 16, 17, 18, 19, 20]);
@@ -79,7 +79,7 @@ public class KPointCrossoverIntegrationTests
         var strategy = config.CrossoverStrategy;
 
         var random = new Random(42);
-        var offspring = strategy!.Crossover(couple, random).ToList();
+        var offspring = (await strategy!.CrossoverAsync(couple, random)).ToList();
 
         Assert.Equal(2, offspring.Count);
         
@@ -92,7 +92,7 @@ public class KPointCrossoverIntegrationTests
     }
 
     [Fact]
-    public void KPointCrossover_MultipleGenerations_ShouldMaintainGeneticDiversity()
+    public async Task KPointCrossover_MultipleGenerations_ShouldMaintainGeneticDiversity()
     {
         var config = new CrossoverStrategyConfiguration<int>();
         config.KPointCrossover(2);
@@ -123,7 +123,7 @@ public class KPointCrossoverIntegrationTests
                 var parentB = currentGeneration[(i + 1) % currentGeneration.Count];
                 var couple = Couple<int>.Pair(parentA, parentB);
 
-                var offspring = strategy!.Crossover(couple, random).ToList();
+                var offspring = (await strategy!.CrossoverAsync(couple, random)).ToList();
                 nextGeneration.AddRange(offspring.Cast<DummyChromosome>());
             }
 
@@ -143,7 +143,7 @@ public class KPointCrossoverIntegrationTests
     }
 
     [Fact]
-    public void KPointCrossover_ConfigurationReuse_ShouldWorkCorrectly()
+    public async Task KPointCrossover_ConfigurationReuse_ShouldWorkCorrectly()
     {
         var config = new CrossoverStrategyConfiguration<int>();
         
@@ -165,10 +165,10 @@ public class KPointCrossoverIntegrationTests
         var parentB = new DummyChromosome([11, 12, 13, 14, 15, 16, 17, 18, 19, 20]);
         var couple = Couple<int>.Pair(parentA, parentB);
         var random = new Random(42);
-        
-        var offspring2Point = strategy2Point!.Crossover(couple, random).ToList();
-        var offspring4Point = strategy4Point!.Crossover(couple, random).ToList();
-        
+
+        var offspring2Point = (await strategy2Point!.CrossoverAsync(couple, random)).ToList();
+        var offspring4Point = (await strategy4Point!.CrossoverAsync(couple, random)).ToList();
+
         Assert.Equal(2, offspring2Point.Count);
         Assert.Equal(2, offspring4Point.Count);
         
