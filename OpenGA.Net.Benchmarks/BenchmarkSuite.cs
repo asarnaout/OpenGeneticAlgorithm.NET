@@ -308,8 +308,14 @@ public static class BenchmarkAnalyzer
         var distance50 = tspResult50.GetTotalDistance();
         var fitness50 = await tspResult50.CalculateFitnessAsync();
         
+        // Calculate improvement over random baseline
+        var randomBaseline50 = CalculateRandomTourBaseline(distanceMatrix50, 1000);
+        var improvement50 = (randomBaseline50 - distance50) / randomBaseline50 * 100;
+        
         Console.WriteLine($"TSP 50 Cities:");
         Console.WriteLine($"  Best Distance: {distance50:F2}");
+        Console.WriteLine($"  Random Baseline: {randomBaseline50:F2}");
+        Console.WriteLine($"  Improvement: {improvement50:F1}% over random");
         Console.WriteLine($"  Fitness: {fitness50:F6}");
         Console.WriteLine($"  Route: {string.Join(" → ", tspResult50.Genes.Take(10))}...");
         Console.WriteLine();
