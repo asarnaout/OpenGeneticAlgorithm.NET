@@ -40,7 +40,7 @@ public class KPointCrossoverStrategyTests
     #region Exception Tests
 
     [Fact]
-    public void Crossover_WithEmptyChromosomeA_ShouldThrowException()
+    public async Task Crossover_WithEmptyChromosomeA_ShouldThrowException()
     {
         var parentA = new DummyChromosome([]);
         var parentB = new DummyChromosome([1, 2, 3, 4, 5]);
@@ -48,15 +48,15 @@ public class KPointCrossoverStrategyTests
         var strategy = new KPointCrossoverStrategy<int>(2);
         var random = new Random();
 
-        var exception = Assert.Throws<InvalidChromosomeException>(
-            () => strategy.Crossover(couple, random).ToList());
+        var exception = await Assert.ThrowsAsync<InvalidChromosomeException>(
+            async () => (await strategy.CrossoverAsync(couple, random)).ToList());
         
         Assert.Contains("invalid chromosome", exception.Message);
         Assert.Contains("at least one gene", exception.Message);
     }
 
     [Fact]
-    public void Crossover_WithEmptyChromosomeB_ShouldThrowException()
+    public async Task Crossover_WithEmptyChromosomeB_ShouldThrowException()
     {
         var parentA = new DummyChromosome([1, 2, 3, 4, 5]);
         var parentB = new DummyChromosome([]);
@@ -64,15 +64,15 @@ public class KPointCrossoverStrategyTests
         var strategy = new KPointCrossoverStrategy<int>(2);
         var random = new Random();
 
-        var exception = Assert.Throws<InvalidChromosomeException>(
-            () => strategy.Crossover(couple, random).ToList());
+        var exception = await Assert.ThrowsAsync<InvalidChromosomeException>(
+            async () => (await strategy.CrossoverAsync(couple, random)).ToList());
         
         Assert.Contains("invalid chromosome", exception.Message);
         Assert.Contains("at least one gene", exception.Message);
     }
 
     [Fact]
-    public void Crossover_WithBothEmptyChromosomes_ShouldThrowException()
+    public async Task Crossover_WithBothEmptyChromosomes_ShouldThrowException()
     {
         var parentA = new DummyChromosome([]);
         var parentB = new DummyChromosome([]);
@@ -80,14 +80,14 @@ public class KPointCrossoverStrategyTests
         var strategy = new KPointCrossoverStrategy<int>(1);
         var random = new Random();
 
-        var exception = Assert.Throws<InvalidChromosomeException>(
-            () => strategy.Crossover(couple, random).ToList());
+        var exception = await Assert.ThrowsAsync<InvalidChromosomeException>(
+            async () => (await strategy.CrossoverAsync(couple, random)).ToList());
         
         Assert.Contains("invalid chromosome", exception.Message);
     }
 
     [Fact]
-    public void Crossover_WithTooManyPointsForChromosomeLength_ShouldThrowException()
+    public async Task Crossover_WithTooManyPointsForChromosomeLength_ShouldThrowException()
     {
         var parentA = new DummyChromosome([1, 2]);  // 2 genes
         var parentB = new DummyChromosome([3, 4]);  // 2 genes
@@ -95,15 +95,15 @@ public class KPointCrossoverStrategyTests
         var strategy = new KPointCrossoverStrategy<int>(5); // More points than genes - 1
         var random = new Random();
 
-        var exception = Assert.Throws<InvalidChromosomeException>(
-            () => strategy.Crossover(couple, random).ToList());
+        var exception = await Assert.ThrowsAsync<InvalidChromosomeException>(
+            async () => (await strategy.CrossoverAsync(couple, random)).ToList());
         
         Assert.Contains("do not have at least", exception.Message);
         Assert.Contains("genes", exception.Message);
     }
 
     [Fact]
-    public void Crossover_WithPointsEqualToChromosomeLength_ShouldThrowException()
+    public async Task Crossover_WithPointsEqualToChromosomeLength_ShouldThrowException()
     {
         var parentA = new DummyChromosome([1, 2, 3]);  // 3 genes
         var parentB = new DummyChromosome([4, 5, 6]);  // 3 genes
@@ -111,8 +111,8 @@ public class KPointCrossoverStrategyTests
         var strategy = new KPointCrossoverStrategy<int>(3); // Equal to length
         var random = new Random();
 
-        var exception = Assert.Throws<InvalidChromosomeException>(
-            () => strategy.Crossover(couple, random).ToList());
+        var exception = await Assert.ThrowsAsync<InvalidChromosomeException>(
+            async () => (await strategy.CrossoverAsync(couple, random)).ToList());
         
         Assert.Contains("do not have at least", exception.Message);
     }
@@ -122,7 +122,7 @@ public class KPointCrossoverStrategyTests
     #region Basic Functionality Tests
 
     [Fact]
-    public void Crossover_WithOnePoint_ShouldWorkLikeOnePointCrossover()
+    public async Task Crossover_WithOnePoint_ShouldWorkLikeOnePointCrossover()
     {
         var parentA = new DummyChromosome([1, 2, 3, 4, 5]);
         var parentB = new DummyChromosome([6, 7, 8, 9, 10]);
@@ -130,7 +130,7 @@ public class KPointCrossoverStrategyTests
         var strategy = new KPointCrossoverStrategy<int>(1);
         var random = new Random(42); // Fixed seed for reproducibility
 
-        var offspring = strategy.Crossover(couple, random).ToList();
+        var offspring = (await strategy.CrossoverAsync(couple, random)).ToList();
 
         Assert.Equal(2, offspring.Count);
         Assert.Equal(5, offspring[0].Genes.Count);
@@ -148,7 +148,7 @@ public class KPointCrossoverStrategyTests
     }
 
     [Fact]
-    public void Crossover_WithTwoPoints_ShouldAlternateBetweenParents()
+    public async Task Crossover_WithTwoPoints_ShouldAlternateBetweenParents()
     {
         var parentA = new DummyChromosome([1, 2, 3, 4, 5, 6]);
         var parentB = new DummyChromosome([7, 8, 9, 10, 11, 12]);
@@ -156,7 +156,7 @@ public class KPointCrossoverStrategyTests
         var strategy = new KPointCrossoverStrategy<int>(2);
         var random = new Random(42); // Fixed seed
 
-        var offspring = strategy.Crossover(couple, random).ToList();
+        var offspring = (await strategy.CrossoverAsync(couple, random)).ToList();
 
         Assert.Equal(2, offspring.Count);
         
@@ -171,7 +171,7 @@ public class KPointCrossoverStrategyTests
     }
 
     [Fact]
-    public void Crossover_WithThreePoints_ShouldCreateValidOffspring()
+    public async Task Crossover_WithThreePoints_ShouldCreateValidOffspring()
     {
         var parentA = new DummyChromosome([1, 2, 3, 4, 5, 6, 7, 8]);
         var parentB = new DummyChromosome([10, 20, 30, 40, 50, 60, 70, 80]);
@@ -179,7 +179,7 @@ public class KPointCrossoverStrategyTests
         var strategy = new KPointCrossoverStrategy<int>(3);
         var random = new Random(42);
 
-        var offspring = strategy.Crossover(couple, random).ToList();
+        var offspring = (await strategy.CrossoverAsync(couple, random)).ToList();
 
         Assert.Equal(2, offspring.Count);
         Assert.Equal(8, offspring[0].Genes.Count);
@@ -187,7 +187,7 @@ public class KPointCrossoverStrategyTests
     }
 
     [Fact]
-    public void Crossover_AlwaysProducesTwoOffspring()
+    public async Task Crossover_AlwaysProducesTwoOffspring()
     {
         var parentA = new DummyChromosome([1, 2, 3, 4, 5]);
         var parentB = new DummyChromosome([6, 7, 8, 9, 10]);
@@ -197,7 +197,7 @@ public class KPointCrossoverStrategyTests
 
         for (int i = 0; i < 100; i++)
         {
-            var offspring = strategy.Crossover(couple, random).ToList();
+            var offspring = (await strategy.CrossoverAsync(couple, random)).ToList();
             Assert.Equal(2, offspring.Count);
         }
     }
@@ -207,7 +207,7 @@ public class KPointCrossoverStrategyTests
     #region Variable Length Chromosome Tests
 
     [Fact]
-    public void Crossover_WithDifferentLengthChromosomes_ShouldHandleCorrectly()
+    public async Task Crossover_WithDifferentLengthChromosomes_ShouldHandleCorrectly()
     {
         var parentA = new DummyChromosome([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
         var parentB = new DummyChromosome([100, 200, 300]);
@@ -215,7 +215,7 @@ public class KPointCrossoverStrategyTests
         var strategy = new KPointCrossoverStrategy<int>(2);
         var random = new Random(42);
 
-        var offspring = strategy.Crossover(couple, random).ToList();
+        var offspring = (await strategy.CrossoverAsync(couple, random)).ToList();
 
         Assert.Equal(2, offspring.Count);
         
@@ -226,7 +226,7 @@ public class KPointCrossoverStrategyTests
     }
 
     [Fact]
-    public void Crossover_WithVeryDifferentLengths_ShouldProduceValidResults()
+    public async Task Crossover_WithVeryDifferentLengths_ShouldProduceValidResults()
     {
         var parentA = new DummyChromosome([1]);
         var parentB = new DummyChromosome([100, 200, 300, 400, 500]);
@@ -234,7 +234,7 @@ public class KPointCrossoverStrategyTests
         var strategy = new KPointCrossoverStrategy<int>(1);
         var random = new Random(42);
 
-        var offspring = strategy.Crossover(couple, random).ToList();
+        var offspring = (await strategy.CrossoverAsync(couple, random)).ToList();
 
         Assert.Equal(2, offspring.Count);
         Assert.Equal(5, offspring[0].Genes.Count);
@@ -242,7 +242,7 @@ public class KPointCrossoverStrategyTests
     }
 
     [Fact]
-    public void Crossover_WithShortChromosomes_ShouldUseMinimumLength()
+    public async Task Crossover_WithShortChromosomes_ShouldUseMinimumLength()
     {
         var parentA = new DummyChromosome([1, 2]);
         var parentB = new DummyChromosome([3, 4]);
@@ -250,7 +250,7 @@ public class KPointCrossoverStrategyTests
         var strategy = new KPointCrossoverStrategy<int>(1);
         var random = new Random(42);
 
-        var offspring = strategy.Crossover(couple, random).ToList();
+        var offspring = (await strategy.CrossoverAsync(couple, random)).ToList();
 
         Assert.Equal(2, offspring.Count);
         Assert.Equal(2, offspring[0].Genes.Count);
@@ -262,7 +262,7 @@ public class KPointCrossoverStrategyTests
     #region Crossover Point Generation Tests
 
     [Fact]
-    public void Crossover_ShouldGenerateUniquePointsWithinValidRange()
+    public async Task Crossover_ShouldGenerateUniquePointsWithinValidRange()
     {
         var parentA = new DummyChromosome([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
         var parentB = new DummyChromosome([11, 12, 13, 14, 15, 16, 17, 18, 19, 20]);
@@ -273,14 +273,14 @@ public class KPointCrossoverStrategyTests
         // Run multiple times to test randomness
         for (int run = 0; run < 50; run++)
         {
-            var offspring = strategy.Crossover(couple, random).ToList();
+            var offspring = (await strategy.CrossoverAsync(couple, random)).ToList();
             Assert.Equal(2, offspring.Count);
             // The fact that it doesn't throw an exception means points are valid
         }
     }
 
     [Fact]
-    public void Crossover_WithMaximumValidPoints_ShouldWork()
+    public async Task Crossover_WithMaximumValidPoints_ShouldWork()
     {
         var parentA = new DummyChromosome([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
         var parentB = new DummyChromosome([11, 12, 13, 14, 15, 16, 17, 18, 19, 20]);
@@ -288,7 +288,7 @@ public class KPointCrossoverStrategyTests
         var strategy = new KPointCrossoverStrategy<int>(9); // Maximum valid for 10-gene chromosomes
         var random = new Random(42);
 
-        var offspring = strategy.Crossover(couple, random).ToList();
+        var offspring = (await strategy.CrossoverAsync(couple, random)).ToList();
 
         Assert.Equal(2, offspring.Count);
         Assert.Equal(10, offspring[0].Genes.Count);
@@ -300,7 +300,7 @@ public class KPointCrossoverStrategyTests
     #region Age Reset Tests
 
     [Fact]
-    public void Crossover_ShouldResetOffspringAge()
+    public async Task Crossover_ShouldResetOffspringAge()
     {
         var parentA = new DummyChromosome([1, 2, 3, 4, 5]);
         var parentB = new DummyChromosome([6, 7, 8, 9, 10]);
@@ -313,7 +313,7 @@ public class KPointCrossoverStrategyTests
         var strategy = new KPointCrossoverStrategy<int>(2);
         var random = new Random();
 
-        var offspring = strategy.Crossover(couple, random).ToList();
+        var offspring = (await strategy.CrossoverAsync(couple, random)).ToList();
 
         Assert.Equal(2, offspring.Count);
         Assert.Equal(0, offspring[0].Age);
@@ -325,7 +325,7 @@ public class KPointCrossoverStrategyTests
     #region Data Integrity Tests
 
     [Fact]
-    public void Crossover_ShouldNotModifyOriginalParents()
+    public async Task Crossover_ShouldNotModifyOriginalParents()
     {
         var originalA = new List<int> { 1, 2, 3, 4, 5 };
         var originalB = new List<int> { 6, 7, 8, 9, 10 };
@@ -336,7 +336,7 @@ public class KPointCrossoverStrategyTests
         var strategy = new KPointCrossoverStrategy<int>(2);
         var random = new Random();
 
-        _ = strategy.Crossover(couple, random).ToList();
+        _ = (await strategy.CrossoverAsync(couple, random)).ToList();
 
         // Original parents should remain unchanged
         Assert.Equal(originalA, parentA.Genes);
@@ -344,7 +344,7 @@ public class KPointCrossoverStrategyTests
     }
 
     [Fact]
-    public void Crossover_OffspringShouldBeIndependentCopies()
+    public async Task Crossover_OffspringShouldBeIndependentCopies()
     {
         var parentA = new DummyChromosome([1, 2, 3, 4, 5]);
         var parentB = new DummyChromosome([6, 7, 8, 9, 10]);
@@ -352,7 +352,7 @@ public class KPointCrossoverStrategyTests
         var strategy = new KPointCrossoverStrategy<int>(2);
         var random = new Random();
 
-        var offspring = strategy.Crossover(couple, random).ToList();
+        var offspring = (await strategy.CrossoverAsync(couple, random)).ToList();
 
         // Modifying one offspring should not affect the other
         offspring[0].Genes[0] = 999;
@@ -364,7 +364,7 @@ public class KPointCrossoverStrategyTests
     #region Deterministic Tests with Fixed Seeds
 
     [Fact]
-    public void Crossover_WithFixedSeed_ShouldProduceConsistentResults()
+    public async Task Crossover_WithFixedSeed_ShouldProduceConsistentResults()
     {
         var parentA = new DummyChromosome([1, 2, 3, 4, 5, 6]);
         var parentB = new DummyChromosome([7, 8, 9, 10, 11, 12]);
@@ -372,10 +372,10 @@ public class KPointCrossoverStrategyTests
         var strategy = new KPointCrossoverStrategy<int>(2);
 
         var random1 = new Random(12345);
-        var offspring1 = strategy.Crossover(couple, random1).ToList();
+        var offspring1 = (await strategy.CrossoverAsync(couple, random1)).ToList();
 
         var random2 = new Random(12345);
-        var offspring2 = strategy.Crossover(couple, random2).ToList();
+        var offspring2 = (await strategy.CrossoverAsync(couple, random2)).ToList();
 
         // Results should be identical with same seed
         Assert.Equal(offspring1[0].Genes, offspring2[0].Genes);
@@ -383,7 +383,7 @@ public class KPointCrossoverStrategyTests
     }
 
     [Fact]
-    public void Crossover_WithDifferentSeeds_ShouldProduceDifferentResults()
+    public async Task Crossover_WithDifferentSeeds_ShouldProduceDifferentResults()
     {
         var parentA = new DummyChromosome([1, 2, 3, 4, 5, 6, 7, 8]);
         var parentB = new DummyChromosome([9, 10, 11, 12, 13, 14, 15, 16]);
@@ -391,10 +391,10 @@ public class KPointCrossoverStrategyTests
         var strategy = new KPointCrossoverStrategy<int>(3);
 
         var random1 = new Random(111);
-        var offspring1 = strategy.Crossover(couple, random1).ToList();
+        var offspring1 = (await strategy.CrossoverAsync(couple, random1)).ToList();
 
         var random2 = new Random(222);
-        var offspring2 = strategy.Crossover(couple, random2).ToList();
+        var offspring2 = (await strategy.CrossoverAsync(couple, random2)).ToList();
 
         // Results should be different with different seeds (high probability)
         var isDifferent = !offspring1[0].Genes.SequenceEqual(offspring2[0].Genes) ||
@@ -407,7 +407,7 @@ public class KPointCrossoverStrategyTests
     #region Performance Tests
 
     [Fact]
-    public void Crossover_WithLargeChromosomes_ShouldBeEfficient()
+    public async Task Crossover_WithLargeChromosomes_ShouldBeEfficient()
     {
         var largeParentA = new DummyChromosome(Enumerable.Range(1, 10000).ToList());
         var largeParentB = new DummyChromosome(Enumerable.Range(10001, 10000).ToList());
@@ -419,7 +419,7 @@ public class KPointCrossoverStrategyTests
         
         for (int i = 0; i < 100; i++)
         {
-            var offspring = strategy.Crossover(couple, random).ToList();
+            var offspring = (await strategy.CrossoverAsync(couple, random)).ToList();
             Assert.Equal(2, offspring.Count);
         }
         
@@ -430,7 +430,7 @@ public class KPointCrossoverStrategyTests
     }
 
     [Fact]
-    public void Crossover_WithManyPoints_ShouldHandleEfficiently()
+    public async Task Crossover_WithManyPoints_ShouldHandleEfficiently()
     {
         var parentA = new DummyChromosome(Enumerable.Range(1, 1000).ToList());
         var parentB = new DummyChromosome(Enumerable.Range(1001, 1000).ToList());
@@ -440,7 +440,7 @@ public class KPointCrossoverStrategyTests
 
         var stopwatch = Stopwatch.StartNew();
         
-        var offspring = strategy.Crossover(couple, random).ToList();
+        var offspring = (await strategy.CrossoverAsync(couple, random)).ToList();
         
         stopwatch.Stop();
         
@@ -454,7 +454,7 @@ public class KPointCrossoverStrategyTests
     #region Memory Tests
 
     [Fact]
-    public void Crossover_ShouldNotCauseMemoryLeaks()
+    public async Task Crossover_ShouldNotCauseMemoryLeaks()
     {
         var parentA = new DummyChromosome(Enumerable.Range(1, 1000).ToList());
         var parentB = new DummyChromosome(Enumerable.Range(1001, 1000).ToList());
@@ -470,7 +470,7 @@ public class KPointCrossoverStrategyTests
         
         for (int i = 0; i < 1000; i++)
         {
-            var offspring = strategy.Crossover(couple, random).ToList();
+            var offspring = (await strategy.CrossoverAsync(couple, random)).ToList();
             // Don't hold references to allow garbage collection
         }
         
@@ -490,7 +490,7 @@ public class KPointCrossoverStrategyTests
     #region Edge Cases
 
     [Fact]
-    public void Crossover_WithZeroPoints_ShouldReturnCopiesOfOriginalParents()
+    public async Task Crossover_WithZeroPoints_ShouldReturnCopiesOfOriginalParents()
     {
         var parentA = new DummyChromosome([1, 2, 3, 4, 5]);
         var parentB = new DummyChromosome([6, 7, 8, 9, 10]);
@@ -498,7 +498,7 @@ public class KPointCrossoverStrategyTests
         var strategy = new KPointCrossoverStrategy<int>(0);
         var random = new Random();
 
-        var offspring = strategy.Crossover(couple, random).ToList();
+        var offspring = (await strategy.CrossoverAsync(couple, random)).ToList();
 
         Assert.Equal(2, offspring.Count);
         
@@ -513,7 +513,7 @@ public class KPointCrossoverStrategyTests
     [InlineData(3)]
     [InlineData(5)]
     [InlineData(10)]
-    public void Crossover_WithVariousPointCounts_ShouldProduceValidResults(int numberOfPoints)
+    public async Task Crossover_WithVariousPointCounts_ShouldProduceValidResults(int numberOfPoints)
     {
         var parentA = new DummyChromosome(Enumerable.Range(1, 12).ToList());
         var parentB = new DummyChromosome(Enumerable.Range(13, 12).ToList());
@@ -521,7 +521,7 @@ public class KPointCrossoverStrategyTests
         var strategy = new KPointCrossoverStrategy<int>(numberOfPoints);
         var random = new Random(42);
 
-        var offspring = strategy.Crossover(couple, random).ToList();
+        var offspring = (await strategy.CrossoverAsync(couple, random)).ToList();
 
         Assert.Equal(2, offspring.Count);
         Assert.Equal(12, offspring[0].Genes.Count);
@@ -540,7 +540,7 @@ public class KPointCrossoverStrategyTests
     #region Integration Tests
 
     [Fact]
-    public void Crossover_IntegratedWithGeneticAlgorithm_ShouldMaintainPopulationDiversity()
+    public async Task Crossover_IntegratedWithGeneticAlgorithm_ShouldMaintainPopulationDiversity()
     {
         var parentA = new DummyChromosome([1, 2, 3, 4, 5, 6, 7, 8]);
         var parentB = new DummyChromosome([9, 10, 11, 12, 13, 14, 15, 16]);
@@ -553,7 +553,7 @@ public class KPointCrossoverStrategyTests
         // Generate many offspring to test diversity
         for (int i = 0; i < 100; i++)
         {
-            var offspring = strategy.Crossover(couple, random).ToList();
+            var offspring = (await strategy.CrossoverAsync(couple, random)).ToList();
             allOffspring.Add(offspring[0].Genes.ToList());
             allOffspring.Add(offspring[1].Genes.ToList());
         }

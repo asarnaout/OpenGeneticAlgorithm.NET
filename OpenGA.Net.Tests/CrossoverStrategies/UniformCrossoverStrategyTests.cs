@@ -9,7 +9,7 @@ public class UniformCrossoverStrategyTests
     private readonly Random _random = new();
 
     [Fact]
-    public void CrossoverShouldGenerateOffspringWithValidParentGenes()
+    public async Task CrossoverShouldGenerateOffspringWithValidParentGenes()
     {
         var parentA = new DummyChromosome([1, 2, 3, 4, 5]);
         var parentB = new DummyChromosome([6, 7, 8, 9, 10]);
@@ -17,7 +17,7 @@ public class UniformCrossoverStrategyTests
         var couple = Couple<int>.Pair(parentA, parentB);
         var crossoverStrategy = new UniformCrossoverStrategy<int>();
 
-        var offspring = crossoverStrategy.Crossover(couple, _random).First();
+        var offspring = (await crossoverStrategy.CrossoverAsync(couple, _random)).First();
 
         Assert.Equal(5, offspring.Genes.Count);
 
@@ -28,7 +28,7 @@ public class UniformCrossoverStrategyTests
     }
 
     [Fact]
-    public void CrossoverShouldHandleUnequalLengthParentsA()
+    public async Task CrossoverShouldHandleUnequalLengthParentsA()
     {
         var parentA = new DummyChromosome([1, 2, 3]);
         var parentB = new DummyChromosome([4, 5, 6, 7, 8]);
@@ -36,7 +36,7 @@ public class UniformCrossoverStrategyTests
         var couple = Couple<int>.Pair(parentA, parentB);
         var crossoverStrategy = new UniformCrossoverStrategy<int>();
 
-        var offspring = crossoverStrategy.Crossover(couple, _random).First();
+        var offspring = (await crossoverStrategy.CrossoverAsync(couple, _random)).First();
 
         // Offspring can be either minLength (3) or maxLength (5) due to coin flip
         Assert.True(offspring.Genes.Count == 3 || offspring.Genes.Count == 5, 
@@ -61,7 +61,7 @@ public class UniformCrossoverStrategyTests
     }
 
         [Fact]
-    public void CrossoverShouldHandleUnequalLengthParentsB()
+    public async Task CrossoverShouldHandleUnequalLengthParentsB()
     {
         var parentA = new DummyChromosome([4, 5, 6, 7, 8]);
         var parentB = new DummyChromosome([1, 2, 3]);
@@ -69,7 +69,7 @@ public class UniformCrossoverStrategyTests
         var couple = Couple<int>.Pair(parentA, parentB);
         var crossoverStrategy = new UniformCrossoverStrategy<int>();
 
-        var offspring = crossoverStrategy.Crossover(couple, _random).First();
+        var offspring = (await crossoverStrategy.CrossoverAsync(couple, _random)).First();
 
         // Offspring can be either minLength (3) or maxLength (5) due to coin flip
         Assert.True(offspring.Genes.Count == 3 || offspring.Genes.Count == 5, 
@@ -94,7 +94,7 @@ public class UniformCrossoverStrategyTests
     }
 
     [Fact]
-    public void CrossoverShouldNotModifyOriginalParents()
+    public async Task CrossoverShouldNotModifyOriginalParents()
     {
         var parentA = new DummyChromosome([1, 2, 3, 4, 5]);
         var parentB = new DummyChromosome([6, 7, 8, 9, 10]);
@@ -105,14 +105,14 @@ public class UniformCrossoverStrategyTests
         var originalParentA = new List<int>(parentA.Genes);
         var originalParentB = new List<int>(parentB.Genes);
 
-        _ = crossoverStrategy.Crossover(couple, _random).First();
+        _ = (await crossoverStrategy.CrossoverAsync(couple, _random)).First();
 
         Assert.Equal(originalParentA, parentA.Genes);
         Assert.Equal(originalParentB, parentB.Genes);
     }
 
     [Fact]
-    public void CrossoverShouldPreserveUniformRandomDistribution()
+    public async Task CrossoverShouldPreserveUniformRandomDistribution()
     {
         var parentA = new DummyChromosome([0, 0, 0, 0, 0]);
         var parentB = new DummyChromosome([1, 1, 1, 1, 1]);
@@ -125,7 +125,7 @@ public class UniformCrossoverStrategyTests
 
         for (int i = 0; i < iterations; i++)
         {
-            var offspring = crossoverStrategy.Crossover(couple, _random).First();
+            var offspring = (await crossoverStrategy.CrossoverAsync(couple, _random)).First();
             zeroCount += offspring.Genes.Count(g => g == 0);
             oneCount += offspring.Genes.Count(g => g == 1);
         }
@@ -136,7 +136,7 @@ public class UniformCrossoverStrategyTests
     }
 
     [Fact]
-    public void CrossoverShouldThrowWhenParentAIsEmpty()
+    public async Task CrossoverShouldThrowWhenParentAIsEmpty()
     {
         var parentA = new DummyChromosome([]);
         var parentB = new DummyChromosome([1, 2, 3]);
@@ -144,14 +144,14 @@ public class UniformCrossoverStrategyTests
         var couple = Couple<int>.Pair(parentA, parentB);
         var crossoverStrategy = new UniformCrossoverStrategy<int>();
 
-        var exception = Assert.Throws<InvalidChromosomeException>(() => 
-            crossoverStrategy.Crossover(couple, _random).First());
+        var exception = await Assert.ThrowsAsync<InvalidChromosomeException>(async () => 
+            (await crossoverStrategy.CrossoverAsync(couple, _random)).First());
             
         Assert.Equal("Parent A has null or empty genes collection.", exception.Message);
     }
 
     [Fact]
-    public void CrossoverShouldThrowWhenParentBIsEmpty()
+    public async Task CrossoverShouldThrowWhenParentBIsEmpty()
     {
         var parentA = new DummyChromosome([1, 2, 3]);
         var parentB = new DummyChromosome([]);
@@ -159,14 +159,14 @@ public class UniformCrossoverStrategyTests
         var couple = Couple<int>.Pair(parentA, parentB);
         var crossoverStrategy = new UniformCrossoverStrategy<int>();
 
-        var exception = Assert.Throws<InvalidChromosomeException>(() => 
-            crossoverStrategy.Crossover(couple, _random).First());
+        var exception = await Assert.ThrowsAsync<InvalidChromosomeException>(async () => 
+            (await crossoverStrategy.CrossoverAsync(couple, _random)).First());
             
         Assert.Equal("Parent B has null or empty genes collection.", exception.Message);
     }
 
     [Fact]
-    public void CrossoverShouldThrowWhenBothParentsAreEmpty()
+    public async Task CrossoverShouldThrowWhenBothParentsAreEmpty()
     {
         var parentA = new DummyChromosome([]);
         var parentB = new DummyChromosome([]);
@@ -174,14 +174,14 @@ public class UniformCrossoverStrategyTests
         var couple = Couple<int>.Pair(parentA, parentB);
         var crossoverStrategy = new UniformCrossoverStrategy<int>();
 
-        var exception = Assert.Throws<InvalidChromosomeException>(() => 
-            crossoverStrategy.Crossover(couple, _random).First());
+        var exception = await Assert.ThrowsAsync<InvalidChromosomeException>(async () => 
+            (await crossoverStrategy.CrossoverAsync(couple, _random)).First());
             
         Assert.Equal("Parent A has null or empty genes collection.", exception.Message);
     }
 
     [Fact]
-    public void CrossoverShouldHandleSingleGeneChromosomes()
+    public async Task CrossoverShouldHandleSingleGeneChromosomes()
     {
         var parentA = new DummyChromosome([1]);
         var parentB = new DummyChromosome([2]);
@@ -189,14 +189,14 @@ public class UniformCrossoverStrategyTests
         var couple = Couple<int>.Pair(parentA, parentB);
         var crossoverStrategy = new UniformCrossoverStrategy<int>();
 
-        var offspring = crossoverStrategy.Crossover(couple, _random).First();
+        var offspring = (await crossoverStrategy.CrossoverAsync(couple, _random)).First();
 
         Assert.Single(offspring.Genes);
         Assert.Contains(offspring.Genes[0], new[] { 1, 2 });
     }
 
     [Fact]
-    public void CrossoverShouldMaintainUniformDistributionWithUnequalLengths()
+    public async Task CrossoverShouldMaintainUniformDistributionWithUnequalLengths()
     {
         var parentA = new DummyChromosome([0, 0]);
         var parentB = new DummyChromosome([1, 1, 1, 1]);
@@ -209,7 +209,7 @@ public class UniformCrossoverStrategyTests
 
         for (int i = 0; i < iterations; i++)
         {
-            var offspring = crossoverStrategy.Crossover(couple, _random).First();
+            var offspring = (await crossoverStrategy.CrossoverAsync(couple, _random)).First();
             
             // Count genes in overlap region (first 2 positions) - should be roughly 50/50
             zeroCount += offspring.Genes.Take(2).Count(g => g == 0);
@@ -224,7 +224,7 @@ public class UniformCrossoverStrategyTests
     }
 
     [Fact]
-    public void CrossoverPerformance_LargeChromosomes_ShouldBeEfficient()
+    public async Task CrossoverPerformance_LargeChromosomes_ShouldBeEfficient()
     {
         // Create large chromosomes for performance testing
         var largeGenesA = Enumerable.Range(0, 10000).ToList();
@@ -241,7 +241,7 @@ public class UniformCrossoverStrategyTests
         // Perform multiple crossover operations
         for (int i = 0; i < 1000; i++)
         {
-            _ = crossoverStrategy.Crossover(couple, _random).First();
+            _ = (await crossoverStrategy.CrossoverAsync(couple, _random)).First();
         }
 
         stopwatch.Stop();
@@ -252,7 +252,7 @@ public class UniformCrossoverStrategyTests
     }
 
     [Fact]
-    public void CrossoverShouldHandleVeryUnequalLengths()
+    public async Task CrossoverShouldHandleVeryUnequalLengths()
     {
         var parentA = new DummyChromosome([1]);
         var parentB = new DummyChromosome(Enumerable.Range(2, 100).ToList());
@@ -260,7 +260,7 @@ public class UniformCrossoverStrategyTests
         var couple = Couple<int>.Pair(parentA, parentB);
         var crossoverStrategy = new UniformCrossoverStrategy<int>();
 
-        var offspring = crossoverStrategy.Crossover(couple, _random).First();
+        var offspring = (await crossoverStrategy.CrossoverAsync(couple, _random)).First();
 
         // Offspring can be either minLength (1) or maxLength (100) due to coin flip
         Assert.True(offspring.Genes.Count == 1 || offspring.Genes.Count == 100, 
@@ -280,7 +280,7 @@ public class UniformCrossoverStrategyTests
     }
     
     [Fact]
-    public void CrossoverShouldProduceVariableLengthOffspringWithCoinFlip()
+    public async Task CrossoverShouldProduceVariableLengthOffspringWithCoinFlip()
     {
         var parentA = new DummyChromosome([1, 2, 3]);
         var parentB = new DummyChromosome([4, 5, 6, 7, 8, 9, 10]);
@@ -293,7 +293,7 @@ public class UniformCrossoverStrategyTests
         // Run crossover many times to verify coin flip behavior
         for (int trial = 0; trial < 1000; trial++)
         {
-            var offspring = crossoverStrategy.Crossover(couple, new Random(trial)).First();
+            var offspring = (await crossoverStrategy.CrossoverAsync(couple, new Random(trial))).First();
             
             // Track length distribution
             lengthCounts[offspring.Genes.Count] = lengthCounts.GetValueOrDefault(offspring.Genes.Count, 0) + 1;
