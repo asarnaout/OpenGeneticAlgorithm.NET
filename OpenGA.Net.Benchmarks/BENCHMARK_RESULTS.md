@@ -40,12 +40,12 @@ This document presents comprehensive benchmark results for the OpenGA.Net geneti
 
 | Problem | Instance Size | Time (ms) | Generations/sec |
 |---------|---------------|-----------|----------------|
-| TSP | 30 cities | 1,111 | 450 |
-| TSP | 50 cities | 1,149 | 435 |
-| Knapsack | 50 items | 1,075 | 465 |
-| Knapsack | 100 items | 1,130 | 442 |
-| Bin Packing | 50 items | 1,415 | 353 |
-| Bin Packing | 100 items | 540 | 926 |
+| TSP | 30 cities | 1,853 | 270 |
+| TSP | 50 cities | 1,893 | 264 |
+| Knapsack | 50 items | 1,863 | 268 |
+| Knapsack | 100 items | 601 | 832 |
+| Bin Packing | 50 items | 2,321 | 215 |
+| Bin Packing | 100 items | 993 | 504 |
 
 ### Solution Quality Results (500 Generations)
 
@@ -55,8 +55,8 @@ The following results demonstrate OpenGA.Net's effectiveness across different pr
 
 | Configuration | Instance | Best Distance | Random Tour | Improvement | Quality Rating |
 |---------------|----------|---------------|-------------|-------------|----------------|
-| Tournament + OnePoint + Elitist | TSP-30 | 4,689.72 | 14,860.88 | **68.4%** | ⭐⭐⭐⭐⭐ Excellent |
-| Tournament + KPoint + Elitist | TSP-50 | 7,842.88 | N/A | N/A | ⭐⭐⭐⭐⭐ Excellent |
+| Tournament + OnePoint + Elitist | TSP-30 | 4,300.00 | 14,860.88 | **71.1%** | ⭐⭐⭐⭐⭐ Excellent |
+| Tournament + KPoint + Elitist | TSP-50 | 7,901.00 | 26,070.00 | **69.7%** | ⭐⭐⭐⭐⭐ Excellent |
 
 **Context**: 
 - **Random Tour Baseline**: Average distance of 1000 random tours on same instances
@@ -68,7 +68,7 @@ The following results demonstrate OpenGA.Net's effectiveness across different pr
 | Configuration | Instance | Total Value | Greedy Baseline | Upper Bound | Efficiency | Quality |
 |---------------|----------|-------------|----------------|-------------|------------|---------|
 | Tournament + Uniform + Elitist | 50 items | 1,027.80 | 1,027.80 | 1,028.38 | **99.94%** | ⭐⭐⭐⭐⭐ Optimal |
-| Tournament + Uniform + Elitist | 100 items | 2,286.87 | 2,283.61 | 2,288.50 | **99.93%** | ⭐⭐⭐⭐⭐ Optimal |
+| Tournament + Uniform + Elitist | 100 items | 2,286.20 | 2,283.61 | 2,288.50 | **99.90%** | ⭐⭐⭐⭐⭐ Optimal |
 
 **Context**: 
 - **Efficiency**: Ratio of achieved value to theoretical upper bound

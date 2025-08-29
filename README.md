@@ -273,20 +273,20 @@ OpenGA.Net has been rigorously tested on classic optimization problems to demons
 - **📦 Bin Packing Problem**: 50 and 100 item optimization
 
 ### ⚡ **Performance Highlights**
-- **Execution Speed**: 540ms-1,415ms for 500 generations on complex problems
+- **Execution Speed**: 601ms-2,321ms for 500 generations on complex problems
 - **Scalability**: Linear scaling with population size and problem complexity
 - **Solution Quality**: Consistently achieves near-optimal results within 1-2% of known bounds
 
 ### 📈 **Key Results**
 
-| Problem | Instance | Time (500 gen) | Best Result | Quality |
-|---------|----------|----------------|-------------|---------|
-| TSP | 30 cities | 1,111ms | 68.4% better than random tour | ⭐⭐⭐⭐⭐ |
-| TSP | 50 cities | 1,149ms | Distance: 7,842.88 | ⭐⭐⭐⭐⭐ |
-| Knapsack | 50 items | 1,075ms | 1,027.80 value (99.94% efficiency) | ⭐⭐⭐⭐⭐ |
-| Knapsack | 100 items | 1,130ms | 2,286.87 value (99.93% efficiency) | ⭐⭐⭐⭐⭐ |
-| Bin Packing | 50 items | 1,415ms | 19 bins (vs 18 optimal) | ⭐⭐⭐⭐⭐ |
-| Bin Packing | 100 items | 540ms | 36 bins (optimal!) | ⭐⭐⭐⭐⭐ |
+| Problem | Instance | Time (500 gen) | Best Result |
+|---------|----------|----------------|-------------|
+| TSP | 30 cities | 1,853ms | 71.1% better than random tour |
+| TSP | 50 cities | 1,893ms | 69.7% better than random tour |
+| Knapsack | 50 items | 1,863ms | 1,027.8 value (99.94% efficiency) |
+| Knapsack | 100 items | 601ms | 2,286.2 value (99.90% efficiency) |
+| Bin Packing | 50 items | 2,321ms | 19 bins (vs 18 optimal) |
+| Bin Packing | 100 items | 993ms | 36 bins (optimal!) |
 
 **Result Interpretation:**
 - **TSP**: % improvement over random tours / absolute distance (showing significant optimization capability)
