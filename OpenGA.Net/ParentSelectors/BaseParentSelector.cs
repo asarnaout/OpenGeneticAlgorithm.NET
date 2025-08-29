@@ -2,7 +2,7 @@ using OpenGA.Net.Extensions;
 
 namespace OpenGA.Net.ParentSelectors;
 
-public abstract class BaseParentSelector<T>
+public abstract class BaseParentSelector<T> : BaseOperator
 {
     protected internal abstract IEnumerable<Couple<T>> SelectMatingPairs(Chromosome<T>[] population, Random random, int minimumNumberOfCouples);
 

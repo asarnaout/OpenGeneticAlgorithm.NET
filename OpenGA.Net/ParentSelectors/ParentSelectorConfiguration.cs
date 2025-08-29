@@ -1,4 +1,5 @@
 using OpenGA.Net.Exceptions;
+using OpenGA.Net.OperatorSelectionPolicies;
 
 namespace OpenGA.Net.ParentSelectors;
 
@@ -6,24 +7,24 @@ public class ParentSelectorConfiguration<T>
 {
     internal BaseParentSelector<T> ParentSelector = default!;
 
+    private readonly OperatorSelectionPolicyConfiguration _policyConfig = new();
+
     /// <summary>
     /// Parents are chosen at random regardless of their fitness.
     /// </summary>
-    public BaseParentSelector<T> Random()
+    public void Random()
     {
         var result = new RandomParentSelector<T>();
         ParentSelector = result;
-        return result;
     }
 
     /// <summary>
     /// The likelihood of an individual chromosome being chosen for mating is proportional to its fitness.
     /// </summary>
-    public BaseParentSelector<T> RouletteWheel()
+    public void RouletteWheel()
     {
         var result = new FitnessWeightedRouletteWheelParentSelector<T>();
         ParentSelector = result;
-        return result;
     }
 
     /// <summary>
@@ -33,22 +34,20 @@ public class ParentSelectorConfiguration<T>
     /// <param name="stochasticTournament">Defaults to true. If set to true, then the 2 individuals chosen for mating in each 
     /// tournament are the fittest 2 individuals in the tournament, otherwise a roulette wheel is spun to choose the two winners 
     /// out of the n-individuals, where the probability of winning is proportional to each individual's fitness.</param>
-    public BaseParentSelector<T> Tournament(bool stochasticTournament = true)
+    public void Tournament(bool stochasticTournament = true)
     {
         var result = new TournamentParentSelector<T>(stochasticTournament);
         ParentSelector = result;
-        return result;
     }
 
     /// <summary>
     /// Apply a custom strategy for choosing mating parents. Requires an instance of a subclass of <see cref="BaseParentSelector<T>">BaseParentSelector<T></see>
     /// to dictate which individuals will be chosen to take part in the crossover process.
     /// </summary>
-    public BaseParentSelector<T> Custom(BaseParentSelector<T> parentSelector)
+    public void Custom(BaseParentSelector<T> parentSelector)
     {
         ArgumentNullException.ThrowIfNull(parentSelector, nameof(parentSelector));
         ParentSelector = parentSelector;
-        return parentSelector;
     }
 
     /// <summary>
@@ -61,11 +60,10 @@ public class ParentSelectorConfiguration<T>
     /// disproportionate advantage in fitness will have a (relatively) harder time (compared to the traditional fitness-weighted roulette wheel) 
     /// dominating the selection mechanism.
     /// </summary>
-    public BaseParentSelector<T> Rank()
+    public void Rank()
     {
         var result = new RankSelectionParentSelector<T>();
         ParentSelector = result;
-        return result;
     }
 
     /// <summary>
@@ -80,7 +78,7 @@ public class ParentSelectorConfiguration<T>
     /// <param name="initialTemperature">The starting temperature value. Higher values promote more exploration initially.
     /// Must be greater than 0. Defaults to 1.0.</param>
     /// <exception cref="ArgumentException">Thrown when temperatureDecayRate is less than 0 or initialTemperature is less than or equal to 0.</exception>
-    public BaseParentSelector<T> Boltzmann(double temperatureDecayRate = 0.05, double initialTemperature = 1.0)
+    public void Boltzmann(double temperatureDecayRate = 0.05, double initialTemperature = 1.0)
     {
         if (temperatureDecayRate < 0)
         {
@@ -94,7 +92,6 @@ public class ParentSelectorConfiguration<T>
         
         var result = new BoltzmannParentSelector<T>(temperatureDecayRate, initialTemperature, useExponentialDecay: true);
         ParentSelector = result;
-        return result;
     }
 
     /// <summary>
@@ -109,7 +106,7 @@ public class ParentSelectorConfiguration<T>
     /// <param name="initialTemperature">The starting temperature value. Higher values promote more exploration initially.
     /// Must be greater than 0. Defaults to 1.0.</param>
     /// <exception cref="ArgumentException">Thrown when temperatureDecayRate is less than 0 or initialTemperature is less than or equal to 0.</exception>
-    public BaseParentSelector<T> BoltzmannWithLinearDecay(double temperatureDecayRate = 0.01, double initialTemperature = 1.0)
+    public void BoltzmannWithLinearDecay(double temperatureDecayRate = 0.01, double initialTemperature = 1.0)
     {
         if (temperatureDecayRate < 0)
         {
@@ -123,7 +120,6 @@ public class ParentSelectorConfiguration<T>
         
         var result = new BoltzmannParentSelector<T>(temperatureDecayRate, initialTemperature, useExponentialDecay: false);
         ParentSelector = result;
-        return result;
     }
 
     /// <summary>
@@ -132,7 +128,7 @@ public class ParentSelectorConfiguration<T>
     /// <param name="proportionOfElitesInPopulation">The proportion of elites in the population. Example, if the rate is 0.2 and the population size is 100, then we have 20 elites who are guaranteed to take part in the mating process.</param>
     /// <param name="proportionOfNonElitesAllowedToMate">The proportion of non-elites allowed to take part in the mating process. Non elites are chosen randomly regardless of fitness.</param>
     /// <param name="allowMatingElitesWithNonElites">Defaults to true. Setting this value to false would restrict couples made up of an elite and non-elite members</param>
-    public BaseParentSelector<T> Elitist(float proportionOfElitesInPopulation = 0.1f, float proportionOfNonElitesAllowedToMate = 0.01f, bool allowMatingElitesWithNonElites = true)
+    public void Elitist(float proportionOfElitesInPopulation = 0.1f, float proportionOfNonElitesAllowedToMate = 0.01f, bool allowMatingElitesWithNonElites = true)
     {
         if (proportionOfElitesInPopulation <= 0 || proportionOfElitesInPopulation > 1)
         {
@@ -146,6 +142,22 @@ public class ParentSelectorConfiguration<T>
 
         var result = new ElitistParentSelector<T>(allowMatingElitesWithNonElites, proportionOfElitesInPopulation, proportionOfNonElitesAllowedToMate);
         ParentSelector = result;
-        return result;
+    }
+
+    internal void ValidateAndDefault()
+    {
+        if (ParentSelector is null)
+        {
+            Tournament();
+        }
+        
+        _policyConfig.FirstChoice();
+
+        _policyConfig.Policy!.ApplyOperators([ParentSelector!]);
+    }
+
+    internal OperatorSelectionPolicy GetParentSelectorSelectionPolicy()
+    {
+        return _policyConfig.Policy;
     }
 }

@@ -21,7 +21,7 @@ public class OpenGARunner<T>
 
     private float _mutationRate = 0.2f;
 
-    private readonly ParentSelectorConfiguration<T> _parentSelectorConfig = new();
+    private readonly ParentSelectorRegistration<T> _parentSelectorRegistration = new();
 
     private readonly CrossoverStrategyRegistration<T> _crossoverStrategyRegistration = new();
 
@@ -101,12 +101,11 @@ public class OpenGARunner<T>
         return this;
     }
 
-    public OpenGARunner<T> ParentSelection(Action<ParentSelectorConfiguration<T>> selectorConfigurator)
+    public OpenGARunner<T> ParentSelection(Action<ParentSelectorRegistration<T>> selectorConfigurator)
     {
         ArgumentNullException.ThrowIfNull(selectorConfigurator, nameof(selectorConfigurator));
 
-        selectorConfigurator(_parentSelectorConfig);
-
+        selectorConfigurator(_parentSelectorRegistration);
         return this;
     }
 
@@ -174,10 +173,7 @@ public class OpenGARunner<T>
     /// </exception>
     private void DefaultMissingStrategies()
     {
-        if (_parentSelectorConfig.ParentSelector is null)
-        {
-            _parentSelectorConfig.Tournament();
-        }
+        _parentSelectorRegistration.ValidateAndDefault();
 
         if (_terminationStrategyConfig.TerminationStrategies is [])
         {
@@ -267,6 +263,55 @@ public class OpenGARunner<T>
     }
 
     /// <summary>
+    /// Updates the Adaptive Pursuit Policy with performance feedback from a parent selection operation.
+    /// 
+    /// Rationale:
+    /// - Parent selection quality is measured by evaluating the fitness characteristics of the selected couples
+    /// - We reward parent selectors that choose high-fitness parents, which should lead to better offspring
+    /// - We also consider diversity in the selected couples to encourage exploration
+    /// - The fitness range and diversity of selected couples are compared against the overall population
+    /// </summary>
+    private static void UpdateAdaptivePursuitRewardForParentSelection(
+        AdaptivePursuitPolicy adaptivePursuit,
+        BaseParentSelector<T> parentSelector,
+        Chromosome<T>[] population,
+        IEnumerable<Couple<T>> selectedCouples)
+    {
+        var couplesList = selectedCouples.ToList();
+        if (couplesList.Count == 0)
+        {
+            return; // No couples to evaluate
+        }
+
+        // Calculate population fitness metrics for normalization
+        var populationFitnesses = population.Select(c => c.Fitness).ToArray();
+        var populationMean = populationFitnesses.Average();
+        var populationRange = populationFitnesses.Max() - populationFitnesses.Min();
+
+        // Calculate metrics for selected couples
+        var selectedParentFitnesses = couplesList
+            .SelectMany(couple => new[] { couple.IndividualA.Fitness, couple.IndividualB.Fitness })
+            .ToArray();
+
+        var selectedMean = selectedParentFitnesses.Average();
+        var selectedDiversity = selectedParentFitnesses.StandardDeviation();
+
+        // Reward selection of high-fitness parents (primary signal: how much above population mean)
+        var fitnessAdvantage = selectedMean - populationMean;
+
+        // Diversity bonus: reward maintaining some diversity in selection
+        var diversityBonus = selectedDiversity;
+
+        // Update the reward for this parent selector strategy
+        adaptivePursuit.UpdateReward(
+            parentSelector,
+            populationMean,
+            selectedMean,
+            populationRange,
+            diversityBonus);
+    }
+
+    /// <summary>
     /// Executes the genetic algorithm until one of the configured termination conditions is met.
     /// 
     /// This method runs the complete genetic algorithm process, including:
@@ -315,7 +360,15 @@ public class OpenGARunner<T>
             {
                 var remainingOffspringNeeded = requiredNumberOfOffspring - offspring.Count;
                 var couplesForThisBatch = Math.Min(maxCouplesPerBatch, remainingOffspringNeeded * 2); // Generate extra to account for failed crossovers
-                var couples = _parentSelectorConfig.ParentSelector.SelectMatingPairs(Population, _random, couplesForThisBatch, CurrentEpoch);
+                
+                var parentSelectorPolicy = _parentSelectorRegistration.GetParentSelectorSelectionPolicy();
+                var parentSelector = (BaseParentSelector<T>)parentSelectorPolicy.SelectOperator(_random, CurrentEpoch);
+                var couples = parentSelector.SelectMatingPairs(Population, _random, couplesForThisBatch, CurrentEpoch);
+
+                if (parentSelectorPolicy is AdaptivePursuitPolicy parentAdaptivePursuit)
+                {
+                    UpdateAdaptivePursuitRewardForParentSelection(parentAdaptivePursuit, parentSelector, Population, couples);
+                }
 
                 var offspringGeneratedInBatch = 0;
 

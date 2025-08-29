@@ -277,7 +277,7 @@ public static class TspSolver
         var runner = OpenGARunner<int>
                         .Initialize(initialPopulation, 0.5f, 1.0f) // min 50%, max 100% (same as initial)
                         .MutationRate(0.15f)
-                        .ParentSelection(c => c.Elitist())
+                        .ParentSelection(c => c.RegisterSingle(s => s.Elitist()))
                         .Crossover(s => s
                                     .WithCrossoverRate(0.85f)
                                     .RegisterSingle(o => o.OnePointCrossover())
@@ -349,7 +349,7 @@ public static class TspSolver
         var runner = OpenGARunner<int>
                         .Initialize(initialPopulation, 0.5f, 1.0f) // min 50%, max 100% (same as initial)
                         .MutationRate(mutationRate)
-                        .ParentSelection(c => c.Elitist())
+                        .ParentSelection(c => c.RegisterSingle(s => s.Elitist()))
                         .Crossover(s => s.WithCrossoverRate(0.85f).RegisterSingle(o => o.OnePointCrossover()))
                         .SurvivorSelection(c => c.RegisterSingle(s => s.Elitist()))
                         .Termination(c => c.MaximumEpochs(epochs).MaximumDuration(TimeSpan.FromMinutes(1)));
