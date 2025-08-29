@@ -6,7 +6,7 @@ public class ElitistParentSelectorStrategy<T>(bool allowMatingElitesWithNonElite
     internal float ProportionOfNonElitesAllowedToMate { get; } = proportionOfNonElitesAllowedToMate;
     internal float ProportionOfElitesInPopulation { get; } = proportionOfElitesInPopulation;
 
-    protected internal override IEnumerable<Couple<T>> SelectMatingPairs(Chromosome<T>[] population, Random random, int minimumNumberOfCouples)
+    protected internal override async Task<IEnumerable<Couple<T>>> SelectMatingPairsAsync(Chromosome<T>[] population, Random random, int minimumNumberOfCouples)
     {
         if (population.Length <= 1)
         {
@@ -18,7 +18,15 @@ public class ElitistParentSelectorStrategy<T>(bool allowMatingElitesWithNonElite
             return GenerateCouplesFromATwoIndividualPopulation(population, minimumNumberOfCouples);
         }
         
-        var sortedPopulation = population.OrderByDescending(x => x.Fitness).ToArray();
+        // Get fitness values for all chromosomes
+        var populationWithFitness = new List<(Chromosome<T> chromosome, double fitness)>();
+        foreach (var chromosome in population)
+        {
+            var fitness = await chromosome.GetCachedFitnessAsync();
+            populationWithFitness.Add((chromosome, fitness));
+        }
+        
+        var sortedPopulation = populationWithFitness.OrderByDescending(x => x.fitness).Select(x => x.chromosome).ToArray();
         
         var eliteCount = Math.Max(1, (int)Math.Ceiling(ProportionOfElitesInPopulation * population.Length));
         var elites = sortedPopulation.Take(eliteCount).ToHashSet();
@@ -28,27 +36,27 @@ public class ElitistParentSelectorStrategy<T>(bool allowMatingElitesWithNonElite
             : 0;
         var nonElites = sortedPopulation.Skip(eliteCount).Take(nonEliteCount).ToArray();
         
-        return GenerateElitistCouples(elites, nonElites, minimumNumberOfCouples);
+        return await GenerateElitistCouplesAsync(elites, nonElites, minimumNumberOfCouples);
     }
 
-    private IEnumerable<Couple<T>> GenerateElitistCouples(HashSet<Chromosome<T>> elites, Chromosome<T>[] nonElites, 
+    private async Task<IEnumerable<Couple<T>>> GenerateElitistCouplesAsync(HashSet<Chromosome<T>> elites, Chromosome<T>[] nonElites, 
         int minimumNumberOfCouples)
     {
         var couples = new List<Couple<T>>();
         var matedChromosomes = new HashSet<Guid>();
         
-        couples.AddRange(MateAllElites(elites, nonElites, matedChromosomes));
+        couples.AddRange(await MateAllElitesAsync(elites, nonElites, matedChromosomes));
         
         if (couples.Count < minimumNumberOfCouples)
         {
             var remainingCouples = minimumNumberOfCouples - couples.Count;
-            couples.AddRange(GenerateAdditionalCouples(elites, nonElites, remainingCouples));
+            couples.AddRange(await GenerateAdditionalCouplesAsync(elites, nonElites, remainingCouples));
         }
         
         return couples;
     }
 
-    private IEnumerable<Couple<T>> MateAllElites(HashSet<Chromosome<T>> elites, Chromosome<T>[] nonElites,
+    private async Task<IEnumerable<Couple<T>>> MateAllElitesAsync(HashSet<Chromosome<T>> elites, Chromosome<T>[] nonElites,
         HashSet<Guid> matedChromosomes)
     {
         var couples = new List<Couple<T>>();
@@ -70,7 +78,7 @@ public class ElitistParentSelectorStrategy<T>(bool allowMatingElitesWithNonElite
                 break;
             }
             
-            var mate = SelectMateByFitness(potentialMates);
+            var mate = await SelectMateByFitnessAsync(potentialMates);
             
             couples.Add(Couple<T>.Pair(elite, mate));
             
@@ -80,7 +88,7 @@ public class ElitistParentSelectorStrategy<T>(bool allowMatingElitesWithNonElite
         return couples;
     }
 
-    private IEnumerable<Couple<T>> GenerateAdditionalCouples(HashSet<Chromosome<T>> elites, Chromosome<T>[] nonElites,
+    private async Task<IEnumerable<Couple<T>>> GenerateAdditionalCouplesAsync(HashSet<Chromosome<T>> elites, Chromosome<T>[] nonElites,
         int couplesNeeded)
     {
         var couples = new List<Couple<T>>();
@@ -88,7 +96,7 @@ public class ElitistParentSelectorStrategy<T>(bool allowMatingElitesWithNonElite
         
         for (int i = 0; i < couplesNeeded && allCandidates.Length >= 2; i++)
         {
-            var parent1 = SelectMateByFitness(allCandidates);
+            var parent1 = await SelectMateByFitnessAsync(allCandidates);
             
             var potentialMates = GetPotentialMates(parent1, elites, nonElites, []);
             
@@ -97,7 +105,7 @@ public class ElitistParentSelectorStrategy<T>(bool allowMatingElitesWithNonElite
                 break;
             }
             
-            var parent2 = SelectMateByFitness(potentialMates);
+            var parent2 = await SelectMateByFitnessAsync(potentialMates);
             
             couples.Add(Couple<T>.Pair(parent1, parent2));
         }
@@ -168,14 +176,25 @@ public class ElitistParentSelectorStrategy<T>(bool allowMatingElitesWithNonElite
         return [.. potentialMates];
     }
 
-    private static Chromosome<T> SelectMateByFitness(Chromosome<T>[] candidates)
+    private static async Task<Chromosome<T>> SelectMateByFitnessAsync(Chromosome<T>[] candidates)
     {
         if (candidates.Length == 1)
         {
             return candidates[0];
         }
         
-        var rouletteWheel = WeightedRouletteWheel<Chromosome<T>>.Init(candidates, c => c.Fitness);
+        // Get fitness values for all candidates
+        var fitnessValues = new double[candidates.Length];
+        for (int i = 0; i < candidates.Length; i++)
+        {
+            fitnessValues[i] = await candidates[i].GetCachedFitnessAsync();
+        }
+        
+        var rouletteWheel = WeightedRouletteWheel<Chromosome<T>>.Init(candidates, c => 
+        {
+            var index = Array.IndexOf(candidates, c);
+            return fitnessValues[index];
+        });
         return rouletteWheel.Spin();
     }
 }

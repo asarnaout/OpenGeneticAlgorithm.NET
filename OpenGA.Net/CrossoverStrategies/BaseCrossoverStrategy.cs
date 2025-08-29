@@ -2,7 +2,7 @@ namespace OpenGA.Net.CrossoverStrategies;
 
 public abstract class BaseCrossoverStrategy<T> : BaseOperator
 {
-    protected internal abstract IEnumerable<Chromosome<T>> Crossover(Couple<T> couple, Random random);
+    protected internal abstract Task<IEnumerable<Chromosome<T>>> CrossoverAsync(Couple<T> couple, Random random);
 
     /// <summary>
     /// Optional per-strategy override of the global crossover rate.

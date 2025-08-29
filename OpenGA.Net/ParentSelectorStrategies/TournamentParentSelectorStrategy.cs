@@ -9,7 +9,7 @@ public class TournamentParentSelectorStrategy<T>(bool stochasticTournament) : Ba
     private const int _tournamentSizeMinPercentage = 5;
     private const int _tournamentSizeMaxPercentage = 21;
 
-    protected internal override IEnumerable<Couple<T>> SelectMatingPairs(Chromosome<T>[] population, Random random, int minimumNumberOfCouples)
+    protected internal override async Task<IEnumerable<Couple<T>>> SelectMatingPairsAsync(Chromosome<T>[] population, Random random, int minimumNumberOfCouples)
     {
         ArgumentNullException.ThrowIfNull(population);
         ArgumentNullException.ThrowIfNull(random);
@@ -17,18 +17,15 @@ public class TournamentParentSelectorStrategy<T>(bool stochasticTournament) : Ba
 
         if (population.Length <= 1)
         {
-            yield break;
+            return new List<Couple<T>>();
         }
 
         if (population.Length == 2)
         {
-            foreach (var couple in GenerateCouplesFromATwoIndividualPopulation(population, minimumNumberOfCouples))
-            {
-                yield return couple;
-            }
-            
-            yield break;
+            return GenerateCouplesFromATwoIndividualPopulation(population, minimumNumberOfCouples);
         }
+
+        var couples = new List<Couple<T>>();
 
         for (var i = 0; i < minimumNumberOfCouples; i++)
         {
@@ -53,17 +50,38 @@ public class TournamentParentSelectorStrategy<T>(bool stochasticTournament) : Ba
 
             if (!StochasticTournament)
             {
-                var orderedTournament = tournament.OrderByDescending(x => x.Fitness).ToArray();
-                yield return Couple<T>.Pair(orderedTournament[0], orderedTournament[1]);
+                // Get fitness values for all tournament participants
+                var tournamentWithFitness = new List<(Chromosome<T> chromosome, double fitness)>();
+                foreach (var chromosome in tournament)
+                {
+                    var fitness = await chromosome.GetCachedFitnessAsync();
+                    tournamentWithFitness.Add((chromosome, fitness));
+                }
+
+                var orderedTournament = tournamentWithFitness.OrderByDescending(x => x.fitness).ToArray();
+                couples.Add(Couple<T>.Pair(orderedTournament[0].chromosome, orderedTournament[1].chromosome));
             }
             else
             {
-                var rouletteWheel = WeightedRouletteWheel<Chromosome<T>>.Init(tournament, d => d.Fitness);
+                // Get fitness values for roulette wheel
+                var fitnessValues = new double[tournament.Length];
+                for (int j = 0; j < tournament.Length; j++)
+                {
+                    fitnessValues[j] = await tournament[j].GetCachedFitnessAsync();
+                }
+
+                var rouletteWheel = WeightedRouletteWheel<Chromosome<T>>.Init(tournament, (chromosome) => 
+                {
+                    var index = Array.IndexOf(tournament, chromosome);
+                    return fitnessValues[index];
+                });
                 var winner1 = rouletteWheel.SpinAndReadjustWheel();
                 var winner2 = rouletteWheel.Spin();
 
-                yield return Couple<T>.Pair(winner1, winner2);
+                couples.Add(Couple<T>.Pair(winner1, winner2));
             }
         }
+
+        return couples;
     }
 }

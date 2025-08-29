@@ -23,7 +23,7 @@ public class UniformCrossoverStrategy<T> : BaseCrossoverStrategy<T>
     /// <returns>One offspring chromosome resulting from the uniform crossover operation</returns>
     /// <exception cref="ArgumentNullException">Thrown when the random parameter is null</exception>
     /// <exception cref="InvalidChromosomeException">Thrown when either parent chromosome has null genes</exception>
-    protected internal override IEnumerable<Chromosome<T>> Crossover(Couple<T> couple, Random random)
+    protected internal override async Task<IEnumerable<Chromosome<T>>> CrossoverAsync(Couple<T> couple, Random random)
     {
         if (couple.IndividualA?.Genes is null or { Count: 0 })
             throw new InvalidChromosomeException("Parent A has null or empty genes collection.");
@@ -37,8 +37,8 @@ public class UniformCrossoverStrategy<T> : BaseCrossoverStrategy<T>
         
         // Start with the longer parent as the base
         var offspring = couple.IndividualA.Genes.Count >= couple.IndividualB.Genes.Count 
-            ? couple.IndividualA.DeepCopy() 
-            : couple.IndividualB.DeepCopy();
+            ? await couple.IndividualA.DeepCopyAsync() 
+            : await couple.IndividualB.DeepCopyAsync();
         
         // Reset age for the new offspring chromosome
         offspring.ResetAge();
@@ -49,7 +49,7 @@ public class UniformCrossoverStrategy<T> : BaseCrossoverStrategy<T>
         // Handle non-overlapping region by randomly deciding to extend or truncate
         CopyNonOverlappingGenes(offspring, couple, random, minLength, maxLength);
         
-        yield return offspring;
+        return [offspring];
     }
     
     /// <summary>

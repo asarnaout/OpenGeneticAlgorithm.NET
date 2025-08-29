@@ -7,7 +7,7 @@ public class KPointCrossoverStrategy<T>(int numberOfPoints) : BaseCrossoverStrat
 {
     internal int NumberOfPoints { get; set; } = numberOfPoints;
 
-    protected internal override IEnumerable<Chromosome<T>> Crossover(Couple<T> couple, Random random)
+    protected internal override async Task<IEnumerable<Chromosome<T>>> CrossoverAsync(Couple<T> couple, Random random)
     {
         if (couple.IndividualA.Genes.Count == 0 || couple.IndividualB.Genes.Count == 0)
         {
@@ -30,11 +30,10 @@ public class KPointCrossoverStrategy<T>(int numberOfPoints) : BaseCrossoverStrat
         var sortedCrossoverPoints = crossoverPoints.OrderBy(x => x).ToList();
 
         // Create offspring by alternating segments between parents
-        var offspringA = CreateOffspring(couple.IndividualA, couple.IndividualB, sortedCrossoverPoints);
-        var offspringB = CreateOffspring(couple.IndividualB, couple.IndividualA, sortedCrossoverPoints);
+        var offspringA = await CreateOffspringAsync(couple.IndividualA, couple.IndividualB, sortedCrossoverPoints);
+        var offspringB = await CreateOffspringAsync(couple.IndividualB, couple.IndividualA, sortedCrossoverPoints);
 
-        yield return offspringA;
-        yield return offspringB;
+        return [offspringA, offspringB];
     }
 
     /// <summary>
@@ -45,9 +44,9 @@ public class KPointCrossoverStrategy<T>(int numberOfPoints) : BaseCrossoverStrat
     /// <param name="secondaryParent">Parent contributing genes in alternating segments</param>
     /// <param name="sortedCrossoverPoints">List of crossover points in ascending order</param>
     /// <returns>A new offspring chromosome with combined genetic material</returns>
-    private static Chromosome<T> CreateOffspring(Chromosome<T> primaryParent, Chromosome<T> secondaryParent, IList<int> sortedCrossoverPoints)
+    private static async Task<Chromosome<T>> CreateOffspringAsync(Chromosome<T> primaryParent, Chromosome<T> secondaryParent, IList<int> sortedCrossoverPoints)
     {
-        var offspring = primaryParent.DeepCopy();
+        var offspring = await primaryParent.DeepCopyAsync();
         offspring.ResetAge();
 
         // Determine the length of the offspring chromosome

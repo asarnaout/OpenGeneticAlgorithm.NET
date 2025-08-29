@@ -9,9 +9,9 @@ public class CrossoverAgeResetTests
     {
         public TestChromosome(IList<int> genes) : base(genes) { }
 
-        public override double CalculateFitness() => Genes.Sum();
+        public override Task<double> CalculateFitnessAsync() => Task.FromResult((double)Genes.Sum());
 
-        public override void Mutate()
+        public override Task MutateAsync()
         {
             // Simple mutation for testing
             if (Genes.Count > 0)
@@ -20,16 +20,23 @@ public class CrossoverAgeResetTests
                 var index = random.Next(Genes.Count);
                 Genes[index] = random.Next(100);
             }
+            
+            return Task.CompletedTask;
         }
 
-        public override Chromosome<int> DeepCopy()
+        public override Task<Chromosome<int>> DeepCopyAsync()
         {
-            return new TestChromosome(new List<int>(Genes));
+            return Task.FromResult<Chromosome<int>>(new TestChromosome(new List<int>(Genes)));
+        }
+
+        public override Task GeneticRepairAsync()
+        {
+            return Task.CompletedTask;
         }
     }
 
     [Fact]
-    public void OnePointCrossover_OffspringHaveAgeZero()
+    public async Task OnePointCrossover_OffspringHaveAgeZero()
     {
         // Arrange
         var strategy = new OnePointCrossoverStrategy<int>();
@@ -47,7 +54,7 @@ public class CrossoverAgeResetTests
         var random = new Random(42);
 
         // Act
-        var offspring = strategy.Crossover(couple, random).ToList();
+        var offspring = (await strategy.CrossoverAsync(couple, random)).ToList();
 
         // Assert
         Assert.Equal(2, offspring.Count);
@@ -59,7 +66,7 @@ public class CrossoverAgeResetTests
     }
 
     [Fact]
-    public void UniformCrossover_OffspringHaveAgeZero()
+    public async Task UniformCrossover_OffspringHaveAgeZero()
     {
         // Arrange
         var strategy = new UniformCrossoverStrategy<int>();
@@ -77,7 +84,7 @@ public class CrossoverAgeResetTests
         var random = new Random(42);
 
         // Act
-        var offspring = strategy.Crossover(couple, random).ToList();
+        var offspring = (await strategy.CrossoverAsync(couple, random)).ToList();
 
         // Assert
         Assert.Single(offspring);
@@ -89,7 +96,7 @@ public class CrossoverAgeResetTests
     }
 
     [Fact]
-    public void KPointCrossover_OffspringHaveAgeZero()
+    public async Task KPointCrossover_OffspringHaveAgeZero()
     {
         // Arrange
         var strategy = new KPointCrossoverStrategy<int>(2);
@@ -107,7 +114,7 @@ public class CrossoverAgeResetTests
         var random = new Random(42);
 
         // Act
-        var offspring = strategy.Crossover(couple, random).ToList();
+        var offspring = (await strategy.CrossoverAsync(couple, random)).ToList();
 
         // Assert
         Assert.Equal(2, offspring.Count);

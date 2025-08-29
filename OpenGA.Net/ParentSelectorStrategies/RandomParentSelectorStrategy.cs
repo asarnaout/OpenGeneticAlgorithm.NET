@@ -2,7 +2,7 @@ namespace OpenGA.Net.ParentSelectorStrategies;
 
 public class RandomParentSelectorStrategy<T> : BaseParentSelectorStrategy<T>
 {
-    protected internal override IEnumerable<Couple<T>> SelectMatingPairs(Chromosome<T>[] population, Random random, int minimumNumberOfCouples)
+    protected internal override Task<IEnumerable<Couple<T>>> SelectMatingPairsAsync(Chromosome<T>[] population, Random random, int minimumNumberOfCouples)
     {
         ArgumentNullException.ThrowIfNull(population);
         ArgumentNullException.ThrowIfNull(random);
@@ -10,15 +10,15 @@ public class RandomParentSelectorStrategy<T> : BaseParentSelectorStrategy<T>
 
         if (population.Length <= 1)
         {
-            return [];
+            return Task.FromResult(Enumerable.Empty<Couple<T>>());
         }
 
         if (population.Length == 2)
         {
-            return GenerateCouplesFromATwoIndividualPopulation(population, minimumNumberOfCouples);
+            return Task.FromResult(GenerateCouplesFromATwoIndividualPopulation(population, minimumNumberOfCouples));
         }
 
-        return CreateStochasticCouples(population, random, minimumNumberOfCouples,
-            () => WeightedRouletteWheel<Chromosome<T>>.InitWithUniformWeights(population));
+        return Task.FromResult(CreateStochasticCouples(population, random, minimumNumberOfCouples,
+            () => WeightedRouletteWheel<Chromosome<T>>.InitWithUniformWeights(population)));
     }
 }

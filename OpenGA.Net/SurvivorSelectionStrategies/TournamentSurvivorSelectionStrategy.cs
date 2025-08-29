@@ -57,7 +57,7 @@ public class TournamentSurvivorSelectionStrategy<T> : BaseSurvivorSelectionStrat
     /// <param name="random">Random number generator for stochastic operations</param>
     /// <param name="currentEpoch">The current epoch/generation number (not used in tournament elimination)</param>
     /// <returns>The chromosomes selected for elimination through tournament competition</returns>
-    protected internal override IEnumerable<Chromosome<T>> SelectChromosomesForElimination(
+    protected internal override async Task<IEnumerable<Chromosome<T>>> SelectChromosomesForEliminationAsync(
         Chromosome<T>[] population, 
         Chromosome<T>[] offspring, 
         Random random,
@@ -118,12 +118,12 @@ public class TournamentSurvivorSelectionStrategy<T> : BaseSurvivorSelectionStrat
             if (_stochasticTournament)
             {
                 // Use weighted roulette wheel with inverse fitness (lower fitness = higher chance of elimination)
-                loser = SelectLoserStochastically(tournamentParticipants);
+                loser = await SelectLoserStochasticallyAsync(tournamentParticipants);
             }
             else
             {
                 // Deterministic: always eliminate the least fit
-                loser = GetLeastFitChromosome(tournamentParticipants);
+                loser = await GetLeastFitChromosomeAsync(tournamentParticipants);
             }
 
             candidatesForElimination.Add(loser);
@@ -152,16 +152,23 @@ public class TournamentSurvivorSelectionStrategy<T> : BaseSurvivorSelectionStrat
     /// </summary>
     /// <param name="participants">The chromosomes participating in the tournament</param>
     /// <returns>The chromosome selected for elimination</returns>
-    private static Chromosome<T> SelectLoserStochastically(IList<Chromosome<T>> participants)
+    private static async Task<Chromosome<T>> SelectLoserStochasticallyAsync(IList<Chromosome<T>> participants)
     {
         if (participants.Count == 1)
         {
             return participants[0];
         }
 
+        // Get fitness values for all participants
+        var fitnessValues = new double[participants.Count];
+        for (int i = 0; i < participants.Count; i++)
+        {
+            fitnessValues[i] = await participants[i].GetCachedFitnessAsync();
+        }
+
         // Calculate inverse fitness weights (lower fitness = higher elimination probability)
-        var maxFitness = participants.Max(c => c.Fitness);
-        var minFitness = participants.Min(c => c.Fitness);
+        var maxFitness = fitnessValues.Max();
+        var minFitness = fitnessValues.Min();
         
         // Add small epsilon to avoid division by zero and ensure all have some elimination probability
         var epsilon = (maxFitness - minFitness) * 0.01 + 0.001;
@@ -170,7 +177,8 @@ public class TournamentSurvivorSelectionStrategy<T> : BaseSurvivorSelectionStrat
         var rouletteWheel = WeightedRouletteWheel<Chromosome<T>>.Init(participants, chromosome =>
         {
             // Inverse weight: maxFitness + epsilon - fitness gives higher weight to lower fitness
-            return maxFitness + epsilon - chromosome.Fitness;
+            var index = participants.ToList().IndexOf(chromosome);
+            return maxFitness + epsilon - fitnessValues[index];
         });
 
         return rouletteWheel.Spin();
@@ -181,14 +189,14 @@ public class TournamentSurvivorSelectionStrategy<T> : BaseSurvivorSelectionStrat
     /// </summary>
     /// <param name="participants">The chromosomes to evaluate</param>
     /// <returns>The chromosome with the lowest fitness</returns>
-    private static Chromosome<T> GetLeastFitChromosome(IList<Chromosome<T>> participants)
+    private static async Task<Chromosome<T>> GetLeastFitChromosomeAsync(IList<Chromosome<T>> participants)
     {
         var leastFit = participants[0];
-        var minFitness = leastFit.Fitness;
+        var minFitness = await leastFit.GetCachedFitnessAsync();
 
         for (int i = 1; i < participants.Count; i++)
         {
-            var fitness = participants[i].Fitness;
+            var fitness = await participants[i].GetCachedFitnessAsync();
             if (fitness < minFitness)
             {
                 minFitness = fitness;

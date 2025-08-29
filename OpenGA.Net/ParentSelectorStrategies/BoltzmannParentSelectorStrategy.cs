@@ -6,12 +6,12 @@ public class BoltzmannParentSelectorStrategy<T>(double temperatureDecayRate, dou
     private readonly double _initialTemperature = initialTemperature;
     private readonly bool _useExponentialDecay = useExponentialDecay;
 
-    protected internal override IEnumerable<Couple<T>> SelectMatingPairs(Chromosome<T>[] population, Random random, int minimumNumberOfCouples)
+    protected internal override async Task<IEnumerable<Couple<T>>> SelectMatingPairsAsync(Chromosome<T>[] population, Random random, int minimumNumberOfCouples)
     {
-        return SelectMatingPairs(population, random, minimumNumberOfCouples, 0);
+        return await SelectMatingPairsAsync(population, random, minimumNumberOfCouples, 0);
     }
 
-    protected internal override IEnumerable<Couple<T>> SelectMatingPairs(Chromosome<T>[] population, Random random, int minimumNumberOfCouples, int currentEpoch)
+    protected internal override async Task<IEnumerable<Couple<T>>> SelectMatingPairsAsync(Chromosome<T>[] population, Random random, int minimumNumberOfCouples, int currentEpoch)
     {
         if (population.Length <= 1)
         {
@@ -32,10 +32,21 @@ public class BoltzmannParentSelectorStrategy<T>(double temperatureDecayRate, dou
             currentTemperature = double.Epsilon;
         }
 
-        var maxFitness = population.Max(x => x.Fitness);
+        // Get fitness values for all chromosomes
+        var fitnessValues = new double[population.Length];
+        for (int i = 0; i < population.Length; i++)
+        {
+            fitnessValues[i] = await population[i].GetCachedFitnessAsync();
+        }
+        
+        var maxFitness = fitnessValues.Max();
         
         return CreateStochasticCouples(population, random, minimumNumberOfCouples, 
             () => WeightedRouletteWheel<Chromosome<T>>.Init(population, 
-                chromosome => Math.Exp((chromosome.Fitness - maxFitness) / currentTemperature)));
+                chromosome => 
+                {
+                    var index = Array.IndexOf(population, chromosome);
+                    return Math.Exp((fitnessValues[index] - maxFitness) / currentTemperature);
+                }));
     }
 }

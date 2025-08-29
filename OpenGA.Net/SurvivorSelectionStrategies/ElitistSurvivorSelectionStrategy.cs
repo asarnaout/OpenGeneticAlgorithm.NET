@@ -43,13 +43,13 @@ public class ElitistSurvivorSelectionStrategy<T> (float elitePercentage = 0.1f):
     /// <param name="random">Random number generator for stochastic operations</param>
     /// <param name="currentEpoch">The current epoch/generation number (not used in elitist elimination)</param>
     /// <returns>The non-elite chromosomes selected for elimination</returns>
-    protected internal override IEnumerable<Chromosome<T>> SelectChromosomesForElimination(
+    protected internal override async Task<IEnumerable<Chromosome<T>>> SelectChromosomesForEliminationAsync(
         Chromosome<T>[] population, 
         Chromosome<T>[] offspring, 
         Random random,
         int currentEpoch = 0)
     {
-        if (population.Length == 0 || offspring.Length == 0)
+        if (population.Length == 0)
         {
             return [];
         }
@@ -59,23 +59,29 @@ public class ElitistSurvivorSelectionStrategy<T> (float elitePercentage = 0.1f):
         eliteCount = Math.Min(eliteCount, population.Length); // Ensure we don't exceed population size
 
         // Calculate fitness for all chromosomes and sort by fitness (descending - best first)
-        var chromosomesWithFitness = population
-            .Select(chromosome => new { Chromosome = chromosome, chromosome.Fitness })
-            .OrderByDescending(x => x.Fitness)
+        var chromosomesWithFitness = new List<(Chromosome<T> chromosome, double fitness)>();
+        foreach (var chromosome in population)
+        {
+            var fitness = await chromosome.GetCachedFitnessAsync();
+            chromosomesWithFitness.Add((chromosome, fitness));
+        }
+
+        var sortedChromosomes = chromosomesWithFitness
+            .OrderByDescending(x => x.fitness)
             .ToArray();
 
         // Identify elite chromosomes (top performers)
-        var eliteChromosomes = chromosomesWithFitness
+        var eliteChromosomes = sortedChromosomes
             .Take(eliteCount)
-            .Select(x => x.Chromosome)
+            .Select(x => x.chromosome)
             .ToHashSet();
 
         // Get non-elite chromosomes that are eligible for elimination
         var eligibleForElimination = population.Where(c => !eliteChromosomes.Contains(c)).ToArray();
-
+        
         // Determine how many chromosomes we need to eliminate
         var eliminationsNeeded = Math.Min(offspring.Length, eligibleForElimination.Length);
-
+        
         // If we need to eliminate more than available non-elites, we can only eliminate what's available
         if (eliminationsNeeded <= 0)
         {
@@ -83,9 +89,6 @@ public class ElitistSurvivorSelectionStrategy<T> (float elitePercentage = 0.1f):
         }
 
         // Select chromosomes for elimination from the non-elite pool
-        // Use random selection among non-elites (could be enhanced with fitness-based selection)
-        var shuffledEligible = eligibleForElimination.FisherYatesShuffle(random);
-
-        return shuffledEligible.Take(eliminationsNeeded);
+        return eligibleForElimination.Take(eliminationsNeeded).ToArray();
     }
 }

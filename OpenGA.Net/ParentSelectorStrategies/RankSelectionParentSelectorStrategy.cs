@@ -2,7 +2,7 @@ namespace OpenGA.Net.ParentSelectorStrategies;
 
 public class RankSelectionParentSelectorStrategy<T> : BaseParentSelectorStrategy<T>
 {
-    protected internal override IEnumerable<Couple<T>> SelectMatingPairs(Chromosome<T>[] population, Random random, int minimumNumberOfCouples)
+    protected internal override async Task<IEnumerable<Couple<T>>> SelectMatingPairsAsync(Chromosome<T>[] population, Random random, int minimumNumberOfCouples)
     {
         if (population.Length <= 1)
         {
@@ -14,9 +14,17 @@ public class RankSelectionParentSelectorStrategy<T> : BaseParentSelectorStrategy
             return GenerateCouplesFromATwoIndividualPopulation(population, minimumNumberOfCouples);
         }
 
-        var rankedPopulation = population.OrderBy(x => x.Fitness)
-                                          .Select((chromosome, index) => new { Chromosome = chromosome, Rank = index + 1 })
-                                          .ToDictionary(x => x.Chromosome, y => y.Rank);
+        // Get fitness values for all chromosomes
+        var populationWithFitness = new List<(Chromosome<T> chromosome, double fitness)>();
+        foreach (var chromosome in population)
+        {
+            var fitness = await chromosome.GetCachedFitnessAsync();
+            populationWithFitness.Add((chromosome, fitness));
+        }
+
+        var rankedPopulation = populationWithFitness.OrderBy(x => x.fitness)
+                                          .Select((item, index) => new { item.chromosome, Rank = index + 1 })
+                                          .ToDictionary(x => x.chromosome, y => y.Rank);
         
         return CreateStochasticCouples(population, random, minimumNumberOfCouples, 
             () => WeightedRouletteWheel<Chromosome<T>>.Init(population, chromosome => rankedPopulation[chromosome]));

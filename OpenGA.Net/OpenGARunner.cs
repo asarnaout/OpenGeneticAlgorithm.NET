@@ -503,7 +503,7 @@ public class OpenGARunner<T>
 
                 var parentSelector = (BaseParentSelectorStrategy<T>)parentSelectorPolicy.SelectOperator(_random, CurrentEpoch);
 
-                var couples = parentSelector.SelectMatingPairs(Population, _random, couplesForThisBatch, CurrentEpoch);
+                var couples = await parentSelector.SelectMatingPairsAsync(Population, _random, couplesForThisBatch, CurrentEpoch);
 
                 var offspringGeneratedInBatch = 0;
 
@@ -522,7 +522,7 @@ public class OpenGARunner<T>
 
                     if (_random.NextDouble() <= crossoverRate)
                     {
-                        var newOffspring = crossoverStrategy.Crossover(couple, _random);
+                        var newOffspring = await crossoverStrategy.CrossoverAsync(couple, _random);
 
                         foreach (var child in newOffspring)
                         {
@@ -553,7 +553,7 @@ public class OpenGARunner<T>
             // Keep a snapshot to isolate survivor selection impact (copy array to avoid in-place modifications)
             var preSurvivorSelectionPopulation = Population.ToArray();
 
-            Population = survivorSelectionStrategy.ApplySurvivorSelection(Population, [.. offspring], _random, CurrentEpoch);
+            Population = await survivorSelectionStrategy.ApplySurvivorSelectionAsync(Population, [.. offspring], _random, CurrentEpoch);
 
             // Update Adaptive Pursuit for survivor selection based on immediate post-survivor selection population (before mutation)
             if (survivorSelectionSelectionPolicy is AdaptivePursuitPolicy adaptiveSurvivorSelection)
@@ -582,7 +582,20 @@ public class OpenGARunner<T>
 
         StopWatch.Stop();
 
-        return Population.OrderByDescending(c => c.GetCachedFitnessAsync()).First();
+        var fitnessValues = await Task.WhenAll(Population.Select(c => c.GetCachedFitnessAsync()));
+        var bestIndex = 0;
+        var bestFitness = fitnessValues[0];
+        
+        for (int i = 1; i < fitnessValues.Length; i++)
+        {
+            if (fitnessValues[i] > bestFitness)
+            {
+                bestFitness = fitnessValues[i];
+                bestIndex = i;
+            }
+        }
+        
+        return Population[bestIndex];
     }
 
     private int CalculateOptimalOffspringCount(BaseSurvivorSelectionStrategy<T> survivorSelectionStrategy)

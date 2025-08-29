@@ -20,7 +20,7 @@ public abstract class BaseSurvivorSelectionStrategy<T> : BaseOperator
     /// <param name="random">Random number generator for stochastic operations</param>
     /// <param name="currentEpoch">The current epoch/generation number (defaults to 0 for non-epoch-aware strategies)</param>
     /// <returns>The chromosomes that should be eliminated from the population</returns>
-    protected internal abstract IEnumerable<Chromosome<T>> SelectChromosomesForElimination(
+    protected internal abstract Task<IEnumerable<Chromosome<T>>> SelectChromosomesForEliminationAsync(
         Chromosome<T>[] population,
         Chromosome<T>[] offspring,
         Random random,
@@ -35,14 +35,14 @@ public abstract class BaseSurvivorSelectionStrategy<T> : BaseOperator
     /// <param name="random">Random number generator for stochastic operations</param>
     /// <param name="currentEpoch">The current epoch/generation number (defaults to 0 for non-epoch-aware strategies)</param>
     /// <returns>The new population after survivor selection</returns>
-    public virtual Chromosome<T>[] ApplySurvivorSelection(
+    public virtual async Task<Chromosome<T>[]> ApplySurvivorSelectionAsync(
         Chromosome<T>[] population, 
         Chromosome<T>[] offspring, 
         Random random,
         int currentEpoch = 0)
     {
         // Select chromosomes for elimination
-        var chromosomesToEliminate = SelectChromosomesForElimination(population, offspring, random, currentEpoch);
+        var chromosomesToEliminate = await SelectChromosomesForEliminationAsync(population, offspring, random, currentEpoch);
         var eliminatedSet = chromosomesToEliminate.ToHashSet();
         
         // Create new population excluding eliminated chromosomes and adding offspring

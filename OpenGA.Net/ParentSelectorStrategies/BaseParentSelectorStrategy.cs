@@ -2,15 +2,15 @@ namespace OpenGA.Net.ParentSelectorStrategies;
 
 public abstract class BaseParentSelectorStrategy<T> : BaseOperator
 {
-    protected internal abstract IEnumerable<Couple<T>> SelectMatingPairs(Chromosome<T>[] population, Random random, int minimumNumberOfCouples);
+    protected internal abstract Task<IEnumerable<Couple<T>>> SelectMatingPairsAsync(Chromosome<T>[] population, Random random, int minimumNumberOfCouples);
 
     /// <summary>
     /// Optional method for parent selectors that need access to the current epoch information.
     /// Default implementation delegates to the standard SelectMatingPairs method.
     /// </summary>
-    protected internal virtual IEnumerable<Couple<T>> SelectMatingPairs(Chromosome<T>[] population, Random random, int minimumNumberOfCouples, int currentEpoch)
+    protected internal virtual async Task<IEnumerable<Couple<T>>> SelectMatingPairsAsync(Chromosome<T>[] population, Random random, int minimumNumberOfCouples, int currentEpoch)
     {
-        return SelectMatingPairs(population, random, minimumNumberOfCouples);
+        return await SelectMatingPairsAsync(population, random, minimumNumberOfCouples);
     }
 
     internal virtual IEnumerable<Couple<T>> CreateStochasticCouples(IList<Chromosome<T>> candidates, Random random, int minimumNumberOfCouples, Func<WeightedRouletteWheel<Chromosome<T>>> rouletteWheelBuilder)

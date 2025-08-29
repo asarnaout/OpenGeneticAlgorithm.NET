@@ -2,12 +2,12 @@ namespace OpenGA.Net.Tests;
 
 public class DummyChromosome(List<int> genes) : Chromosome<int>(genes)
 {
-    public override double CalculateFitness()
+    public override Task<double> CalculateFitnessAsync()
     {
-        return Genes.Average();
+        return Task.FromResult(Genes.Average());
     }
 
-    public override Chromosome<int> DeepCopy()
+    public override Task<Chromosome<int>> DeepCopyAsync()
     {
         var list = new List<int>();
 
@@ -16,17 +16,19 @@ public class DummyChromosome(List<int> genes) : Chromosome<int>(genes)
             list.Add(item);
         }
 
-        return new DummyChromosome(list);
+        return Task.FromResult<Chromosome<int>>(new DummyChromosome(list));
     }
 
-    public override void Mutate()
+    public override Task MutateAsync()
     {
         var random = new Random();
 
         Genes[random.Next(0, Genes.Count)]++;
+        
+        return Task.CompletedTask;
     }
 
-    public override void GeneticRepair()
+    public override Task GeneticRepairAsync()
     {
         for(var i = 0; i < Genes.Count; i++)
         {
@@ -35,6 +37,8 @@ public class DummyChromosome(List<int> genes) : Chromosome<int>(genes)
                 Genes[i]++;
             }
         }
+        
+        return Task.CompletedTask;
     }
 
 }

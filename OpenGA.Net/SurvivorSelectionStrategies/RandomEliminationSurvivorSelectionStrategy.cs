@@ -40,7 +40,7 @@ public class RandomEliminationSurvivorSelectionStrategy<T> : BaseSurvivorSelecti
     /// <param name="random">Random number generator for stochastic operations</param>
     /// <param name="currentEpoch">The current epoch/generation number (not used in random elimination)</param>
     /// <returns>The chromosomes selected for elimination through random selection</returns>
-    protected internal override IEnumerable<Chromosome<T>> SelectChromosomesForElimination(
+    protected internal override Task<IEnumerable<Chromosome<T>>> SelectChromosomesForEliminationAsync(
         Chromosome<T>[] population,
         Chromosome<T>[] offspring,
         Random random,
@@ -48,7 +48,7 @@ public class RandomEliminationSurvivorSelectionStrategy<T> : BaseSurvivorSelecti
     {
         if (population.Length == 0 || offspring.Length == 0)
         {
-            return [];
+            return Task.FromResult(Enumerable.Empty<Chromosome<T>>());
         }
 
         // We need to eliminate as many chromosomes as we have offspring
@@ -57,7 +57,7 @@ public class RandomEliminationSurvivorSelectionStrategy<T> : BaseSurvivorSelecti
         // Optimization: if we need to eliminate the entire population, just return it directly
         if (eliminationsNeeded == population.Length)
         {
-            return population;
+            return Task.FromResult<IEnumerable<Chromosome<T>>>(population);
         }
 
         var candidatesForElimination = new List<Chromosome<T>>(eliminationsNeeded);
@@ -71,6 +71,6 @@ public class RandomEliminationSurvivorSelectionStrategy<T> : BaseSurvivorSelecti
             candidatesForElimination.Add(shuffledPopulation[i]);
         }
 
-        return candidatesForElimination;
+        return Task.FromResult<IEnumerable<Chromosome<T>>>(candidatesForElimination);
     }
 }

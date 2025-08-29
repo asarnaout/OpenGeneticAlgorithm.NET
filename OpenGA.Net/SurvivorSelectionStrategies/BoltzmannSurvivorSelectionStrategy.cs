@@ -37,7 +37,7 @@ public class BoltzmannSurvivorSelectionStrategy<T>(double temperatureDecayRate, 
     /// <param name="random">Random number generator for stochastic operations</param>
     /// <param name="currentEpoch">The current epoch/generation number for temperature calculation</param>
     /// <returns>The chromosomes selected for elimination through Boltzmann selection</returns>
-    protected internal override IEnumerable<Chromosome<T>> SelectChromosomesForElimination(
+    protected internal override async Task<IEnumerable<Chromosome<T>>> SelectChromosomesForEliminationAsync(
         Chromosome<T>[] population, 
         Chromosome<T>[] offspring, 
         Random random, 
@@ -45,33 +45,40 @@ public class BoltzmannSurvivorSelectionStrategy<T>(double temperatureDecayRate, 
     {
         if (population.Length == 0 || offspring.Length == 0)
         {
-            return [];
+            return Enumerable.Empty<Chromosome<T>>();
         }
 
         // We need to eliminate as many chromosomes as we have offspring
         var eliminationsNeeded = Math.Min(offspring.Length, population.Length);
 
-        // If we need to eliminate the entire population, just return it directly
+        // Optimization: if we need to eliminate the entire population, just return it directly
         if (eliminationsNeeded == population.Length)
         {
             return population;
         }
 
-        // Calculate current temperature with decay
+        // Calculate temperature based on cooling schedule
         var currentTemperature = _useExponentialDecay 
             ? _initialTemperature * Math.Exp(-_temperatureDecayRate * currentEpoch)
             : Math.Max(0, _initialTemperature - (_temperatureDecayRate * currentEpoch));
-        
+
         // If temperature reaches 0 (only possible with linear decay), use a very small positive value to avoid division by zero
         if (currentTemperature == 0)
         {
             currentTemperature = double.Epsilon;
         }
 
+        // Get fitness values for all chromosomes
+        var fitnessValues = new double[population.Length];
+        for (int i = 0; i < population.Length; i++)
+        {
+            fitnessValues[i] = await population[i].GetCachedFitnessAsync();
+        }
+
         // Calculate Boltzmann weights for elimination: exp((maxFitness - fitness) / temperature)
         // This gives higher elimination probability to lower fitness chromosomes
-        var maxFitness = population.Max(c => c.Fitness);
-        var minFitness = population.Min(c => c.Fitness);
+        var maxFitness = fitnessValues.Max();
+        var minFitness = fitnessValues.Min();
         
         // To avoid numerical overflow/underflow, we normalize by using the fitness range
         var fitnessRange = maxFitness - minFitness;
@@ -87,7 +94,11 @@ public class BoltzmannSurvivorSelectionStrategy<T>(double temperatureDecayRate, 
         
         // Create weighted roulette wheel with inverse fitness for elimination
         var rouletteWheel = WeightedRouletteWheel<Chromosome<T>>.Init(population.ToList(), 
-            chromosome => Math.Exp((maxFitness - chromosome.Fitness) / currentTemperature));
+            chromosome => 
+            {
+                var index = Array.IndexOf(population, chromosome);
+                return Math.Exp((maxFitness - fitnessValues[index]) / currentTemperature);
+            });
 
         for (int i = 0; i < eliminationsNeeded; i++)
         {

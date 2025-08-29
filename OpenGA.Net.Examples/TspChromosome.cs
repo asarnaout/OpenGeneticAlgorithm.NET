@@ -21,7 +21,7 @@ public class TspChromosome : Chromosome<int>
     /// Calculates the fitness of the chromosome as the inverse of the total tour distance.
     /// Lower distance = higher fitness.
     /// </summary>
-    public override double CalculateFitness()
+    public override Task<double> CalculateFitnessAsync()
     {
         double totalDistance = 0;
 
@@ -34,15 +34,15 @@ public class TspChromosome : Chromosome<int>
 
         // Return inverse of distance (higher fitness = shorter tour)
         // Add 1 to avoid division by zero
-        return 1.0 / (totalDistance + 1);
+        return Task.FromResult(1.0 / (totalDistance + 1));
     }
 
     /// <summary>
     /// Mutates the chromosome by swapping two random cities in the tour.
     /// </summary>
-    public override void Mutate()
+    public override Task MutateAsync()
     {
-        if (Genes.Count < 2) return;
+        if (Genes.Count < 2) return Task.CompletedTask;
 
         int index1 = _random.Next(Genes.Count);
         int index2 = _random.Next(Genes.Count);
@@ -55,13 +55,15 @@ public class TspChromosome : Chromosome<int>
 
         // Swap the cities
         (Genes[index1], Genes[index2]) = (Genes[index2], Genes[index1]);
+        
+        return Task.CompletedTask;
     }
 
     /// <summary>
     /// Ensures the chromosome represents a valid TSP tour by removing duplicates
     /// and ensuring all cities are represented exactly once.
     /// </summary>
-    public override void GeneticRepair()
+    public override Task GeneticRepairAsync()
     {
         var totalCities = _distanceMatrix.GetLength(0);
         var presentCities = new HashSet<int>(Genes);
@@ -108,15 +110,17 @@ public class TspChromosome : Chromosome<int>
                 Genes.Add(city);
             }
         }
+        
+        return Task.CompletedTask;
     }
 
     /// <summary>
     /// Creates a deep copy of the chromosome.
     /// </summary>
-    public override Chromosome<int> DeepCopy()
+    public override Task<Chromosome<int>> DeepCopyAsync()
     {
         var copiedGenes = new List<int>(Genes);
-        return new TspChromosome(copiedGenes, _distanceMatrix);
+        return Task.FromResult<Chromosome<int>>(new TspChromosome(copiedGenes, _distanceMatrix));
     }
 
     /// <summary>

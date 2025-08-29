@@ -24,7 +24,7 @@ public class OnePointCrossoverStrategy<T> : BaseCrossoverStrategy<T>
     /// <exception cref="InvalidChromosomeException">
     /// Thrown when either parent chromosome has fewer than 2 genes, making crossover impossible
     /// </exception>
-    protected internal override IEnumerable<Chromosome<T>> Crossover(Couple<T> couple, Random random)
+    protected internal override async Task<IEnumerable<Chromosome<T>>> CrossoverAsync(Couple<T> couple, Random random)
     {
         // Validate that both parents have enough genes for meaningful crossover
         if (couple.IndividualA.Genes is not { Count: > 1 } || couple.IndividualB.Genes is not {Count: > 1 })
@@ -37,11 +37,10 @@ public class OnePointCrossoverStrategy<T> : BaseCrossoverStrategy<T>
         var crossoverPoint = GetCrossoverPoint(couple, random);
 
         // Create offspring using efficient direct gene copying
-        var offspringA = CreateOffspring(couple.IndividualA, couple.IndividualB, crossoverPoint);
-        var offspringB = CreateOffspring(couple.IndividualB, couple.IndividualA, crossoverPoint);
+        var offspringA = await CreateOffspringAsync(couple.IndividualA, couple.IndividualB, crossoverPoint);
+        var offspringB = await CreateOffspringAsync(couple.IndividualB, couple.IndividualA, crossoverPoint);
 
-        yield return offspringA;
-        yield return offspringB;
+        return [offspringA, offspringB];
     }
 
     /// <summary>
@@ -69,9 +68,9 @@ public class OnePointCrossoverStrategy<T> : BaseCrossoverStrategy<T>
     /// <param name="secondaryParent">Parent contributing genes after the crossover point</param>
     /// <param name="crossoverPoint">The point where genetic material switches from primary to secondary parent</param>
     /// <returns>A new offspring chromosome with combined genetic material</returns>
-    private static Chromosome<T> CreateOffspring(Chromosome<T> primaryParent, Chromosome<T> secondaryParent, int crossoverPoint)
+    private static async Task<Chromosome<T>> CreateOffspringAsync(Chromosome<T> primaryParent, Chromosome<T> secondaryParent, int crossoverPoint)
     {
-        var offspring = primaryParent.DeepCopy();
+        var offspring = await primaryParent.DeepCopyAsync();
         
         // Reset age for the new offspring chromosome
         offspring.ResetAge();

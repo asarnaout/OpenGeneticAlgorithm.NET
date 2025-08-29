@@ -38,13 +38,13 @@ public class GenerationalSurvivorSelectionStrategy<T> : BaseSurvivorSelectionStr
     /// <param name="random">Random number generator (not used in this strategy)</param>
     /// <param name="currentEpoch">The current epoch/generation number (not used in generational survivor selection)</param>
     /// <returns>All chromosomes from the current population for elimination</returns>
-    protected internal override IEnumerable<Chromosome<T>> SelectChromosomesForElimination(
+    protected internal override Task<IEnumerable<Chromosome<T>>> SelectChromosomesForEliminationAsync(
         Chromosome<T>[] population,
         Chromosome<T>[] offspring,
         Random random,
         int currentEpoch = 0)
     {
         // In generational survivor selection, we eliminate the entire parent population
-        return population;
+        return Task.FromResult<IEnumerable<Chromosome<T>>>(population);
     }
 }
