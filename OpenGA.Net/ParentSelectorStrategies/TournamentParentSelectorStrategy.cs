@@ -9,7 +9,7 @@ public class TournamentParentSelectorStrategy<T>(bool stochasticTournament) : Ba
     private const int _tournamentSizeMinPercentage = 5;
     private const int _tournamentSizeMaxPercentage = 21;
 
-    protected internal override async Task<IEnumerable<Couple<T>>> SelectMatingPairsAsync(Chromosome<T>[] population, Random random, int minimumNumberOfCouples)
+    protected internal override async Task<IEnumerable<Couple<T>>> SelectMatingPairsAsync(Chromosome<T>[] population, Random random, int minimumNumberOfCouples, int currentEpoch = 0)
     {
         ArgumentNullException.ThrowIfNull(population);
         ArgumentNullException.ThrowIfNull(random);

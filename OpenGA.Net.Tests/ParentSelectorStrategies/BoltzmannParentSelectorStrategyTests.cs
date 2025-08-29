@@ -42,11 +42,11 @@ public class BoltzmannParentSelectorStrategyTests
     [Fact]
     public async Task SelectMatingPairs_WithEmptyPopulation_ShouldReturnEmptyResult()
     {
-    var selector = new BoltzmannParentSelectorStrategy<int>(0.01);
+        var selector = new BoltzmannParentSelectorStrategy<int>(0.01);
         var random = new Random();
         var population = Array.Empty<DummyChromosome>();
 
-        var result = (await selector.SelectMatingPairsAsync(population, random, 100)).ToList();
+        var result = (await selector.SelectMatingPairsAsync(population, random, 100, 0)).ToList();
 
         Assert.Empty(result);
     }
@@ -54,11 +54,11 @@ public class BoltzmannParentSelectorStrategyTests
     [Fact]
     public async Task SelectMatingPairs_WithSingleIndividual_ShouldReturnEmptyResult()
     {
-    var selector = new BoltzmannParentSelectorStrategy<int>(0.01);
+        var selector = new BoltzmannParentSelectorStrategy<int>(0.01);
         var random = new Random();
         var population = GenerateRandomPopulation(1, random);
 
-        var result = (await selector.SelectMatingPairsAsync(population, random, 100)).ToList();
+        var result = (await selector.SelectMatingPairsAsync(population, random, 100, 0)).ToList();
 
         Assert.Empty(result);
     }
@@ -71,7 +71,7 @@ public class BoltzmannParentSelectorStrategyTests
         var population = GenerateRandomPopulation(2, random);
         var minimumNumberOfCouples = 100;
 
-        var result = (await selector.SelectMatingPairsAsync(population, random, minimumNumberOfCouples)).ToList();
+        var result = (await selector.SelectMatingPairsAsync(population, random, minimumNumberOfCouples, 0)).ToList();
 
         Assert.Equal(minimumNumberOfCouples, result.Count);
 
@@ -90,7 +90,7 @@ public class BoltzmannParentSelectorStrategyTests
         var population = GenerateRandomPopulation(10, random);
         var minimumNumberOfCouples = 50;
 
-        var result = (await selector.SelectMatingPairsAsync(population, random, minimumNumberOfCouples)).ToList();
+        var result = (await selector.SelectMatingPairsAsync(population, random, minimumNumberOfCouples, 0)).ToList();
 
         Assert.Equal(minimumNumberOfCouples, result.Count);
     }
@@ -103,7 +103,7 @@ public class BoltzmannParentSelectorStrategyTests
         var population = GenerateRandomPopulation(10, random);
         var minimumNumberOfCouples = 100;
 
-        var result = (await selector.SelectMatingPairsAsync(population, random, minimumNumberOfCouples)).ToList();
+        var result = (await selector.SelectMatingPairsAsync(population, random, minimumNumberOfCouples, 0)).ToList();
 
         foreach (var couple in result)
         {
@@ -288,7 +288,7 @@ public class BoltzmannParentSelectorStrategyTests
             new DummyChromosome(Enumerable.Range(0, 10).Select(x => 1).ToList())  // Fitness = 1
         };
 
-        var result = (await selector.SelectMatingPairsAsync(population, random, 10)).ToList();
+        var result = (await selector.SelectMatingPairsAsync(population, random, 10, 0)).ToList();
 
         Assert.Equal(10, result.Count);
         
@@ -299,33 +299,6 @@ public class BoltzmannParentSelectorStrategyTests
             Assert.NotNull(couple.IndividualB);
             Assert.NotEqual(couple.IndividualA.InternalIdentifier, couple.IndividualB.InternalIdentifier);
         }
-    }
-
-    [Fact]
-    public async Task SelectMatingPairs_WithoutEpochParameter_ShouldDefaultToEpochZero()
-    {
-    var selector = new BoltzmannParentSelectorStrategy<int>(0.1);
-        var random = new Random(42);
-        
-        // Create simple population
-        var population = new List<DummyChromosome>();
-        for (int i = 0; i < 10; i++)
-        {
-            population.Add(new DummyChromosome(Enumerable.Range(0, 10).Select(x => i + 1).ToList()));
-        }
-
-        var populationArray = population.ToArray();
-        var numberOfCouples = 100;
-
-        // Call without epoch parameter (should default to epoch 0)
-        var resultWithoutEpoch = (await selector.SelectMatingPairsAsync(populationArray, random, numberOfCouples)).ToList();
-        
-        // Call with explicit epoch 0
-        var resultWithEpoch0 = (await selector.SelectMatingPairsAsync(populationArray, random, numberOfCouples, 0)).ToList();
-
-        // Both should have the same number of couples
-        Assert.Equal(numberOfCouples, resultWithoutEpoch.Count);
-        Assert.Equal(numberOfCouples, resultWithEpoch0.Count);
     }
 
     [Fact]

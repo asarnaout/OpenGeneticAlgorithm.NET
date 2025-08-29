@@ -6,7 +6,7 @@ public class ElitistParentSelectorStrategy<T>(bool allowMatingElitesWithNonElite
     internal float ProportionOfNonElitesAllowedToMate { get; } = proportionOfNonElitesAllowedToMate;
     internal float ProportionOfElitesInPopulation { get; } = proportionOfElitesInPopulation;
 
-    protected internal override async Task<IEnumerable<Couple<T>>> SelectMatingPairsAsync(Chromosome<T>[] population, Random random, int minimumNumberOfCouples)
+    protected internal override async Task<IEnumerable<Couple<T>>> SelectMatingPairsAsync(Chromosome<T>[] population, Random random, int minimumNumberOfCouples, int currentEpoch = 0)
     {
         if (population.Length <= 1)
         {

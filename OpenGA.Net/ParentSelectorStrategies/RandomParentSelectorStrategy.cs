@@ -2,7 +2,7 @@ namespace OpenGA.Net.ParentSelectorStrategies;
 
 public class RandomParentSelectorStrategy<T> : BaseParentSelectorStrategy<T>
 {
-    protected internal override Task<IEnumerable<Couple<T>>> SelectMatingPairsAsync(Chromosome<T>[] population, Random random, int minimumNumberOfCouples)
+    protected internal override Task<IEnumerable<Couple<T>>> SelectMatingPairsAsync(Chromosome<T>[] population, Random random, int minimumNumberOfCouples, int currentEpoch = 0)
     {
         ArgumentNullException.ThrowIfNull(population);
         ArgumentNullException.ThrowIfNull(random);

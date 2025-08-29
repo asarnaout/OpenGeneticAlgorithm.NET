@@ -6,11 +6,6 @@ public class BoltzmannParentSelectorStrategy<T>(double temperatureDecayRate, dou
     private readonly double _initialTemperature = initialTemperature;
     private readonly bool _useExponentialDecay = useExponentialDecay;
 
-    protected internal override async Task<IEnumerable<Couple<T>>> SelectMatingPairsAsync(Chromosome<T>[] population, Random random, int minimumNumberOfCouples)
-    {
-        return await SelectMatingPairsAsync(population, random, minimumNumberOfCouples, 0);
-    }
-
     protected internal override async Task<IEnumerable<Couple<T>>> SelectMatingPairsAsync(Chromosome<T>[] population, Random random, int minimumNumberOfCouples, int currentEpoch)
     {
         if (population.Length <= 1)

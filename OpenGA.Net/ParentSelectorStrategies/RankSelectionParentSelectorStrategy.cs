@@ -2,7 +2,7 @@ namespace OpenGA.Net.ParentSelectorStrategies;
 
 public class RankSelectionParentSelectorStrategy<T> : BaseParentSelectorStrategy<T>
 {
-    protected internal override async Task<IEnumerable<Couple<T>>> SelectMatingPairsAsync(Chromosome<T>[] population, Random random, int minimumNumberOfCouples)
+    protected internal override async Task<IEnumerable<Couple<T>>> SelectMatingPairsAsync(Chromosome<T>[] population, Random random, int minimumNumberOfCouples, int currentEpoch = 0)
     {
         if (population.Length <= 1)
         {

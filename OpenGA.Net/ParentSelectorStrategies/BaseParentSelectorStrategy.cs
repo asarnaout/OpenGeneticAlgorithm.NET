@@ -2,13 +2,7 @@ namespace OpenGA.Net.ParentSelectorStrategies;
 
 public abstract class BaseParentSelectorStrategy<T> : BaseOperator
 {
-    protected internal abstract Task<IEnumerable<Couple<T>>> SelectMatingPairsAsync(Chromosome<T>[] population, Random random, int minimumNumberOfCouples);
-
-    /// <summary>
-    /// Optional method for parent selectors that need access to the current epoch information.
-    /// Default implementation delegates to the standard SelectMatingPairs method.
-    /// </summary>
-    protected internal virtual async Task<IEnumerable<Couple<T>>> SelectMatingPairsAsync(Chromosome<T>[] population, Random random, int minimumNumberOfCouples, int currentEpoch)
+    protected internal virtual async Task<IEnumerable<Couple<T>>> SelectMatingPairsAsync(Chromosome<T>[] population, Random random, int minimumNumberOfCouples, int currentEpoch = 0)
     {
         return await SelectMatingPairsAsync(population, random, minimumNumberOfCouples);
     }
