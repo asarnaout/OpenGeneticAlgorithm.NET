@@ -32,12 +32,15 @@ using OpenGA.Net;
 // A chromosome for the Traveling Salesman Problem. Each chromosome represents a route through cities (genes = city sequence)
 public class TspChromosome : Chromosome<int>
 {
+    private readonly double[,] _distanceMatrix;
+    
     public TspChromosome(IList<int> cities, double[,] distanceMatrix) : base(cities)
     {
+        _distanceMatrix = distanceMatrix;
     }
     
     // Calculate how "good" this route is (shorter distance = higher fitness)
-    public override double CalculateFitness()
+    public override async Task<double> CalculateFitnessAsync()
     {
         double totalDistance = CalculateTotalDistance();
         
@@ -45,22 +48,37 @@ public class TspChromosome : Chromosome<int>
     }
     
     // Randomly swap two cities in the route
-    public override void Mutate()
+    public override async Task MutateAsync(Random random)
     {
-        int index1 = _random.Next(Genes.Count);
-        int index2 = _random.Next(Genes.Count);
+        int index1 = random.Next(Genes.Count);
+        int index2 = random.Next(Genes.Count);
         (Genes[index1], Genes[index2]) = (Genes[index2], Genes[index1]);
+        
+        InvalidateFitness(); // Important: invalidate cached fitness after mutation
     }
     
     // Create an identical copy of this chromosome
-    public override Chromosome<int> DeepCopy()
+    public override async Task<Chromosome<int>> DeepCopyAsync()
     {
         return new TspChromosome(new List<int>(Genes), _distanceMatrix);
     }
     
     // Ensure each city appears exactly once (fix any duplicates)
-    public override void GeneticRepair()
+    public override async Task GeneticRepairAsync()
     {
+        // Implementation would ensure no duplicate cities exist
+        // For example: remove duplicates and fill missing cities
+    }
+    
+    private double CalculateTotalDistance()
+    {
+        double distance = 0;
+        for (int i = 0; i < Genes.Count - 1; i++)
+        {
+            distance += _distanceMatrix[Genes[i], Genes[i + 1]];
+        }
+        distance += _distanceMatrix[Genes[^1], Genes[0]]; // Return to start
+        return distance;
     }
 }
 ```
@@ -81,9 +99,9 @@ for (int i = 0; i < 100; i++)
 
 ```csharp
 // Configure and run your genetic algorithm
-var bestSolution = OpenGARunner<int>
+var bestSolution = await OpenGARunner<int>
     .Initialize(initialPopulation)
-    .RunToCompletion();
+    .RunToCompletionAsync();
 
 // Get your optimized result
 Console.WriteLine($"Best route: {string.Join(" → ", bestSolution.Genes)}");
@@ -100,10 +118,10 @@ OpenGA.Net is built around four core concepts that work together seamlessly:
 ### 🧬 **Chromosomes**
 Your solution candidates. Strongly typed and extensible. Each `Chromosome<T>` subclass defines how a solution is represented and evaluated. Implement:
 
-- CalculateFitness() — return a higher-is-better score for the current Genes
-- Mutate() — randomly perturb Genes to explore the search space
-- DeepCopy() — produce a full copy used during crossover
-- GeneticRepair() (optional) — fix invalid states after crossover/mutation
+- CalculateFitnessAsync() — return a higher-is-better score for the current Genes
+- MutateAsync() — randomly perturb Genes to explore the search space
+- DeepCopyAsync() — produce a full copy used during crossover
+- GeneticRepairAsync() (optional) — fix invalid states after crossover/mutation
 
 Tip: See the TSP chromosome in the Quick Start above for a concrete example. The pattern is the same for any problem: choose a gene representation, define a fitness function, add a simple mutation, and optionally repair to enforce constraints.
 
@@ -156,25 +174,25 @@ Control when the genetic algorithm stops evolving:
 
 ```csharp
 // High-performance optimization (fast convergence needed)
-.ParentSelection(c => c.Tournament())
+.ParentSelection(c => c.RegisterSingle(s => s.Tournament()))
 .Crossover(c => c.RegisterSingle(s => s.OnePointCrossover()))
 .SurvivorSelection(r => r.RegisterSingle(s => s.Elitist()))
 .Termination(t => t.MaximumEpochs(100))
 
 // Exploratory search (avoiding local optima)
-.ParentSelection(c => c.Tournament())
+.ParentSelection(c => c.RegisterSingle(s => s.Tournament()))
 .Crossover(c => c.RegisterSingle(s => s.UniformCrossover()))
 .SurvivorSelection(r => r.RegisterSingle(s => s.Generational()))
 .Termination(t => t.TargetStandardDeviation(stdDev: 0.001))
 
 // Production system (time-constrained)
-.ParentSelection(c => c.Tournament())
+.ParentSelection(c => c.RegisterSingle(s => s.Tournament()))
 .Crossover(c => c.RegisterSingle(s => s.OnePointCrossover()))
 .SurvivorSelection(r => r.RegisterSingle(s => s.Elitist()))
 .Termination(t => t.MaximumDuration(TimeSpan.FromMinutes(5)))
 
 // Quality-focused research (target fitness termination)
-.ParentSelection(c => c.RouletteWheel())
+.ParentSelection(c => c.RegisterSingle(s => s.RouletteWheel()))
 .Crossover(c => c.RegisterSingle(s => s.KPointCrossover(3)))
 .SurvivorSelection(r => r.RegisterSingle(s => s.Elitist(0.2f)))
 .Termination(t => t.TargetFitness(0.95).TargetStandardDeviation(stdDev: 0.001, window: 10))
@@ -206,6 +224,67 @@ Control when the genetic algorithm stops evolving:
 
 ---
 
+## ⚙️ **Advanced Configuration**
+
+For sophisticated optimization scenarios, OpenGA.Net supports advanced multi-strategy configurations with **Adaptive Pursuit** - an intelligent operator selection policy that learns which strategies perform best over time and automatically adjusts selection probabilities.
+
+### 🧠 **Adaptive Pursuit Algorithm**
+
+Adaptive Pursuit continuously monitors the performance of each configured strategy and dynamically adapts their selection probabilities based on:
+- **Fitness improvement** from applied operators
+- **Population diversity** maintenance 
+- **Recent performance trends** with temporal weighting
+- **Exploration vs exploitation** balance
+
+This creates a self-optimizing genetic algorithm that automatically discovers the best operator combinations for your specific problem.
+
+### � **Multi-Strategy Configuration**
+
+```csharp
+var result = await OpenGARunner<int>
+    .Initialize(initialPopulation, minPopulationPercentage: 0.4f, maxPopulationPercentage: 2.5f)
+    .WithRandomSeed(42)
+    .MutationRate(0.15f)
+    
+    // Multi-strategy parent selection with adaptive learning
+    .ParentSelection(p => p.RegisterMulti(m => m
+        .Tournament(stochasticTournament: true, customWeight: 0.4f)
+        .RouletteWheel(customWeight: 0.3f)
+        .Rank(customWeight: 0.2f)
+        .Boltzmann(temperatureDecayRate: 0.05, initialTemperature: 1.0, customWeight: 0.1f)
+        .WithPolicy(policy => policy.AdaptivePursuit(
+            learningRate: 0.12,
+            minimumProbability: 0.05,
+            rewardWindowSize: 15
+        ))
+    ))
+    
+    // Single high-performance crossover for exploitation
+    .Crossover(c => c.RegisterSingle(s => s.KPointCrossover(3))
+        .WithCrossoverRate(0.85f))
+    
+    // Multi-strategy survivor selection for dynamic population management
+    .SurvivorSelection(s => s.RegisterMulti(m => m
+        .Elitist(elitePercentage: 0.12f, customWeight: 0.6f)
+        .Tournament(tournamentSize: 4, stochasticTournament: true, customWeight: 0.3f)
+        .AgeBased(customWeight: 0.1f)
+        .WithPolicy(policy => policy.AdaptivePursuit(
+            learningRate: 0.08,
+            diversityWeight: 0.15
+        ))
+    ).OverrideOffspringGenerationRate(1.3f))
+    
+    // Multi-condition termination
+    .Termination(t => t
+        .MaximumEpochs(750)
+        .MaximumDuration(TimeSpan.FromMinutes(10))
+        .TargetFitness(0.98)
+        .TargetStandardDeviation(0.001, window: 20))
+    
+    .RunToCompletionAsync();
+```
+
+---
 
 ## 🛠️ Extensibility
 
@@ -215,7 +294,7 @@ Create your own strategies by inheriting from base classes:
 // Custom crossover strategy
 public class MyCustomCrossover<T> : BaseCrossoverStrategy<T>
 {
-    protected internal override IEnumerable<Chromosome<T>> Crossover(
+    protected internal override async Task<IEnumerable<Chromosome<T>>> CrossoverAsync(
         Couple<T> couple, Random random)
     {
         // Your custom crossover logic
@@ -225,8 +304,10 @@ public class MyCustomCrossover<T> : BaseCrossoverStrategy<T>
 // Custom survivor selection strategy  
 public class MySurvivorSelectionStrategy<T> : BaseSurvivorSelectionStrategy<T>
 {
-    protected internal override IEnumerable<Chromosome<T>> SelectChromosomesForElimination(
-        Chromosome<T>[] population, Chromosome<T>[] offspring, Random random)
+    internal override float RecommendedOffspringGenerationRate => 0.5f;
+    
+    protected internal override async Task<IEnumerable<Chromosome<T>>> SelectChromosomesForEliminationAsync(
+        Chromosome<T>[] population, Chromosome<T>[] offspring, Random random, int currentEpoch = 0)
     {
         // Your custom survivor selection logic
     }
@@ -235,7 +316,7 @@ public class MySurvivorSelectionStrategy<T> : BaseSurvivorSelectionStrategy<T>
 // Custom reproduction selector
 public class MyParentSelector<T> : BaseParentSelectorStrategy<T>
 {
-    protected internal override IEnumerable<Couple<T>> SelectMatingPairs(
+    protected internal override async Task<IEnumerable<Couple<T>>> SelectMatingPairsAsync(
         Chromosome<T>[] population, Random random, int minimumNumberOfCouples)
     {
         // Your custom parent selection logic
@@ -252,13 +333,13 @@ public class MyTerminationStrategy<T> : BaseTerminationStrategy<T>
 }
 
 // Using your custom strategies
-var result = OpenGARunner<MyGeneType>
+var result = await OpenGARunner<MyGeneType>
     .Initialize(initialPopulation)
-    .ParentSelection(c => c.Custom(new MyParentSelector<MyGeneType>()))
+    .ParentSelection(c => c.RegisterSingle(s => s.Custom(new MyParentSelector<MyGeneType>())))
     .Crossover(c => c.RegisterSingle(s => s.CustomCrossover(new MyCustomCrossover<MyGeneType>())))
     .SurvivorSelection(r => r.RegisterSingle(s => s.Custom(new MySurvivorSelectionStrategy<MyGeneType>())))
     .Termination(t => t.Custom(new MyTerminationStrategy<MyGeneType>(50)))
-    .RunToCompletion();
+    .RunToCompletionAsync();
 ```
 
 ---
