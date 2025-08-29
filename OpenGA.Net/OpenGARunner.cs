@@ -31,12 +31,11 @@ public class OpenGARunner<T>
 
     internal Chromosome<T>[] Population { get; set; } = [];
 
-    internal double HighestFitness => Population.Max(c => c.Fitness);
-
-    /// <summary>
-    /// Gets the current state of the genetic algorithm including epoch, duration, and fitness metrics.
-    /// </summary>
-    internal GeneticAlgorithmState CurrentState => new(CurrentEpoch, StopWatch, HighestFitness);
+    internal async Task<GeneticAlgorithmState> GetCurrentStateAsync()
+    {
+        var highestFitness = (await Task.WhenAll(Population.Select(x => x.GetCachedFitnessAsync()))).Max();
+        return new(CurrentEpoch, StopWatch, highestFitness);
+    }
 
     private Random _random = new();
 
@@ -374,7 +373,7 @@ public class OpenGARunner<T>
         _survivorSelectionStrategyRegistration.ValidateAndDefault(_random);
     }
 
-    private void UpdateAdaptivePursuitReward(
+    private async Task UpdateAdaptivePursuitReward(
         AdaptivePursuitPolicy adaptivePursuit,
         BaseOperator @operator,
         Couple<T> couple,
@@ -387,15 +386,15 @@ public class OpenGARunner<T>
         }
 
         // Calculate best fitness among parents and offspring
-        var bestParentFitness = Math.Max(couple.IndividualA.Fitness, couple.IndividualB.Fitness);
-        var bestOffspringFitness = offspringList.Max(o => o.Fitness);
+        var bestParentFitness = Math.Max(await couple.IndividualA.GetCachedFitnessAsync(), await couple.IndividualB.GetCachedFitnessAsync());
+        var bestOffspringFitness = (await Task.WhenAll(offspringList.Select(o => o.GetCachedFitnessAsync()))).Max();
 
         // Calculate population fitness range for normalization
-        var populationFitnesses = Population.Select(c => c.Fitness).ToArray();
+        var populationFitnesses = (await Task.WhenAll(Population.Select(c => c.GetCachedFitnessAsync()))).ToArray();
         var populationFitnessRange = populationFitnesses.Max() - populationFitnesses.Min();
 
         // Calculate diversity among offspring (standard deviation of fitness)
-        var offspringFitnesses = offspringList.Select(o => o.Fitness);
+        var offspringFitnesses = await Task.WhenAll(offspringList.Select(o => o.GetCachedFitnessAsync()));
         var offspringDiversity = offspringFitnesses.StandardDeviation();
 
         // Update the reward for this crossover strategy
@@ -416,15 +415,15 @@ public class OpenGARunner<T>
     /// - To encourage maintaining healthy exploration, we add a diversity component based on the change in fitness standard deviation.
     /// - Metrics are computed immediately after survivor selection and before mutation/repair to isolate the survivor selection effect.
     /// </summary>
-    private static void UpdateAdaptivePursuitRewardForSurvivorSelection(
+    private static async Task UpdateAdaptivePursuitRewardForSurvivorSelection(
         AdaptivePursuitPolicy adaptivePursuit,
         BaseSurvivorSelectionStrategy<T> survivorSelectionStrategy,
         Chromosome<T>[] preSurvivorSelectionPopulation,
         Chromosome<T>[] postSurvivorSelectionPopulation)
     {
         // Fitness arrays
-        var preFitnesses = preSurvivorSelectionPopulation.Select(c => c.Fitness).ToArray();
-        var postFitnesses = postSurvivorSelectionPopulation.Select(c => c.Fitness).ToArray();
+        var preFitnesses = (await Task.WhenAll(preSurvivorSelectionPopulation.Select(c => c.GetCachedFitnessAsync()))).ToArray();
+        var postFitnesses = (await Task.WhenAll(postSurvivorSelectionPopulation.Select(c => c.GetCachedFitnessAsync()))).ToArray();
 
         // Primary signal: mean fitness improvement across the whole population
         var preMean = preFitnesses.Average();
@@ -472,14 +471,14 @@ public class OpenGARunner<T>
     /// <exception cref="InvalidOperationException">
     /// Thrown when the calculated number of offspring is invalid (≤ 0 or > 2× population size).
     /// </exception>
-    public Chromosome<T> RunToCompletion()
+    public async Task<Chromosome<T>> RunToCompletionAsync()
     {
         StopWatch.Start();
         DefaultMissingStrategies();
 
         for (; ; CurrentEpoch++)
         {
-            if (_terminationStrategyConfig.ShouldTerminate(CurrentState))
+            if (_terminationStrategyConfig.ShouldTerminate(await GetCurrentStateAsync()))
             {
                 break;
             }
@@ -532,12 +531,12 @@ public class OpenGARunner<T>
 
                         if (crossoverPolicy is AdaptivePursuitPolicy adaptivePursuit)
                         {
-                            UpdateAdaptivePursuitReward(adaptivePursuit, crossoverStrategy, couple, newOffspring);
+                            await UpdateAdaptivePursuitReward(adaptivePursuit, crossoverStrategy, couple, newOffspring);
                         }
 
                         if (parentSelectorPolicy is AdaptivePursuitPolicy parentAdaptivePursuit)
                         {
-                            UpdateAdaptivePursuitReward(parentAdaptivePursuit, parentSelector, couple, newOffspring);
+                            await UpdateAdaptivePursuitReward(parentAdaptivePursuit, parentSelector, couple, newOffspring);
                         }
 
                         offspring.AddRange(newOffspring);
@@ -559,18 +558,18 @@ public class OpenGARunner<T>
             // Update Adaptive Pursuit for survivor selection based on immediate post-survivor selection population (before mutation)
             if (survivorSelectionSelectionPolicy is AdaptivePursuitPolicy adaptiveSurvivorSelection)
             {
-                UpdateAdaptivePursuitRewardForSurvivorSelection(adaptiveSurvivorSelection, survivorSelectionStrategy, preSurvivorSelectionPopulation, Population);
+                await UpdateAdaptivePursuitRewardForSurvivorSelection(adaptiveSurvivorSelection, survivorSelectionStrategy, preSurvivorSelectionPopulation, Population);
             }
 
             foreach (var chromosome in Population)
             {
                 if (_random.NextDouble() <= _mutationRate)
                 {
-                    chromosome.Mutate();
+                    await chromosome.MutateAsync();
                     chromosome.InvalidateFitness();
                 }
 
-                chromosome.GeneticRepair();
+                await chromosome.GeneticRepairAsync();
                 chromosome.InvalidateFitness();
                 chromosome.IncrementAge();
             }
@@ -583,7 +582,7 @@ public class OpenGARunner<T>
 
         StopWatch.Stop();
 
-        return Population.OrderByDescending(c => c.Fitness).First();
+        return Population.OrderByDescending(c => c.GetCachedFitnessAsync()).First();
     }
 
     private int CalculateOptimalOffspringCount(BaseSurvivorSelectionStrategy<T> survivorSelectionStrategy)

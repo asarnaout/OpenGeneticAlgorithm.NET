@@ -15,11 +15,16 @@ public abstract class Chromosome<T>(IList<T> genes) : IEquatable<Chromosome<T>>
     internal Guid InternalIdentifier { get; } = Guid.NewGuid();
 
     private double? _fitness;
-    
-    internal double Fitness
+
+    internal async Task<double> GetCachedFitnessAsync()
     {
-        get => _fitness ??= CalculateFitness();
-        set => _fitness = value;
+        if (_fitness.HasValue)
+        {
+            return _fitness.Value;
+        }
+
+        _fitness = await CalculateFitnessAsync();
+        return _fitness.Value;
     }
 
     /// <summary>
@@ -51,13 +56,13 @@ public abstract class Chromosome<T>(IList<T> genes) : IEquatable<Chromosome<T>>
     /// The fitness function evaluates the favorability of the chromosome as a potential solution to the optimization
     /// problem. Override this method to return a value reflecting this favorability.
     /// </summary>
-    public abstract double CalculateFitness();
+    public abstract Task<double> CalculateFitnessAsync();
 
     /// <summary>
     /// Override this method to provide a custom Mutation implementation to the Chromosome. An example of a mutation
     /// is to randomly delete a member of the <see cref="Genes">Genes</see> array.
     /// </summary>
-    public abstract void Mutate();
+    public abstract Task MutateAsync();
 
     /// <summary>
     /// Invalidates the cached fitness value, forcing it to be recalculated on next access.
@@ -72,7 +77,7 @@ public abstract class Chromosome<T>(IList<T> genes) : IEquatable<Chromosome<T>>
     /// Since Chromosomes partake in crossover operations, we will need to ensure that we can create deep copies of
     /// the mating chromosome(s). Override the DeepCopy method to provide such an implementation.
     /// </summary>
-    public abstract Chromosome<T> DeepCopy();
+    public abstract Task<Chromosome<T>> DeepCopyAsync();
 
     /// <summary>
     /// Increments the age of the chromosome by 1. This should be called at the end of each generation
@@ -98,7 +103,7 @@ public abstract class Chromosome<T>(IList<T> genes) : IEquatable<Chromosome<T>>
     /// An example of such an operation is to eliminate any duplicates (if necessary) from the <see cref="Genes">Genes</see> 
     /// array in the case of the TSP.
     /// </summary>
-    public virtual void GeneticRepair() => Expression.Empty();
+    public virtual async Task GeneticRepairAsync() => await Task.CompletedTask;
 
     public override bool Equals(object? obj)
     {
