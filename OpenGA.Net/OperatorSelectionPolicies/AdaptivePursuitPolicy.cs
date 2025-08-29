@@ -52,8 +52,8 @@ public class AdaptivePursuitPolicy(
         _operatorUsageCount = operators.ToDictionary(op => op, _ => 0);
         _recentRewards = operators.ToDictionary(op => op, _ => new Queue<double>());
         
-        // Reset round-robin index when operators are applied
-        _roundRobinIndex = 0;
+        // Reset round-robin index to a random start when operators are applied to avoid bias
+        _roundRobinIndex = Random.Shared.Next(operators.Count);
     }
     
     /// <summary>

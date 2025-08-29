@@ -342,19 +342,19 @@ public class BoltzmannParentSelectorTests
     [Fact]
     public void Configuration_WithValidParameters_ShouldCreateSelector()
     {
-    var config = new ParentSelectorConfiguration<int>();
+        var config = new ParentSelectorConfiguration<int>();
         
-    var exponentialSelector = config.Boltzmann(); // Exponential defaults
-        Assert.NotNull(exponentialSelector);
+        config.Boltzmann(); // Exponential defaults
+        Assert.NotNull(config.ParentSelector);
         
-    var linearSelector = config.BoltzmannWithLinearDecay(); // Linear defaults
-        Assert.NotNull(linearSelector);
+        config.BoltzmannWithLinearDecay(); // Linear defaults
+        Assert.NotNull(config.ParentSelector);
         
-    var customExponentialSelector = config.Boltzmann(0.1, 2.0); // Custom exponential
-        Assert.NotNull(customExponentialSelector);
+        config.Boltzmann(0.1, 2.0); // Custom exponential
+        Assert.NotNull(config.ParentSelector);
         
-    var customLinearSelector = config.BoltzmannWithLinearDecay(0.05, 3.0); // Custom linear
-        Assert.NotNull(customLinearSelector);
+        config.BoltzmannWithLinearDecay(0.05, 3.0); // Custom linear
+        Assert.NotNull(config.ParentSelector);
     }
 
     private static int CountChromosomeSelections(List<Couple<int>> couples, DummyChromosome chromosome)

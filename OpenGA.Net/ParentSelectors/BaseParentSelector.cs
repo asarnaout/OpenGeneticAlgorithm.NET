@@ -1,5 +1,3 @@
-using OpenGA.Net.Extensions;
-
 namespace OpenGA.Net.ParentSelectors;
 
 public abstract class BaseParentSelector<T> : BaseOperator

@@ -101,6 +101,62 @@ public class OpenGARunner<T>
         return this;
     }
 
+    /// <summary>
+    /// Configures parent selection strategies that determine how mating pairs are chosen from the population.
+    /// </summary>
+    /// <param name="selectorConfigurator">A configuration action that sets up one or more parent selection strategies.</param>
+    /// <returns>The OpenGARunner instance for method chaining.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when the selectorConfigurator is null.</exception>
+    /// <remarks>
+    /// Parent selection is a crucial component of genetic algorithms that determines which chromosomes
+    /// from the current population are chosen as parents to produce offspring for the next generation.
+    /// The quality of parent selection directly impacts the algorithm's balance between exploration
+    /// and exploitation of the solution space.
+    /// 
+    /// This method supports both single and multiple parent selection strategies:
+    /// 
+    /// <b>Single Strategy Configuration:</b>
+    /// Use RegisterSingle() when only one parent selection method is needed. If no strategies are
+    /// configured, OpenGARunner automatically defaults to Tournament selection during execution.
+    /// 
+    /// <b>Multiple Strategy Configuration:</b>
+    /// Use RegisterMulti() to configure multiple strategies with optional custom weights and
+    /// operator selection policies. The framework intelligently applies defaults:
+    /// - If custom weights are specified, CustomWeightPolicy is automatically applied
+    /// - If no weights and no explicit policy, AdaptivePursuitPolicy is used by default
+    /// - If explicit policy conflicts with custom weights, an exception is thrown
+    /// 
+    /// <b>Available Parent Selection Strategies:</b>
+    /// - <b>Tournament:</b> Conducts tournaments among randomly selected chromosomes
+    /// - <b>RouletteWheel:</b> Selects parents probabilistically based on fitness proportions
+    /// - <b>Rank:</b> Uses fitness rankings instead of absolute values to prevent domination
+    /// - <b>Random:</b> Selects parents randomly regardless of fitness
+    /// - <b>Boltzmann:</b> Temperature-based selection with cooling schedules
+    /// - <b>Custom:</b> User-defined selection strategies
+    /// 
+    /// The framework includes Adaptive Pursuit integration that learns which parent selectors
+    /// perform best over time and adjusts selection probabilities accordingly, providing
+    /// performance feedback through UpdateAdaptivePursuitRewardForParentSelection().
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// // Single strategy
+    /// .ParentSelection(p => p.RegisterSingle(s => s.Tournament(tournamentSize: 5)))
+    /// 
+    /// // Multiple strategies with weights
+    /// .ParentSelection(p => p.RegisterMulti(m => m
+    ///     .Tournament(customWeight: 0.6f)
+    ///     .RouletteWheel(customWeight: 0.4f)
+    ///     .WithPolicy(policy => policy.AdaptivePursuit())))
+    /// 
+    /// // Advanced configuration
+    /// .ParentSelection(p => p.RegisterMulti(m => m
+    ///     .Tournament(stochasticTournament: true)
+    ///     .Rank()
+    ///     .Boltzmann(temperatureDecayRate: 0.05, initialTemperature: 1.0)
+    ///     .WithPolicy(policy => policy.AdaptivePursuit(learningRate: 0.1))))
+    /// </code>
+    /// </example>
     public OpenGARunner<T> ParentSelection(Action<ParentSelectorRegistration<T>> selectorConfigurator)
     {
         ArgumentNullException.ThrowIfNull(selectorConfigurator, nameof(selectorConfigurator));
@@ -109,6 +165,66 @@ public class OpenGARunner<T>
         return this;
     }
 
+    /// <summary>
+    /// Configures crossover strategies that determine how genetic material is combined from parent chromosomes to create offspring.
+    /// </summary>
+    /// <param name="crossoverStrategyRegistration">A configuration action that sets up one or more crossover strategies.</param>
+    /// <returns>The OpenGARunner instance for method chaining.</returns>
+    /// <remarks>
+    /// Crossover is the primary genetic operator responsible for combining genetic material from
+    /// two parent chromosomes to produce offspring. This process is fundamental to genetic algorithms
+    /// as it enables the exploration of new solution combinations while preserving beneficial
+    /// traits from successful parents.
+    /// 
+    /// This method supports both single and multiple crossover strategy configurations:
+    /// 
+    /// <b>Single Strategy Configuration:</b>
+    /// Use RegisterSingle() when only one crossover method is needed. If no strategies are
+    /// configured, OpenGARunner automatically defaults to OnePointCrossover during execution.
+    /// 
+    /// <b>Multiple Strategy Configuration:</b>
+    /// Use RegisterMulti() to configure multiple strategies with optional custom weights and
+    /// operator selection policies. The framework intelligently applies defaults:
+    /// - If custom weights are specified, CustomWeightPolicy is automatically applied
+    /// - If no weights and no explicit policy, AdaptivePursuitPolicy is used by default
+    /// - If explicit policy conflicts with custom weights, an exception is thrown
+    /// 
+    /// <b>Available Crossover Strategies:</b>
+    /// - <b>OnePointCrossover:</b> Single crossover point divides parent chromosomes
+    /// - <b>KPointCrossover:</b> Multiple crossover points for increased genetic mixing
+    /// - <b>UniformCrossover:</b> Gene-by-gene random selection from parents
+    /// - <b>Custom:</b> User-defined crossover strategies
+    /// 
+    /// <b>Crossover Rate Configuration:</b>
+    /// Each crossover operation is subject to a crossover rate that determines the probability
+    /// of crossover occurring. This can be configured globally using WithCrossoverRate() or
+    /// overridden per strategy. The default rate is 0.9 (90%).
+    /// 
+    /// The framework includes Adaptive Pursuit integration that monitors crossover performance
+    /// and adjusts strategy selection probabilities based on offspring quality metrics through
+    /// UpdateAdaptivePursuitReward(), considering fitness improvement and genetic diversity.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// // Single strategy with custom crossover rate
+    /// .Crossover(c => c.RegisterSingle(s => s.OnePointCrossover()).WithCrossoverRate(0.8f))
+    /// 
+    /// // Multiple strategies with adaptive selection
+    /// .Crossover(c => c.RegisterMulti(m => m
+    ///     .OnePointCrossover()
+    ///     .KPointCrossover(numberOfPoints: 2)
+    ///     .UniformCrossover()
+    ///     .WithPolicy(policy => policy.AdaptivePursuit()))
+    ///     .WithCrossoverRate(0.9f))
+    /// 
+    /// // Weighted strategies
+    /// .Crossover(c => c.RegisterMulti(m => m
+    ///     .OnePointCrossover(customWeight: 0.5f)
+    ///     .KPointCrossover(numberOfPoints: 3, customWeight: 0.3f)
+    ///     .UniformCrossover(customWeight: 0.2f))
+    ///     .WithCrossoverRate(0.85f))
+    /// </code>
+    /// </example>
     public OpenGARunner<T> Crossover(Action<CrossoverStrategyRegistration<T>> crossoverStrategyRegistration)
     {
         crossoverStrategyRegistration(_crossoverStrategyRegistration);
@@ -116,6 +232,72 @@ public class OpenGARunner<T>
         return this;
     }
 
+    /// <summary>
+    /// Configures survivor selection strategies that determine which individuals survive to the next generation.
+    /// </summary>
+    /// <param name="survivorSelectionStrategyRegistration">A configuration action that sets up one or more survivor selection strategies.</param>
+    /// <returns>The OpenGARunner instance for method chaining.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when the survivorSelectionStrategyRegistration is null.</exception>
+    /// <remarks>
+    /// Survivor selection (also known as replacement or environmental selection) is a critical
+    /// genetic algorithm component that determines which chromosomes from the combined population
+    /// of parents and offspring will survive to form the next generation. This process directly
+    /// controls population dynamics, selection pressure, and the balance between maintaining
+    /// genetic diversity and preserving high-fitness solutions.
+    /// 
+    /// This method supports both single and multiple survivor selection strategy configurations:
+    /// 
+    /// <b>Single Strategy Configuration:</b>
+    /// Use RegisterSingle() when only one survivor selection method is needed. If no strategies
+    /// are configured, OpenGARunner automatically defaults to ElitistSurvivorSelectionStrategy
+    /// during execution.
+    /// 
+    /// <b>Multiple Strategy Configuration:</b>
+    /// Use RegisterMulti() to configure multiple strategies with optional custom weights and
+    /// operator selection policies. The framework intelligently applies defaults:
+    /// - If custom weights are specified, CustomWeightPolicy is automatically applied
+    /// - If no weights and no explicit policy, AdaptivePursuitPolicy is used by default
+    /// - If explicit policy conflicts with custom weights, an exception is thrown
+    /// 
+    /// <b>Available Survivor Selection Strategies:</b>
+    /// - <b>Elitist:</b> Protects top performers while replacing others with offspring
+    /// - <b>Generational:</b> Completely replaces parent population with offspring
+    /// - <b>Tournament:</b> Eliminates individuals through competitive tournaments
+    /// - <b>Random:</b> Randomly eliminates individuals to make room for offspring
+    /// - <b>AgeBased:</b> Eliminates older chromosomes to encourage population turnover
+    /// - <b>Boltzmann:</b> Temperature-based elimination with cooling schedules
+    /// - <b>Custom:</b> User-defined survival strategies
+    /// 
+    /// <b>Dynamic Population Sizing:</b>
+    /// The framework supports dynamic population sizing within configured bounds (set during
+    /// Initialize()). Survivor selection strategies work with CalculateOptimalOffspringCount()
+    /// to determine appropriate offspring generation rates, which can be overridden using
+    /// OverrideOffspringGenerationRate().
+    /// 
+    /// The framework includes Adaptive Pursuit integration that monitors survivor selection
+    /// performance and adjusts strategy selection based on population fitness improvements
+    /// and diversity metrics through UpdateAdaptivePursuitRewardForSurvivorSelection().
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// // Single strategy with elite preservation
+    /// .SurvivorSelection(s => s.RegisterSingle(config => config.Elitist(elitePercentage: 0.1f)))
+    /// 
+    /// // Multiple strategies with custom offspring rate
+    /// .SurvivorSelection(s => s.RegisterMulti(m => m
+    ///     .Elitist(elitePercentage: 0.15f)
+    ///     .Tournament(tournamentSize: 5)
+    ///     .WithPolicy(policy => policy.AdaptivePursuit()))
+    ///     .OverrideOffspringGenerationRate(0.8f))
+    /// 
+    /// // Advanced configuration with weights
+    /// .SurvivorSelection(s => s.RegisterMulti(m => m
+    ///     .Elitist(elitePercentage: 0.1f, customWeight: 0.6f)
+    ///     .Tournament(tournamentSize: 3, stochasticTournament: true, customWeight: 0.3f)
+    ///     .AgeBased(customWeight: 0.1f))
+    ///     .OverrideOffspringGenerationRate(1.2f))
+    /// </code>
+    /// </example>
     public OpenGARunner<T> SurvivorSelection(Action<SurvivorSelectionStrategyRegistration<T>> survivorSelectionStrategyRegistration)
     {
         ArgumentNullException.ThrowIfNull(survivorSelectionStrategyRegistration, nameof(survivorSelectionStrategyRegistration));
