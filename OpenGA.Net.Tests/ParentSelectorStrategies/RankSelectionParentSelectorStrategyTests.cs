@@ -5,23 +5,23 @@ namespace OpenGA.Net.Tests.ParentSelectorStrategies;
 public class RankSelectionParentSelectorStrategyTests
 {
     [Fact]
-    public void WillFailIfThereThereIsLessThanTwoIndividuals()
+    public async Task WillFailIfThereThereIsLessThanTwoIndividuals()
     {
-    var selector = new RankSelectionParentSelectorStrategy<int>();
+        var selector = new RankSelectionParentSelectorStrategy<int>();
 
         var random = new Random();
 
         var population = GenerateRandomPopulation(1, random);
 
-        var result = selector.SelectMatingPairs(population, random, 100).ToList();
+        var result = (await selector.SelectMatingPairsAsync(population, random, 100)).ToList();
 
         Assert.Empty(result);
     }
 
     [Fact]
-    public void WillProduceUniformCouplesIfOnlyTwoMembersExistInThePopulation()
+    public async Task WillProduceUniformCouplesIfOnlyTwoMembersExistInThePopulation()
     {
-    var selector = new RankSelectionParentSelectorStrategy<int>();
+        var selector = new RankSelectionParentSelectorStrategy<int>();
 
         var random = new Random();
 
@@ -29,7 +29,7 @@ public class RankSelectionParentSelectorStrategyTests
 
         var minimumNumberOfCouples = 100;
 
-        var result = selector.SelectMatingPairs(population, random, minimumNumberOfCouples).ToList();
+        var result = (await selector.SelectMatingPairsAsync(population, random, minimumNumberOfCouples)).ToList();
 
         Assert.Equal(minimumNumberOfCouples, result.Count);
 
@@ -50,9 +50,9 @@ public class RankSelectionParentSelectorStrategyTests
     /// FitnessWeightedRouletteWheel.
     /// </summary>
     [Fact]
-    public void RankSelectionWillPreferTheMostFitChromosomesOverALargeNumberOfRuns()
+    public async Task RankSelectionWillPreferTheMostFitChromosomesOverALargeNumberOfRuns()
     {
-    var selector = new RankSelectionParentSelectorStrategy<int>();
+        var selector = new RankSelectionParentSelectorStrategy<int>();
 
         var random = new Random();
 
@@ -72,7 +72,7 @@ public class RankSelectionParentSelectorStrategyTests
 
         var numberOfCouples = 1000000;
 
-        var result = selector.SelectMatingPairs(population, random, numberOfCouples).ToList();
+        var result = (await selector.SelectMatingPairsAsync(population, random, numberOfCouples)).ToList();
 
         Assert.Equal(numberOfCouples, result.Count);
 
@@ -99,9 +99,9 @@ public class RankSelectionParentSelectorStrategyTests
     }
 
     [Fact]
-    public void RankSelectionShouldAssignCorrectRanksBasedOnFitness()
+    public async Task RankSelectionShouldAssignCorrectRanksBasedOnFitness()
     {
-    var selector = new RankSelectionParentSelectorStrategy<int>();
+        var selector = new RankSelectionParentSelectorStrategy<int>();
         var random = new Random(42); // Fixed seed for reproducibility
 
         // Create chromosomes with known, distinct fitness values
@@ -113,7 +113,7 @@ public class RankSelectionParentSelectorStrategyTests
         var population = new[] { chromosome3, chromosome1, chromosome4, chromosome2 }; // Shuffled order
 
         // Get enough couples to verify ranking behavior
-        var couples = selector.SelectMatingPairs(population, random, 10000).ToList();
+        var couples = (await selector.SelectMatingPairsAsync(population, random, 10000)).ToList();
 
         var matingCounter = population.ToDictionary(x => x.InternalIdentifier, x => 0);
 
@@ -131,9 +131,9 @@ public class RankSelectionParentSelectorStrategyTests
     }
 
     [Fact]
-    public void RankSelectionShouldHandleIdenticalFitnessValues()
+    public async Task RankSelectionShouldHandleIdenticalFitnessValues()
     {
-    var selector = new RankSelectionParentSelectorStrategy<int>();
+        var selector = new RankSelectionParentSelectorStrategy<int>();
         var random = new Random(42);
 
         // Create chromosomes with identical fitness values
@@ -143,7 +143,7 @@ public class RankSelectionParentSelectorStrategyTests
 
         var population = new[] { chromosome1, chromosome2, chromosome3 };
 
-        var couples = selector.SelectMatingPairs(population, random, 1000).ToList();
+        var couples = (await selector.SelectMatingPairsAsync(population, random, 1000)).ToList();
 
         Assert.Equal(1000, couples.Count);
 
@@ -174,10 +174,10 @@ public class RankSelectionParentSelectorStrategyTests
     }
 
     [Fact]
-    public void RankSelectionShouldReduceSelectionPressureComparedToFitnessWeighted()
+    public async Task RankSelectionShouldReduceSelectionPressureComparedToFitnessWeighted()
     {
-    var rankSelector = new RankSelectionParentSelectorStrategy<int>();
-    var fitnessSelector = new FitnessWeightedRouletteWheelParentSelectorStrategy<int>();
+        var rankSelector = new RankSelectionParentSelectorStrategy<int>();
+        var fitnessSelector = new FitnessWeightedRouletteWheelParentSelectorStrategy<int>();
         var random = new Random(42);
 
         // Create population with one very fit chromosome and several average ones
@@ -188,8 +188,8 @@ public class RankSelectionParentSelectorStrategyTests
 
         var population = new Chromosome<int>[] { superFitChromosome }.Concat(averageChromosomes).ToArray();
 
-        var rankCouples = rankSelector.SelectMatingPairs(population, random, 10000).ToList();
-        var fitnessCouples = fitnessSelector.SelectMatingPairs(population, new Random(42), 10000).ToList();
+        var rankCouples = (await rankSelector.SelectMatingPairsAsync(population, random, 10000)).ToList();
+        var fitnessCouples = (await fitnessSelector.SelectMatingPairsAsync(population, new Random(42), 10000)).ToList();
 
         // Count selections for the super fit chromosome in both strategies
         var rankSelections = rankCouples.Count(c => 
@@ -214,15 +214,15 @@ public class RankSelectionParentSelectorStrategyTests
     }
 
     [Fact]
-    public void RankSelectionShouldProduceValidCouplesWithMinimumRequirement()
+    public async Task RankSelectionShouldProduceValidCouplesWithMinimumRequirement()
     {
-    var selector = new RankSelectionParentSelectorStrategy<int>();
+        var selector = new RankSelectionParentSelectorStrategy<int>();
         var random = new Random();
 
         var population = GenerateRandomPopulation(10, random);
 
         var minimumCouples = 5;
-        var couples = selector.SelectMatingPairs(population, random, minimumCouples).ToList();
+        var couples = (await selector.SelectMatingPairsAsync(population, random, minimumCouples)).ToList();
 
         Assert.Equal(minimumCouples, couples.Count);
 

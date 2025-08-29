@@ -26,7 +26,7 @@ public class ElitistParentSelectorStrategyTests
     [InlineData(3, 0.9, 3, 3, 3)]
     [InlineData(1, 0.9, 1, 0, 0)] //Case of interest
     [InlineData(1, 0.9, 1, 100, 0)] //Case of interest
-    public void OnlyElitesAllowedToMate(int populationSize, float proportionOfElites, int exactNumberOfElites, int minimumNumberOfCouples, int expectedMinimumNumberOfCouples)
+    public async Task OnlyElitesAllowedToMate(int populationSize, float proportionOfElites, int exactNumberOfElites, int minimumNumberOfCouples, int expectedMinimumNumberOfCouples)
     {
     var selector = new ElitistParentSelectorStrategy<int>(false, proportionOfElites, 0.0f);
 
@@ -34,11 +34,18 @@ public class ElitistParentSelectorStrategyTests
 
         var population = GenerateRandomPopulation(populationSize, random);
 
-        var result = selector.SelectMatingPairs(population, random, minimumNumberOfCouples).ToList();
+        var result = (await selector.SelectMatingPairsAsync(population, random, minimumNumberOfCouples)).ToList();
 
         Assert.True(result.Count >= expectedMinimumNumberOfCouples);
 
-        var elites = population.OrderByDescending(x => x.CalculateFitness()).Take(exactNumberOfElites).ToList();
+        // Get fitness values for all chromosomes and sort by fitness
+        var populationWithFitness = new List<(DummyChromosome chromosome, double fitness)>();
+        foreach (var chromosome in population)
+        {
+            var fitness = await chromosome.GetCachedFitnessAsync();
+            populationWithFitness.Add((chromosome, fitness));
+        }
+        var elites = populationWithFitness.OrderByDescending(x => x.fitness).Select(x => x.chromosome).Take(exactNumberOfElites).ToList();
 
         //Asserting all parents are elites
         Assert.True(result.All(x => elites.Any(y => y == x.IndividualA)));
@@ -76,7 +83,7 @@ public class ElitistParentSelectorStrategyTests
     [InlineData(3, 0.4, 2, 0.1, 3, 3)]
     [InlineData(3, 0.9, 3, 0.01, 3, 3)] //Case of interest
     [InlineData(1, 0.9, 1, 0.1, 0, 0)] //Case of interest
-    public void NonElitesAllowedToMateWithElites(int populationSize, float proportionOfElites, int exactNumberOfElites, float proportionOfNonElitesAllowedToMate, int minimumNumberOfCouples, int expectedMinimumNumberOfCouples)
+    public async Task NonElitesAllowedToMateWithElites(int populationSize, float proportionOfElites, int exactNumberOfElites, float proportionOfNonElitesAllowedToMate, int minimumNumberOfCouples, int expectedMinimumNumberOfCouples)
     {
     var selector = new ElitistParentSelectorStrategy<int>(true, proportionOfElites, proportionOfNonElitesAllowedToMate);
 
@@ -84,11 +91,18 @@ public class ElitistParentSelectorStrategyTests
 
         var population = GenerateRandomPopulation(populationSize, random);
 
-        var result = selector.SelectMatingPairs(population, random, minimumNumberOfCouples).ToList();
+        var result = (await selector.SelectMatingPairsAsync(population, random, minimumNumberOfCouples)).ToList();
 
         Assert.True(result.Count >= expectedMinimumNumberOfCouples);
 
-        var elites = population.OrderByDescending(x => x.CalculateFitness()).Take(exactNumberOfElites).ToList();
+        // Get fitness values for all chromosomes and sort by fitness
+        var populationWithFitness = new List<(DummyChromosome chromosome, double fitness)>();
+        foreach (var chromosome in population)
+        {
+            var fitness = await chromosome.GetCachedFitnessAsync();
+            populationWithFitness.Add((chromosome, fitness));
+        }
+        var elites = populationWithFitness.OrderByDescending(x => x.fitness).Select(x => x.chromosome).Take(exactNumberOfElites).ToList();
 
         //Asserting all elites have taken part in the mating process if there is at least one eligible member for the elite to mate with.
         var allParents = result.Select(y => y.IndividualA).Concat(result.Select(y => y.IndividualB));
@@ -121,7 +135,7 @@ public class ElitistParentSelectorStrategyTests
     [InlineData(3, 0.4, 2, 0.1, 3, 3)]
     [InlineData(3, 0.9, 3, 0.01, 3, 3)]
     [InlineData(1, 0.9, 1, 0.1, 0, 0)]
-    public void NonElitesRestrictedFromMatingWithElites(int populationSize, float proportionOfElites, int exactNumberOfElites, float proportionOfNonElitesAllowedToMate, int minimumNumberOfCouples, int expectedMinimumNumberOfCouples)
+    public async Task NonElitesRestrictedFromMatingWithElites(int populationSize, float proportionOfElites, int exactNumberOfElites, float proportionOfNonElitesAllowedToMate, int minimumNumberOfCouples, int expectedMinimumNumberOfCouples)
     {
     var selector = new ElitistParentSelectorStrategy<int>(false, proportionOfElites, proportionOfNonElitesAllowedToMate);
 
@@ -129,11 +143,18 @@ public class ElitistParentSelectorStrategyTests
 
         var population = GenerateRandomPopulation(populationSize, random);
 
-        var result = selector.SelectMatingPairs(population, random, minimumNumberOfCouples).ToList();
+        var result = (await selector.SelectMatingPairsAsync(population, random, minimumNumberOfCouples)).ToList();
 
         Assert.True(result.Count >= expectedMinimumNumberOfCouples);
 
-        var elites = population.OrderByDescending(x => x.CalculateFitness()).Take(exactNumberOfElites).ToList();
+        // Get fitness values for all chromosomes and sort by fitness
+        var populationWithFitness = new List<(DummyChromosome chromosome, double fitness)>();
+        foreach (var chromosome in population)
+        {
+            var fitness = await chromosome.GetCachedFitnessAsync();
+            populationWithFitness.Add((chromosome, fitness));
+        }
+        var elites = populationWithFitness.OrderByDescending(x => x.fitness).Select(x => x.chromosome).Take(exactNumberOfElites).ToList();
 
         //Asserting all elites have taken part in the mating process if there is at least one eligible member for the elite to mate with.
         var allParents = result.Select(y => y.IndividualA).Concat(result.Select(y => y.IndividualB));
@@ -158,7 +179,7 @@ public class ElitistParentSelectorStrategyTests
     }
 
     [Fact]
-    public void WillProduceUniformCouplesIfOnlyTwoMembersExistInThePopulation()
+    public async Task WillProduceUniformCouplesIfOnlyTwoMembersExistInThePopulation()
     {
     var selector = new ElitistParentSelectorStrategy<int>(false, 0.3f, 0.2f);
 
@@ -168,7 +189,7 @@ public class ElitistParentSelectorStrategyTests
 
         var minimumNumberOfCouples = 100;
 
-        var result = selector.SelectMatingPairs(population, random, minimumNumberOfCouples).ToList();
+        var result = (await selector.SelectMatingPairsAsync(population, random, minimumNumberOfCouples)).ToList();
 
         Assert.Equal(minimumNumberOfCouples, result.Count);
 

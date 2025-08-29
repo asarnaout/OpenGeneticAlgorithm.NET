@@ -5,23 +5,23 @@ namespace OpenGA.Net.Tests.ParentSelectorStrategies;
 public class TournamentParentSelectorStrategyTests
 {
     [Fact]
-    public void WillFailIfThereThereIsLessThanTwoIndividuals()
+    public async Task WillFailIfThereThereIsLessThanTwoIndividuals()
     {
-    var selector = new TournamentParentSelectorStrategy<int>(false);
+        var selector = new TournamentParentSelectorStrategy<int>(false);
 
         var random = new Random();
 
         var population = GenerateRandomPopulation(1, random);
 
-        var result = selector.SelectMatingPairs(population, random, 100).ToList();
+        var result = (await selector.SelectMatingPairsAsync(population, random, 100)).ToList();
 
         Assert.Empty(result);
     }
 
     [Fact]
-    public void WillProduceUniformCouplesIfOnlyTwoMembersExistInThePopulation()
+    public async Task WillProduceUniformCouplesIfOnlyTwoMembersExistInThePopulation()
     {
-    var selector = new TournamentParentSelectorStrategy<int>(false);
+        var selector = new TournamentParentSelectorStrategy<int>(false);
 
         var random = new Random();
 
@@ -29,7 +29,7 @@ public class TournamentParentSelectorStrategyTests
 
         var minimumNumberOfCouples = 100;
 
-        var result = selector.SelectMatingPairs(population, random, minimumNumberOfCouples).ToList();
+        var result = (await selector.SelectMatingPairsAsync(population, random, minimumNumberOfCouples)).ToList();
 
         Assert.Equal(minimumNumberOfCouples, result.Count);
 
@@ -41,9 +41,9 @@ public class TournamentParentSelectorStrategyTests
     }
 
     [Fact]
-    public void WillRunIfTheTournamentSizeIsLargerThanThePopulationSize()
+    public async Task WillRunIfTheTournamentSizeIsLargerThanThePopulationSize()
     {
-    var selector = new TournamentParentSelectorStrategy<int>(true);
+        var selector = new TournamentParentSelectorStrategy<int>(true);
 
         var random = new Random();
 
@@ -51,15 +51,15 @@ public class TournamentParentSelectorStrategyTests
 
         var minimumNumberOfCouples = 100;
 
-        var result = selector.SelectMatingPairs(population, random, minimumNumberOfCouples).ToList();
+        var result = (await selector.SelectMatingPairsAsync(population, random, minimumNumberOfCouples)).ToList();
 
         Assert.Equal(minimumNumberOfCouples, result.Count);
     }
 
     [Fact]
-    public void WillRunOnNonStochasticTournaments()
+    public async Task WillRunOnNonStochasticTournaments()
     {
-    var selector = new TournamentParentSelectorStrategy<int>(false);
+        var selector = new TournamentParentSelectorStrategy<int>(false);
 
         var random = new Random();
 
@@ -67,11 +67,17 @@ public class TournamentParentSelectorStrategyTests
 
         var minimumNumberOfCouples = 100;
 
-        var result = selector.SelectMatingPairs(population, random, minimumNumberOfCouples).ToList();
+        var result = (await selector.SelectMatingPairsAsync(population, random, minimumNumberOfCouples)).ToList();
 
         Assert.Equal(minimumNumberOfCouples, result.Count);
 
-        var populationOrderedByFitness = population.OrderByDescending(x => x.CalculateFitness()).ToList();
+        var populationWithFitness = new List<(DummyChromosome chromosome, double fitness)>();
+        foreach (var chromosome in population)
+        {
+            var fitness = await chromosome.CalculateFitnessAsync();
+            populationWithFitness.Add((chromosome, fitness));
+        }
+        var populationOrderedByFitness = populationWithFitness.OrderByDescending(x => x.fitness).Select(x => x.chromosome).ToList();
 
         foreach(var item in result)
         {
@@ -81,9 +87,9 @@ public class TournamentParentSelectorStrategyTests
     }
 
     [Fact]
-    public void WillRunWithStochasticTournaments()
+    public async Task WillRunWithStochasticTournaments()
     {
-    var selector = new TournamentParentSelectorStrategy<int>(true);
+        var selector = new TournamentParentSelectorStrategy<int>(true);
 
         var random = new Random();
 
@@ -91,13 +97,11 @@ public class TournamentParentSelectorStrategyTests
 
         var minimumNumberOfCouples = 100;
 
-        var result = selector.SelectMatingPairs(population, random, minimumNumberOfCouples).ToList();
+        var result = (await selector.SelectMatingPairsAsync(population, random, minimumNumberOfCouples)).ToList();
 
         Assert.Equal(minimumNumberOfCouples, result.Count);
     }
 
     private static DummyChromosome[] GenerateRandomPopulation(int size, Random random) =>
-        Enumerable.Range(0, size)
-            .Select(x => new DummyChromosome(Enumerable.Range(0, 10).Select(y => random.Next()).ToList()))
-            .ToArray();
+        [.. Enumerable.Range(0, size).Select(x => new DummyChromosome(Enumerable.Range(0, 10).Select(y => random.Next()).ToList()))];
 }

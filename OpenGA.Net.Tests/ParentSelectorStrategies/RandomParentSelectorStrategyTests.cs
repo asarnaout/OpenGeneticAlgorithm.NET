@@ -5,7 +5,7 @@ namespace OpenGA.Net.Tests.ParentSelectorStrategies;
 public class RandomParentSelectorStrategyTests
 {
     [Fact]
-    public void WillFailIfThereThereIsLessThanTwoIndividuals()
+    public async Task WillFailIfThereThereIsLessThanTwoIndividuals()
     {
     var selector = new RandomParentSelectorStrategy<int>();
 
@@ -13,15 +13,15 @@ public class RandomParentSelectorStrategyTests
 
         var population = GenerateRandomPopulation(1, random);
 
-        var result = selector.SelectMatingPairs(population, random, 100).ToList();
+        var result = (await selector.SelectMatingPairsAsync(population, random, 100)).ToList();
 
         Assert.Empty(result);
     }
 
     [Fact]
-    public void WillProduceUniformCouplesIfOnlyTwoMembersExistInThePopulation()
+    public async Task WillProduceUniformCouplesIfOnlyTwoMembersExistInThePopulation()
     {
-    var selector = new RandomParentSelectorStrategy<int>();
+        var selector = new RandomParentSelectorStrategy<int>();
 
         var random = new Random();
 
@@ -29,7 +29,7 @@ public class RandomParentSelectorStrategyTests
 
         var minimumNumberOfCouples = 100;
 
-        var result = selector.SelectMatingPairs(population, random, minimumNumberOfCouples).ToList();
+        var result = (await selector.SelectMatingPairsAsync(population, random, minimumNumberOfCouples)).ToList();
 
         Assert.Equal(minimumNumberOfCouples, result.Count);
 
@@ -41,9 +41,9 @@ public class RandomParentSelectorStrategyTests
     }
 
     [Fact]
-    public void WillSucceedOtherwise()
+    public async Task WillSucceedOtherwise()
     {
-    var selector = new RandomParentSelectorStrategy<int>();
+        var selector = new RandomParentSelectorStrategy<int>();
 
         var random = new Random();
 
@@ -51,7 +51,7 @@ public class RandomParentSelectorStrategyTests
 
         var numberOfCouples = 100;
 
-        var result = selector.SelectMatingPairs(population, random, numberOfCouples).ToList();
+        var result = (await selector.SelectMatingPairsAsync(population, random, numberOfCouples)).ToList();
 
         Assert.Equal(numberOfCouples, result.Count);
 

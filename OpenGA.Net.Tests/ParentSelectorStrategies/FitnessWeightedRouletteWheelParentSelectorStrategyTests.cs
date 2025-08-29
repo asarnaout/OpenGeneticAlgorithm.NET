@@ -5,23 +5,23 @@ namespace OpenGA.Net.Tests.ParentSelectorStrategies;
 public class FitnessWeightedRouletteWheelParentSelectorStrategyTests
 {
     [Fact]
-    public void WillFailIfThereThereIsLessThanTwoIndividuals()
+    public async Task WillFailIfThereThereIsLessThanTwoIndividuals()
     {
-    var selector = new FitnessWeightedRouletteWheelParentSelectorStrategy<int>();
+        var selector = new FitnessWeightedRouletteWheelParentSelectorStrategy<int>();
 
         var random = new Random();
 
         var population = GenerateRandomPopulation(1, random);
 
-        var result = selector.SelectMatingPairs(population, random, 100).ToList();
+        var result = (await selector.SelectMatingPairsAsync(population, random, 100)).ToList();
 
         Assert.Empty(result);
     }
 
     [Fact]
-    public void WillProduceUniformCouplesIfOnlyTwoMembersExistInThePopulation()
+    public async Task WillProduceUniformCouplesIfOnlyTwoMembersExistInThePopulation()
     {
-    var selector = new FitnessWeightedRouletteWheelParentSelectorStrategy<int>();
+        var selector = new FitnessWeightedRouletteWheelParentSelectorStrategy<int>();
 
         var random = new Random();
 
@@ -29,7 +29,7 @@ public class FitnessWeightedRouletteWheelParentSelectorStrategyTests
 
         var minimumNumberOfCouples = 100;
 
-        var result = selector.SelectMatingPairs(population, random, minimumNumberOfCouples).ToList();
+        var result = (await selector.SelectMatingPairsAsync(population, random, minimumNumberOfCouples)).ToList();
 
         Assert.Equal(minimumNumberOfCouples, result.Count);
 
@@ -41,9 +41,9 @@ public class FitnessWeightedRouletteWheelParentSelectorStrategyTests
     }
 
     [Fact]
-    public void RouletteWheelWillPreferTheMostFitChromosomesOverALargeNumberOfRuns()
+    public async Task RouletteWheelWillPreferTheMostFitChromosomesOverALargeNumberOfRuns()
     {
-    var selector = new FitnessWeightedRouletteWheelParentSelectorStrategy<int>();
+        var selector = new FitnessWeightedRouletteWheelParentSelectorStrategy<int>();
 
         var random = new Random();
 
@@ -63,7 +63,7 @@ public class FitnessWeightedRouletteWheelParentSelectorStrategyTests
 
         var numberOfCouples = 100000;
 
-        var result = selector.SelectMatingPairs(population, random, numberOfCouples).ToList();
+        var result = (await selector.SelectMatingPairsAsync(population, random, numberOfCouples)).ToList();
 
         Assert.Equal(numberOfCouples, result.Count);
 
