@@ -136,15 +136,15 @@ public class CrossoverStrategyRegistration<T>
         return _crossoverRate;
     }
 
-    internal void ValidateAndDefault()
+    internal void ValidateAndDefault(Random random)
     {
         if (_isMultiRegistration)
         {
-            _multiCrossoverStrategyConfig.ValidateAndDefault();
+            _multiCrossoverStrategyConfig.ValidateAndDefault(random);
         }
         else
         {
-            _singleCrossoverStrategyConfig.ValidateAndDefault();
+            _singleCrossoverStrategyConfig.ValidateAndDefault(random);
         }
     }
 

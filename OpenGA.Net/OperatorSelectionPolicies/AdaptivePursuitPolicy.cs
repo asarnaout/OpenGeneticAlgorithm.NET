@@ -37,9 +37,9 @@ public class AdaptivePursuitPolicy(
     private readonly int _warmupRuns = warmupRuns;
     private int _roundRobinIndex = 0;
 
-    protected internal override void ApplyOperators(IList<BaseOperator> operators)
+    protected internal override void ApplyOperators(IList<BaseOperator> operators, Random random)
     {
-        base.ApplyOperators(operators);
+        base.ApplyOperators(operators, random);
 
         if (_minimumProbability * operators.Count > 1.0)
         {
@@ -53,7 +53,7 @@ public class AdaptivePursuitPolicy(
         _recentRewards = operators.ToDictionary(op => op, _ => new Queue<double>());
         
         // Reset round-robin index to a random start when operators are applied to avoid bias
-        _roundRobinIndex = Random.Shared.Next(operators.Count);
+        _roundRobinIndex = random.Next(operators.Count);
     }
     
     /// <summary>

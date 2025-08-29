@@ -244,7 +244,7 @@ public class MultiParentSelectorConfiguration<T>
         return this;
     }
 
-    internal void ValidateAndDefault()
+    internal void ValidateAndDefault(Random random)
     {
         if (ParentSelectors is [])
         {
@@ -277,7 +277,7 @@ public class MultiParentSelectorConfiguration<T>
             }
         }
 
-        _policyConfig.Policy!.ApplyOperators([..ParentSelectors]);
+        _policyConfig.Policy!.ApplyOperators([..ParentSelectors], random);
     }
 
     internal OperatorSelectionPolicy GetParentSelectorSelectionPolicy()

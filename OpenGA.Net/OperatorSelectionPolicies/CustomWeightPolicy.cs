@@ -18,10 +18,11 @@ public class CustomWeightPolicy : OperatorSelectionPolicy
     /// Configures the policy with the available operators.
     /// </summary>
     /// <param name="operators">The list of operators to select from based on their custom weights</param>
+    /// <param name="random">Random number generator for policies that require randomization during initialization</param>
     /// <exception cref="ArgumentException">Thrown when no operators are provided</exception>
-    protected internal override void ApplyOperators(IList<BaseOperator> operators)
+    protected internal override void ApplyOperators(IList<BaseOperator> operators, Random random)
     {
-        base.ApplyOperators(operators);
+        base.ApplyOperators(operators, random);
 
         // Check if all weights are zero - if so, use uniform weights
         var hasNonZeroWeights = operators.Any(op => op.CustomWeight > 0);

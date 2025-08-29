@@ -263,7 +263,7 @@ public class MultiSurvivorSelectionStrategyConfiguration<T>
         return this;
     }
 
-    internal void ValidateAndDefault()
+    internal void ValidateAndDefault(Random random)
     {
         if (SurvivorSelectionStrategies is [])
         {
@@ -296,7 +296,7 @@ public class MultiSurvivorSelectionStrategyConfiguration<T>
             }
         }
 
-        _policyConfig.Policy!.ApplyOperators([..SurvivorSelectionStrategies]);
+        _policyConfig.Policy!.ApplyOperators([..SurvivorSelectionStrategies], random);
     }
 
     internal OperatorSelectionPolicy GetSurvivorSelectionSelectionPolicy()

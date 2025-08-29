@@ -97,15 +97,15 @@ public class ParentSelectorRegistration<T>
         return this;
     }
 
-    internal void ValidateAndDefault()
+    internal void ValidateAndDefault(Random random)
     {
         if (_isMultiRegistration)
         {
-            _multiParentSelectorConfig.ValidateAndDefault();
+            _multiParentSelectorConfig.ValidateAndDefault(random);
         }
         else
         {
-            _singleParentSelectorConfig.ValidateAndDefault();
+            _singleParentSelectorConfig.ValidateAndDefault(random);
         }
     }
 

@@ -51,7 +51,7 @@ public class CrossoverStrategyConfiguration<T>
         CrossoverStrategy = crossoverStrategy;
     }
 
-    internal void ValidateAndDefault()
+    internal void ValidateAndDefault(Random random)
     {
         if (CrossoverStrategy is null)
         {
@@ -60,7 +60,7 @@ public class CrossoverStrategyConfiguration<T>
         
         _policyConfig.FirstChoice();
 
-        _policyConfig.Policy!.ApplyOperators([CrossoverStrategy!]);
+        _policyConfig.Policy!.ApplyOperators([CrossoverStrategy!], random);
     }
 
     internal OperatorSelectionPolicy GetCrossoverSelectionPolicy()

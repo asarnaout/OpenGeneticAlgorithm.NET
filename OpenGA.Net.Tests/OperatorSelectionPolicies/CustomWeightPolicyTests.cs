@@ -35,7 +35,7 @@ public class CustomWeightPolicyTests
         };
 
         // Act
-        policy.ApplyOperators(operators);
+        policy.ApplyOperators(operators, new Random());
 
         // Assert - Should be able to select without throwing
         var random = new Random(42);
@@ -51,7 +51,7 @@ public class CustomWeightPolicyTests
         var emptyOperators = new List<BaseOperator>();
 
         // Act & Assert
-        var exception = Assert.Throws<ArgumentException>(() => policy.ApplyOperators(emptyOperators));
+        var exception = Assert.Throws<ArgumentException>(() => policy.ApplyOperators(emptyOperators, new Random()));
         Assert.Equal("At least one operator must be provided. (Parameter 'operators')", exception.Message);
     }
 
@@ -62,7 +62,7 @@ public class CustomWeightPolicyTests
         var policy = new CustomWeightPolicy();
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => policy.ApplyOperators(null!));
+        Assert.Throws<ArgumentException>(() => policy.ApplyOperators(null!, new Random()));
     }
 
     [Fact]
@@ -85,7 +85,7 @@ public class CustomWeightPolicyTests
         {
             new TestOperator("OnlyOperator").WithCustomWeight(0.7f)
         };
-        policy.ApplyOperators(operators);
+        policy.ApplyOperators(operators, new Random());
         var random = new Random();
 
         // Act & Assert - Multiple selections should always return the same operator
@@ -107,7 +107,7 @@ public class CustomWeightPolicyTests
             new TestOperator("Op2"), // Default weight is 0
             new TestOperator("Op3")  // Default weight is 0
         };
-        policy.ApplyOperators(operators);
+        policy.ApplyOperators(operators, new Random());
         var random = new Random();
 
         var selectionCounts = new Dictionary<string, int>
@@ -143,7 +143,7 @@ public class CustomWeightPolicyTests
             new TestOperator("Op2").WithCustomWeight(0.6f), // 60% of total (1.0) 
             new TestOperator("Op3").WithCustomWeight(0.3f)  // 30% of total (1.0)
         };
-        policy.ApplyOperators(operators);
+        policy.ApplyOperators(operators, new Random());
         var random = new Random(42); // Fixed seed for reproducible test
 
         var selectionCounts = new Dictionary<string, int>
@@ -181,7 +181,7 @@ public class CustomWeightPolicyTests
             new TestOperator("Op1").WithCustomWeight(0.5f), // Will be normalized to 0.25 (0.5/2.0)
             new TestOperator("Op2").WithCustomWeight(1.5f)  // Will be normalized to 0.75 (1.5/2.0)
         };
-        policy.ApplyOperators(operators);
+        policy.ApplyOperators(operators, new Random());
         var random = new Random(42);
 
         var selectionCounts = new Dictionary<string, int>
@@ -220,7 +220,7 @@ public class CustomWeightPolicyTests
             new TestOperator("Op2").WithCustomWeight(0.8f),
             new TestOperator("Op3") // Default weight is 0
         };
-        policy.ApplyOperators(operators);
+        policy.ApplyOperators(operators, new Random());
         var random = new Random();
 
         // Act - Perform many selections
@@ -247,7 +247,7 @@ public class CustomWeightPolicyTests
             new TestOperator("Op2").WithCustomWeight(0.3f),
             new TestOperator("Op3").WithCustomWeight(0.5f)
         };
-        policy.ApplyOperators(operators);
+        policy.ApplyOperators(operators, new Random());
         var random = new Random();
 
         // Act - Perform many selections
@@ -275,7 +275,7 @@ public class CustomWeightPolicyTests
             new TestOperator("Op1").WithCustomWeight(0.3f),
             new TestOperator("Op2").WithCustomWeight(0.7f)
         };
-        policy.ApplyOperators(operators);
+        policy.ApplyOperators(operators, new Random());
         var random = new Random();
 
         // Act - Test that both operators can be selected

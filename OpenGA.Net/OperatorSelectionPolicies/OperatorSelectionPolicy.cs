@@ -30,7 +30,8 @@ public abstract class OperatorSelectionPolicy
     /// with the list of operators it can choose from during evolution.
     /// </summary>
     /// <param name="operators">The list of available operators for selection</param>
-    protected internal virtual void ApplyOperators(IList<BaseOperator> operators)
+    /// <param name="random">Random number generator for policies that require randomization during initialization</param>
+    protected internal virtual void ApplyOperators(IList<BaseOperator> operators, Random random)
     {
         if (operators is not { Count: > 0 })
         {

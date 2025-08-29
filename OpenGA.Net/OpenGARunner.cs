@@ -336,35 +336,18 @@ public class OpenGARunner<T>
         return this;
     }
 
-    /// <summary>
-    /// Applies default strategies for any components that haven't been explicitly configured.
-    /// 
-    /// This method ensures the genetic algorithm has all required components by applying
-    /// sensible defaults when the user hasn't specified certain strategies. It also
-    /// intelligently configures operator selection policies based on the number of
-    /// crossover strategies available and whether custom weights are configured.
-    /// 
-    /// Operator selection policy precedence:
-    /// 1. If explicitly configured policy exists → use it (validates compatibility with custom weights)
-    /// 2. If any operator has custom weight > 0 → use CustomWeightPolicy
-    /// 3. If single strategy → use FirstChoicePolicy
-    /// 4. If multiple strategies → use AdaptivePursuitPolicy
-    /// </summary>
-    /// <exception cref="OperatorSelectionPolicyConflictException">
-    /// Thrown when custom weights are configured but a non-CustomWeight operator selection policy is applied.
-    /// </exception>
     private void DefaultMissingStrategies()
     {
-        _parentSelectorRegistration.ValidateAndDefault();
+        _parentSelectorRegistration.ValidateAndDefault(_random);
 
         if (_terminationStrategyConfig.TerminationStrategies is [])
         {
             _terminationStrategyConfig.MaximumEpochs(100);
         }
 
-        _crossoverStrategyRegistration.ValidateAndDefault();
+        _crossoverStrategyRegistration.ValidateAndDefault(_random);
         
-        _survivorSelectionStrategyRegistration.ValidateAndDefault();
+        _survivorSelectionStrategyRegistration.ValidateAndDefault(_random);
     }
 
     private void UpdateAdaptivePursuitReward(

@@ -128,7 +128,7 @@ public class MultiCrossoverStrategyConfiguration<T>
         return this;
     }
 
-    internal void ValidateAndDefault()
+    internal void ValidateAndDefault(Random random)
     {
         if (CrossoverStrategies is [])
         {
@@ -161,7 +161,7 @@ public class MultiCrossoverStrategyConfiguration<T>
             }
         }
 
-        _policyConfig.Policy!.ApplyOperators([..CrossoverStrategies]);
+        _policyConfig.Policy!.ApplyOperators([..CrossoverStrategies], random);
     }
 
     internal OperatorSelectionPolicy GetCrossoverSelectionPolicy()

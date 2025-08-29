@@ -165,15 +165,15 @@ public class SurvivorSelectionStrategyRegistration<T>
         return _offspringGenerationRate;
     }
 
-    internal void ValidateAndDefault()
+    internal void ValidateAndDefault(Random random)
     {
         if (_isMultiRegistration)
         {
-            _multiSurvivorSelectionStrategyConfig.ValidateAndDefault();
+            _multiSurvivorSelectionStrategyConfig.ValidateAndDefault(random);
         }
         else
         {
-            _singleSurvivorSelectionStrategyConfig.ValidateAndDefault();
+            _singleSurvivorSelectionStrategyConfig.ValidateAndDefault(random);
         }
     }
 

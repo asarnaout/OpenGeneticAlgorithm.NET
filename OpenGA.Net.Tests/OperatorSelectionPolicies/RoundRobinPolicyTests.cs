@@ -35,7 +35,7 @@ public class RoundRobinPolicyTests
         };
 
         // Act
-        policy.ApplyOperators(operators);
+        policy.ApplyOperators(operators, new Random());
 
         // Assert - Verify that first selection starts with first operator
         var random = new Random();
@@ -51,7 +51,7 @@ public class RoundRobinPolicyTests
         var emptyOperators = new List<BaseOperator>();
 
         // Act & Assert
-        var exception = Assert.Throws<ArgumentException>(() => policy.ApplyOperators(emptyOperators));
+        var exception = Assert.Throws<ArgumentException>(() => policy.ApplyOperators(emptyOperators, new Random()));
         Assert.Contains("At least one operator must be provided", exception.Message);
     }
 
@@ -62,7 +62,7 @@ public class RoundRobinPolicyTests
         var policy = new RoundRobinPolicy();
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => policy.ApplyOperators(null!));
+        Assert.Throws<ArgumentException>(() => policy.ApplyOperators(null!, new Random()));
     }
 
     [Fact]
@@ -88,7 +88,7 @@ public class RoundRobinPolicyTests
             new TestOperator("Op2"),
             new TestOperator("Op3")
         };
-        policy.ApplyOperators(operators);
+        policy.ApplyOperators(operators, new Random());
         var random = new Random();
 
         // Act & Assert - Test multiple complete cycles
@@ -114,7 +114,7 @@ public class RoundRobinPolicyTests
         {
             new TestOperator("OnlyOp")
         };
-        policy.ApplyOperators(operators);
+        policy.ApplyOperators(operators, new Random());
         var random = new Random();
 
         // Act & Assert - Test multiple selections
@@ -135,7 +135,7 @@ public class RoundRobinPolicyTests
             new TestOperator("Op1"),
             new TestOperator("Op2")
         };
-        policy.ApplyOperators(operators);
+        policy.ApplyOperators(operators, new Random());
         var random = new Random();
 
         // Act & Assert - Test alternating pattern
@@ -161,7 +161,7 @@ public class RoundRobinPolicyTests
             new TestOperator("Op3"),
             new TestOperator("Op4")
         };
-        policy.ApplyOperators(operators);
+        policy.ApplyOperators(operators, new Random());
         var random = new Random();
 
         var selectionCounts = new Dictionary<string, int>
@@ -202,8 +202,8 @@ public class RoundRobinPolicyTests
             new TestOperator("Op3")
         };
         
-        policy1.ApplyOperators(operators);
-        policy2.ApplyOperators(operators);
+        policy1.ApplyOperators(operators, new Random());
+        policy2.ApplyOperators(operators, new Random());
         
         var random1 = new Random(42); // Different seeds
         var random2 = new Random(123);

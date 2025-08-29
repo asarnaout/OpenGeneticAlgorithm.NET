@@ -38,7 +38,7 @@ public class MultiSurvivorSelectionStrategyConfigurationTests
             .Tournament(3, true, 0.3f)
         );
 
-        registration.ValidateAndDefault();
+        registration.ValidateAndDefault(new Random());
 
         // Assert
         var policy = registration.GetSurvivorSelectionSelectionPolicy();
@@ -61,7 +61,7 @@ public class MultiSurvivorSelectionStrategyConfigurationTests
             .Tournament(3)
         );
 
-        registration.ValidateAndDefault();
+        registration.ValidateAndDefault(new Random());
 
         // Assert
         var policy = registration.GetSurvivorSelectionSelectionPolicy();
@@ -81,7 +81,7 @@ public class MultiSurvivorSelectionStrategyConfigurationTests
             .WithPolicy(p => p.Random())
         );
 
-        registration.ValidateAndDefault();
+        registration.ValidateAndDefault(new Random());
 
         // Assert
         var policy = registration.GetSurvivorSelectionSelectionPolicy();
@@ -96,7 +96,7 @@ public class MultiSurvivorSelectionStrategyConfigurationTests
 
         // Act
         registration.RegisterSingle(s => s.Elitist(0.1f));
-        registration.ValidateAndDefault();
+        registration.ValidateAndDefault(new Random());
 
         // Assert
         var policy = registration.GetSurvivorSelectionSelectionPolicy();

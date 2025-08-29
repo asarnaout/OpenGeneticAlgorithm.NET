@@ -143,7 +143,7 @@ public class ParentSelectorConfiguration<T>
         ParentSelector = result;
     }
 
-    internal void ValidateAndDefault()
+    internal void ValidateAndDefault(Random random)
     {
         if (ParentSelector is null)
         {
@@ -152,7 +152,7 @@ public class ParentSelectorConfiguration<T>
         
         _policyConfig.FirstChoice();
 
-        _policyConfig.Policy!.ApplyOperators([ParentSelector!]);
+        _policyConfig.Policy!.ApplyOperators([ParentSelector!], random);
     }
 
     internal OperatorSelectionPolicy GetParentSelectorSelectionPolicy()

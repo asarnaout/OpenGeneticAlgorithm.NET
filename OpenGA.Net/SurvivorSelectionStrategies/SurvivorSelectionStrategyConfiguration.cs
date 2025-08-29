@@ -163,7 +163,7 @@ public class SurvivorSelectionStrategyConfiguration<T>
         SurvivorSelectionStrategy = result;
     }
 
-    internal void ValidateAndDefault()
+    internal void ValidateAndDefault(Random random)
     {
         if (SurvivorSelectionStrategy is null)
         {
@@ -172,7 +172,7 @@ public class SurvivorSelectionStrategyConfiguration<T>
 
         _policyConfig.FirstChoice();
 
-        _policyConfig.Policy!.ApplyOperators([SurvivorSelectionStrategy!]);
+        _policyConfig.Policy!.ApplyOperators([SurvivorSelectionStrategy!], random);
     }
 
     internal OperatorSelectionPolicy GetSurvivorSelectionSelectionPolicy()
