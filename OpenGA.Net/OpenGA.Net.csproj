@@ -15,7 +15,7 @@
     <PackageProjectUrl>https://github.com/asarnaout/OpenGeneticAlgorithm.Net</PackageProjectUrl>
     <RepositoryUrl>https://github.com/asarnaout/OpenGeneticAlgorithm.Net</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageTags>genetic-algorithm;optimization;evolutionary-computation;machine-learning;ai;dotnet;csharp</PackageTags>
+    <PackageTags>genetic-algorithm;genetic-algorithms;optimization;evolutionary-computation;evolutionary-algorithms;machine-learning;ai;dotnet;csharp;ga;evolutionary;metaheuristic;selection;crossover;mutation</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
