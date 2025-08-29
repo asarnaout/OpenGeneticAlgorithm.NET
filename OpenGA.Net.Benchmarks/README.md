@@ -1,3 +1,5 @@
+![OpenGA.Net logo](../assets/openga-logo.svg)
+
 # 🧬 OpenGA.Net Benchmarks
 
 This directory contains comprehensive benchmarks for the OpenGA.Net genetic algorithm library, featuring implementations of three classic NP-hard optimization problems: Traveling Salesman Problem (TSP), Knapsack Problem, and Bin Packing Problem.
@@ -12,13 +14,16 @@ This directory contains comprehensive benchmarks for the OpenGA.Net genetic algo
 
 ```bash
 # Quick performance benchmarks (recommended for first run)
-dotnet run --simple
+dotnet run -- --simple
 
 # Detailed solution quality analysis
-dotnet run --analysis
+dotnet run -- --analysis
 
 # Comprehensive BenchmarkDotNet performance suite
 dotnet run
+
+# From repository root
+dotnet run --project OpenGA.Net.Benchmarks -- --simple
 ```
 
 ## 📁 Project Structure

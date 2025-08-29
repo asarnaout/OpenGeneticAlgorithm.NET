@@ -1,3 +1,5 @@
+![OpenGA.Net logo](assets/openga-logo.svg)
+
 # 🧬 OpenGeneticAlgorithm.NET
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
