@@ -176,7 +176,7 @@ public class OpenGARunner<T>
     {
         if (_parentSelectorConfig.ParentSelector is null)
         {
-            _parentSelectorConfig.ApplyTournamentParentSelector();
+            _parentSelectorConfig.Tournament();
         }
 
         if (_terminationStrategyConfig.TerminationStrategies is [])

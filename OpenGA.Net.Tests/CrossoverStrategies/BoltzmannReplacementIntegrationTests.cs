@@ -21,7 +21,7 @@ public class BoltzmannReplacementIntegrationTests
         // Act & Assert - Should not throw exceptions
         var result = OpenGARunner<int>
             .Initialize(initialPopulation)
-            .ParentSelection(c => c.ApplyRandomParentSelector())
+            .ParentSelection(c => c.Random())
             .Crossover(s => s.RegisterSingle(c => c.OnePointCrossover()))
             .Replacement(c => c.RegisterSingle(s => s.Boltzmann(temperatureDecayRate: 0.1, initialTemperature: 2.0)))
             .RunToCompletion();
@@ -44,7 +44,7 @@ public class BoltzmannReplacementIntegrationTests
         // Act & Assert - Should not throw exceptions
         var result = OpenGARunner<int>
             .Initialize(initialPopulation)
-            .ParentSelection(c => c.ApplyRandomParentSelector())
+            .ParentSelection(c => c.Random())
             .Crossover(s => s.RegisterSingle(c => c.OnePointCrossover()))
             .Replacement(c => c.RegisterSingle(s => s.BoltzmannWithLinearDecay(temperatureDecayRate: 0.05, initialTemperature: 1.0)))
             .RunToCompletion();

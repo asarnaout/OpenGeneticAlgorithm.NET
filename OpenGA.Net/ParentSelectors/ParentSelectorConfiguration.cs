@@ -9,7 +9,7 @@ public class ParentSelectorConfiguration<T>
     /// <summary>
     /// Parents are chosen at random regardless of their fitness.
     /// </summary>
-    public BaseParentSelector<T> ApplyRandomParentSelector()
+    public BaseParentSelector<T> Random()
     {
         var result = new RandomParentSelector<T>();
         ParentSelector = result;
@@ -19,7 +19,7 @@ public class ParentSelectorConfiguration<T>
     /// <summary>
     /// The likelihood of an individual chromosome being chosen for mating is proportional to its fitness.
     /// </summary>
-    public BaseParentSelector<T> ApplyFitnessWeightedRouletteWheelParentSelector()
+    public BaseParentSelector<T> RouletteWheel()
     {
         var result = new FitnessWeightedRouletteWheelParentSelector<T>();
         ParentSelector = result;
@@ -33,7 +33,7 @@ public class ParentSelectorConfiguration<T>
     /// <param name="stochasticTournament">Defaults to true. If set to true, then the 2 individuals chosen for mating in each 
     /// tournament are the fittest 2 individuals in the tournament, otherwise a roulette wheel is spun to choose the two winners 
     /// out of the n-individuals, where the probability of winning is proportional to each individual's fitness.</param>
-    public BaseParentSelector<T> ApplyTournamentParentSelector(bool stochasticTournament = true)
+    public BaseParentSelector<T> Tournament(bool stochasticTournament = true)
     {
         var result = new TournamentParentSelector<T>(stochasticTournament);
         ParentSelector = result;
@@ -44,7 +44,7 @@ public class ParentSelectorConfiguration<T>
     /// Apply a custom strategy for choosing mating parents. Requires an instance of a subclass of <see cref="BaseParentSelector<T>">BaseParentSelector<T></see>
     /// to dictate which individuals will be chosen to take part in the crossover process.
     /// </summary>
-    public BaseParentSelector<T> ApplyCustomParentSelector(BaseParentSelector<T> parentSelector)
+    public BaseParentSelector<T> Custom(BaseParentSelector<T> parentSelector)
     {
         ArgumentNullException.ThrowIfNull(parentSelector, nameof(parentSelector));
         ParentSelector = parentSelector;
@@ -61,7 +61,7 @@ public class ParentSelectorConfiguration<T>
     /// disproportionate advantage in fitness will have a (relatively) harder time (compared to the traditional fitness-weighted roulette wheel) 
     /// dominating the selection mechanism.
     /// </summary>
-    public BaseParentSelector<T> ApplyRankSelectionParentSelector()
+    public BaseParentSelector<T> Rank()
     {
         var result = new RankSelectionParentSelector<T>();
         ParentSelector = result;
@@ -80,7 +80,7 @@ public class ParentSelectorConfiguration<T>
     /// <param name="initialTemperature">The starting temperature value. Higher values promote more exploration initially.
     /// Must be greater than 0. Defaults to 1.0.</param>
     /// <exception cref="ArgumentException">Thrown when temperatureDecayRate is less than 0 or initialTemperature is less than or equal to 0.</exception>
-    public BaseParentSelector<T> ApplyBoltzmannParentSelector(double temperatureDecayRate = 0.05, double initialTemperature = 1.0)
+    public BaseParentSelector<T> Boltzmann(double temperatureDecayRate = 0.05, double initialTemperature = 1.0)
     {
         if (temperatureDecayRate < 0)
         {
@@ -109,7 +109,7 @@ public class ParentSelectorConfiguration<T>
     /// <param name="initialTemperature">The starting temperature value. Higher values promote more exploration initially.
     /// Must be greater than 0. Defaults to 1.0.</param>
     /// <exception cref="ArgumentException">Thrown when temperatureDecayRate is less than 0 or initialTemperature is less than or equal to 0.</exception>
-    public BaseParentSelector<T> ApplyBoltzmannParentSelectorWithLinearDecay(double temperatureDecayRate = 0.01, double initialTemperature = 1.0)
+    public BaseParentSelector<T> BoltzmannWithLinearDecay(double temperatureDecayRate = 0.01, double initialTemperature = 1.0)
     {
         if (temperatureDecayRate < 0)
         {
@@ -132,7 +132,7 @@ public class ParentSelectorConfiguration<T>
     /// <param name="proportionOfElitesInPopulation">The proportion of elites in the population. Example, if the rate is 0.2 and the population size is 100, then we have 20 elites who are guaranteed to take part in the mating process.</param>
     /// <param name="proportionOfNonElitesAllowedToMate">The proportion of non-elites allowed to take part in the mating process. Non elites are chosen randomly regardless of fitness.</param>
     /// <param name="allowMatingElitesWithNonElites">Defaults to true. Setting this value to false would restrict couples made up of an elite and non-elite members</param>
-    public BaseParentSelector<T> ApplyElitistParentSelector(float proportionOfElitesInPopulation = 0.1f, float proportionOfNonElitesAllowedToMate = 0.01f, bool allowMatingElitesWithNonElites = true)
+    public BaseParentSelector<T> Elitist(float proportionOfElitesInPopulation = 0.1f, float proportionOfNonElitesAllowedToMate = 0.01f, bool allowMatingElitesWithNonElites = true)
     {
         if (proportionOfElitesInPopulation <= 0 || proportionOfElitesInPopulation > 1)
         {

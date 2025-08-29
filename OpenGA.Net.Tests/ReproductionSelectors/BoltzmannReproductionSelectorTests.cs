@@ -333,10 +333,10 @@ public class BoltzmannParentSelectorTests
     {
     var config = new ParentSelectorConfiguration<int>();
         
-    Assert.Throws<ArgumentException>(() => config.ApplyBoltzmannParentSelector(0.01, -1.0));
-    Assert.Throws<ArgumentException>(() => config.ApplyBoltzmannParentSelector(0.01, 0.0));
-    Assert.Throws<ArgumentException>(() => config.ApplyBoltzmannParentSelectorWithLinearDecay(0.01, -1.0));
-    Assert.Throws<ArgumentException>(() => config.ApplyBoltzmannParentSelectorWithLinearDecay(0.01, 0.0));
+    Assert.Throws<ArgumentException>(() => config.Boltzmann(0.01, -1.0));
+    Assert.Throws<ArgumentException>(() => config.Boltzmann(0.01, 0.0));
+    Assert.Throws<ArgumentException>(() => config.BoltzmannWithLinearDecay(0.01, -1.0));
+    Assert.Throws<ArgumentException>(() => config.BoltzmannWithLinearDecay(0.01, 0.0));
     }
 
     [Fact]
@@ -344,16 +344,16 @@ public class BoltzmannParentSelectorTests
     {
     var config = new ParentSelectorConfiguration<int>();
         
-    var exponentialSelector = config.ApplyBoltzmannParentSelector(); // Exponential defaults
+    var exponentialSelector = config.Boltzmann(); // Exponential defaults
         Assert.NotNull(exponentialSelector);
         
-    var linearSelector = config.ApplyBoltzmannParentSelectorWithLinearDecay(); // Linear defaults
+    var linearSelector = config.BoltzmannWithLinearDecay(); // Linear defaults
         Assert.NotNull(linearSelector);
         
-    var customExponentialSelector = config.ApplyBoltzmannParentSelector(0.1, 2.0); // Custom exponential
+    var customExponentialSelector = config.Boltzmann(0.1, 2.0); // Custom exponential
         Assert.NotNull(customExponentialSelector);
         
-    var customLinearSelector = config.ApplyBoltzmannParentSelectorWithLinearDecay(0.05, 3.0); // Custom linear
+    var customLinearSelector = config.BoltzmannWithLinearDecay(0.05, 3.0); // Custom linear
         Assert.NotNull(customLinearSelector);
     }
 
