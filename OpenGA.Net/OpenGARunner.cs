@@ -38,7 +38,7 @@ public class OpenGARunner<T>
     /// </summary>
     internal GeneticAlgorithmState CurrentState => new(CurrentEpoch, StopWatch, HighestFitness);
 
-    private readonly Random _random = new();
+    private Random _random = new();
 
     private OpenGARunner() { }
 
@@ -84,6 +84,30 @@ public class OpenGARunner<T>
             _minNumberOfChromosomes = minPopulationSize,
             _maxNumberOfChromosomes = maxPopulationSize
         };
+    }
+
+    /// <summary>
+    /// Sets a specific seed for the random number generator to enable deterministic behavior.
+    /// </summary>
+    /// <param name="seed">The seed value to initialize the random number generator.</param>
+    /// <returns>The OpenGARunner instance for method chaining.</returns>
+    /// <remarks>
+    /// This method enables reproducible results for testing, debugging, and research purposes.
+    /// When a seed is set, the genetic algorithm will produce the same sequence of random decisions
+    /// across multiple runs, making results deterministic and repeatable.
+    /// 
+    /// <b>Important:</b> Calling this method multiple times will reset the random state each time,
+    /// discarding any previous random sequence progress. The random number generator will restart
+    /// from the beginning of the sequence defined by the new seed.
+    /// 
+    /// This method should typically be called once during configuration, before starting the
+    /// genetic algorithm execution with RunToCompletion().
+    /// </remarks>
+    public OpenGARunner<T> WithRandomSeed(int seed)
+    {
+        _random = new Random(seed);
+
+        return this;
     }
 
     /// <summary>
