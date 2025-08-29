@@ -70,11 +70,14 @@ public class TournamentParentSelectorStrategy<T>(bool stochasticTournament) : Ba
                     fitnessValues[j] = await tournament[j].GetCachedFitnessAsync();
                 }
 
-                var rouletteWheel = WeightedRouletteWheel<Chromosome<T>>.Init(tournament, (chromosome) => 
+                // Create a dictionary mapping chromosomes to their fitness values for O(1) lookup
+                var fitnessLookup = new Dictionary<Chromosome<T>, double>();
+                for (int j = 0; j < tournament.Length; j++)
                 {
-                    var index = Array.IndexOf(tournament, chromosome);
-                    return fitnessValues[index];
-                });
+                    fitnessLookup[tournament[j]] = fitnessValues[j];
+                }
+
+                var rouletteWheel = WeightedRouletteWheel<Chromosome<T>>.Init(tournament, chromosome => fitnessLookup[chromosome]);
                 var winner1 = rouletteWheel.SpinAndReadjustWheel();
                 var winner2 = rouletteWheel.Spin();
 

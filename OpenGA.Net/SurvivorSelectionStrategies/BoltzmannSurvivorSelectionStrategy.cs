@@ -92,13 +92,16 @@ public class BoltzmannSurvivorSelectionStrategy<T>(double temperatureDecayRate, 
 
         var candidatesForElimination = new List<Chromosome<T>>(eliminationsNeeded);
         
+        // Create a dictionary mapping chromosomes to their fitness values for O(1) lookup
+        var fitnessLookup = new Dictionary<Chromosome<T>, double>();
+        for (int i = 0; i < population.Length; i++)
+        {
+            fitnessLookup[population[i]] = fitnessValues[i];
+        }
+        
         // Create weighted roulette wheel with inverse fitness for elimination
         var rouletteWheel = WeightedRouletteWheel<Chromosome<T>>.Init(population.ToList(), 
-            chromosome => 
-            {
-                var index = Array.IndexOf(population, chromosome);
-                return Math.Exp((maxFitness - fitnessValues[index]) / currentTemperature);
-            });
+            chromosome => Math.Exp((maxFitness - fitnessLookup[chromosome]) / currentTemperature));
 
         for (int i = 0; i < eliminationsNeeded; i++)
         {

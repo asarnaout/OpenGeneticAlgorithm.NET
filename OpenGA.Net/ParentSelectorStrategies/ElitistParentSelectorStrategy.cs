@@ -190,11 +190,14 @@ public class ElitistParentSelectorStrategy<T>(bool allowMatingElitesWithNonElite
             fitnessValues[i] = await candidates[i].GetCachedFitnessAsync();
         }
         
-        var rouletteWheel = WeightedRouletteWheel<Chromosome<T>>.Init(candidates, c => 
+        // Create a dictionary mapping chromosomes to their fitness values for O(1) lookup
+        var fitnessLookup = new Dictionary<Chromosome<T>, double>();
+        for (int i = 0; i < candidates.Length; i++)
         {
-            var index = Array.IndexOf(candidates, c);
-            return fitnessValues[index];
-        });
+            fitnessLookup[candidates[i]] = fitnessValues[i];
+        }
+        
+        var rouletteWheel = WeightedRouletteWheel<Chromosome<T>>.Init(candidates, c => fitnessLookup[c]);
         return rouletteWheel.Spin();
     }
 }

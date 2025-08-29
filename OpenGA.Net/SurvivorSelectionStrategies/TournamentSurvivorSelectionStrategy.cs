@@ -173,12 +173,18 @@ public class TournamentSurvivorSelectionStrategy<T> : BaseSurvivorSelectionStrat
         // Add small epsilon to avoid division by zero and ensure all have some elimination probability
         var epsilon = (maxFitness - minFitness) * 0.01 + 0.001;
 
+        // Create a dictionary mapping chromosomes to their fitness values for O(1) lookup
+        var fitnessLookup = new Dictionary<Chromosome<T>, double>();
+        for (int i = 0; i < participants.Count; i++)
+        {
+            fitnessLookup[participants[i]] = fitnessValues[i];
+        }
+
         // Create weighted roulette wheel with inverse fitness
         var rouletteWheel = WeightedRouletteWheel<Chromosome<T>>.Init(participants, chromosome =>
         {
             // Inverse weight: maxFitness + epsilon - fitness gives higher weight to lower fitness
-            var index = participants.ToList().IndexOf(chromosome);
-            return maxFitness + epsilon - fitnessValues[index];
+            return maxFitness + epsilon - fitnessLookup[chromosome];
         });
 
         return rouletteWheel.Spin();

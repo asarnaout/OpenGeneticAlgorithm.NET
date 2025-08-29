@@ -41,12 +41,15 @@ public class BoltzmannParentSelectorStrategy<T>(double temperatureDecayRate, dou
         
         var maxFitness = fitnessValues.Max();
         
+        // Create a dictionary mapping chromosomes to their fitness values for O(1) lookup
+        var fitnessLookup = new Dictionary<Chromosome<T>, double>();
+        for (int i = 0; i < population.Length; i++)
+        {
+            fitnessLookup[population[i]] = fitnessValues[i];
+        }
+        
         return CreateStochasticCouples(population, random, minimumNumberOfCouples, 
             () => WeightedRouletteWheel<Chromosome<T>>.Init(population, 
-                chromosome => 
-                {
-                    var index = Array.IndexOf(population, chromosome);
-                    return Math.Exp((fitnessValues[index] - maxFitness) / currentTemperature);
-                }));
+                chromosome => Math.Exp((fitnessLookup[chromosome] - maxFitness) / currentTemperature)));
     }
 }
