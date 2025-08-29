@@ -1,6 +1,6 @@
 # 🧬 OpenGA.Net Benchmarks
 
-This directory contains comprehensive benchmarks for the OpenGA.Net genetic algorithm library, featuring implementations of three classic NP-hard optimization problems: Traveling Salesman Problem (TSP), N-Queens Problem, and Bin Packing Problem.
+This directory contains comprehensive benchmarks for the OpenGA.Net genetic algorithm library, featuring implementations of two classic NP-hard optimization problems: Traveling Salesman Problem (TSP) and Bin Packing Problem.
 
 ## 🚀 Quick Start
 
@@ -27,7 +27,6 @@ dotnet run
 OpenGA.Net.Benchmarks/
 ├── Problems/                           # Problem implementations
 │   ├── TravelingSalesmanProblem.cs    # TSP chromosome & generators
-│   ├── NQueensProblem.cs               # N-Queens chromosome & generators  
 │   └── BinPackingProblem.cs            # Bin packing chromosome & generators
 ├── BenchmarkSuite.cs                   # BenchmarkDotNet test suite
 ├── SimpleBenchmark.cs                  # Quick performance tests
@@ -55,26 +54,6 @@ public class TspChromosome : Chromosome<int>
     // Fitness = 1 / (1 + total_distance)
     // Mutation: 2-opt segment reversal
     // Repair: Fix duplicate cities
-}
-```
-
-### ♛ N-Queens Problem
-**Objective**: Place N queens on an N×N chessboard such that no two queens attack each other.
-
-**Features**:
-- Conflict minimization fitness function
-- Position-based representation (row → column mapping)
-- Swap mutation maintaining row constraints
-- Test instances: 16×16 and 32×32 boards
-
-**Chromosome Design**:
-```csharp
-public class NQueensChromosome : Chromosome<int>
-{
-    // Genes[i] = column of queen in row i
-    // Fitness = 1 - (conflicts / max_possible_conflicts)
-    // Mutation: Random position swapping
-    // Repair: Boundary constraint enforcement
 }
 ```
 
@@ -132,8 +111,6 @@ var result = await OpenGARunner<int>
 |---------|----------|----------------|---------------|---------------|
 | TSP | 30 cities | 380ms | 4,266.08 distance | A |
 | TSP | 50 cities | 396ms | 8,032.95 distance | A |
-| N-Queens | 16×16 | 265ms | 1 conflict | A- |
-| N-Queens | 32×32 | 150ms | 5 conflicts | B+ |
 | Bin Packing | 50 items | 389ms | 19/18 bins (94.7%) | A |
 | Bin Packing | 100 items | 180ms | 36/36 bins (100%) | A+ |
 
@@ -242,7 +219,6 @@ public override async Task<double> CalculateFitnessAsync()
 
 - **Genetic Algorithms**: Holland, J.H. (1992). "Adaptation in Natural and Artificial Systems"
 - **TSP**: Applegate, D. et al. (2007). "The Traveling Salesman Problem: A Computational Study"
-- **N-Queens**: Sosič, R. & Gu, J. (1994). "Efficient Local Search for the N-Queens Problem"
 - **Bin Packing**: Johnson, D.S. (1973). "Near-optimal bin packing algorithms"
 
 ## 🤝 Contributing

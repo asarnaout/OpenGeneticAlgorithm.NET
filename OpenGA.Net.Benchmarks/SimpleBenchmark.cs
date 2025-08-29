@@ -16,7 +16,6 @@ public static class SimpleBenchmark
         Console.WriteLine();
 
         await RunTspBenchmarks();
-        await RunNQueensBenchmarks();
         await RunBinPackingBenchmarks();
     }
 
@@ -82,58 +81,6 @@ public static class SimpleBenchmark
         Console.WriteLine($"  Random Avg: {randomBaseline50:F0}");
         Console.WriteLine($"  Improvement: {improvement50:F1}% better than random");
         Console.WriteLine($"  Fitness: {await tsp50.CalculateFitnessAsync():F6}");
-        Console.WriteLine();
-    }
-
-    private static async Task RunNQueensBenchmarks()
-    {
-        Console.WriteLine("N-QUEENS PROBLEM - Performance Results");
-        Console.WriteLine("-".PadRight(60, '-'));
-        
-        // N-Queens 16x16
-        var population16 = NQueensInstanceGenerator.GenerateInitialPopulation(50, 16, 42);
-        
-        var sw = Stopwatch.StartNew();
-        var result16 = await OpenGARunner<int>
-            .Initialize(population16)
-            .WithRandomSeed(42)
-            .MutationRate(0.2f)
-            .ParentSelection(c => c.RegisterSingle(s => s.Tournament()))
-            .Crossover(c => c.RegisterSingle(s => s.OnePointCrossover()))
-            .SurvivorSelection(r => r.RegisterSingle(s => s.Elitist()))
-            .Termination(t => t.MaximumEpochs(200))
-            .RunToCompletionAsync();
-        sw.Stop();
-        
-        var nQueens16 = (NQueensChromosome)result16;
-        Console.WriteLine($"N-Queens 16x16:");
-        Console.WriteLine($"  Time: {sw.ElapsedMilliseconds:N0} ms");
-        Console.WriteLine($"  Conflicts: {nQueens16.GetConflicts()}");
-        Console.WriteLine($"  Valid Solution: {nQueens16.IsSolution()}");
-        Console.WriteLine($"  Fitness: {await nQueens16.CalculateFitnessAsync():F6}");
-        Console.WriteLine();
-        
-        // N-Queens 32x32
-        var population32 = NQueensInstanceGenerator.GenerateInitialPopulation(50, 32, 42);
-        
-        sw.Restart();
-        var result32 = await OpenGARunner<int>
-            .Initialize(population32)
-            .WithRandomSeed(42)
-            .MutationRate(0.15f)
-            .ParentSelection(c => c.RegisterSingle(s => s.RouletteWheel()))
-            .Crossover(c => c.RegisterSingle(s => s.UniformCrossover()))
-            .SurvivorSelection(r => r.RegisterSingle(s => s.Tournament()))
-            .Termination(t => t.MaximumEpochs(200))
-            .RunToCompletionAsync();
-        sw.Stop();
-        
-        var nQueens32 = (NQueensChromosome)result32;
-        Console.WriteLine($"N-Queens 32x32:");
-        Console.WriteLine($"  Time: {sw.ElapsedMilliseconds:N0} ms");
-        Console.WriteLine($"  Conflicts: {nQueens32.GetConflicts()}");
-        Console.WriteLine($"  Valid Solution: {nQueens32.IsSolution()}");
-        Console.WriteLine($"  Fitness: {await nQueens32.CalculateFitnessAsync():F6}");
         Console.WriteLine();
     }
 

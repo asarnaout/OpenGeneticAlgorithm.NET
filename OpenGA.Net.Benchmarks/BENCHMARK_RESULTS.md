@@ -20,13 +20,6 @@ This document presents comprehensive benchmark results for the OpenGA.Net geneti
 - **Mutation**: 2-opt local search improvement
 - **Repair**: Ensures valid permutations
 
-#### ♛ **N-Queens Problem**
-- **Objective**: Place N queens on N×N board with no conflicts
-- **Instances**: 16×16 and 32×32 boards  
-- **Evaluation**: Minimize attacking queen pairs
-- **Mutation**: Random position swapping
-- **Repair**: Boundary constraint enforcement
-
 #### 📦 **Bin Packing Problem**
 - **Objective**: Pack items into minimum number of bins
 - **Instances**: 50 and 100 items with bin capacity 100
@@ -42,8 +35,6 @@ This document presents comprehensive benchmark results for the OpenGA.Net geneti
 |---------|---------------|-----------|----------------|
 | TSP | 30 cities | 345 | 580 |
 | TSP | 50 cities | 370 | 541 |
-| N-Queens | 16×16 | 185 | 1,081 |
-| N-Queens | 32×32 | 230 | 870 |
 | Bin Packing | 50 items | 350 | 571 |
 | Bin Packing | 100 items | 110 | 1,818 |
 
@@ -63,18 +54,6 @@ The following results demonstrate OpenGA.Net's effectiveness across different pr
 - **Random Tour Baseline**: Average distance of 1000 random tours on same instances
 - **Improvement**: % reduction from random baseline (industry heuristics typically achieve 10-30%)
 - **Competitive Performance**: Results comparable to nearest-neighbor + 2-opt heuristics
-
-#### N-Queens Problem
-
-| Configuration | Instance | Conflicts | Fitness | Solution Quality | Success Rate |
-|---------------|----------|-----------|---------|------------------|--------------|
-| Tournament + OnePoint + Elitist | 16×16 | 1 | 0.991667 | ⭐⭐⭐⭐⭐ Excellent (99.4% solved) | Very High |
-| RouletteWheel + Uniform + Tournament | 32×32 | 5 | 0.989919 | ⭐⭐⭐⭐ Very Good (99.0% solved) | High |
-
-**Context**: Perfect N-Queens solution = 0 conflicts. For comparison:
-- 16×16 board: 120 possible conflicts, 1 conflict = 99.4% success
-- 32×32 board: 496 possible conflicts, 5 conflicts = 99.0% success
-- Results show excellent constraint satisfaction for complex combinatorial problems
 
 #### Bin Packing Problem
 
@@ -135,14 +114,12 @@ The following results demonstrate OpenGA.Net's effectiveness across different pr
 
 3. **Problem-Specific Behaviors**:
    - **TSP**: Benefits from sophisticated mutation (2-opt) and repair mechanisms
-   - **N-Queens**: Responds well to high mutation rates (15-20%)
    - **Bin Packing**: Requires careful balance between bin minimization and utilization
 
 ### Result Quality Assessment
 
 **What Makes a Good Result:**
 - **TSP**: Tours within 5-10% of best-known heuristic solutions
-- **N-Queens**: <1% conflicts for boards up to 32×32 (near-perfect constraint satisfaction)
 - **Bin Packing**: Within 1-2 bins of theoretical optimum with >90% utilization
 
 **Benchmark Success Criteria:**
@@ -167,7 +144,6 @@ The following results demonstrate OpenGA.Net's effectiveness across different pr
 
 ### Solution Quality
 - **TSP**: Consistently finds high-quality tours within 1-2% of known heuristic bounds
-- **N-Queens**: Achieves near-optimal solutions (≤5 conflicts) for boards up to 32×32
 - **Bin Packing**: Matches or exceeds theoretical lower bounds with high utilization rates
 
 ### Framework Strengths

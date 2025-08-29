@@ -26,10 +26,6 @@ public class GeneticAlgorithmBenchmarks
     private TspChromosome[] _tsp30Population = null!;
     private TspChromosome[] _tsp50Population = null!;
     
-    // N-Queens instances
-    private NQueensChromosome[] _nQueens16Population = null!;
-    private NQueensChromosome[] _nQueens32Population = null!;
-    
     // Bin Packing instances
     private double[] _binPacking50ItemSizes = null!;
     private double[] _binPacking100ItemSizes = null!;
@@ -47,10 +43,6 @@ public class GeneticAlgorithmBenchmarks
         (_tsp50DistanceMatrix, _) = TspInstanceGenerator.GenerateRandomInstance(50, BENCHMARK_SEED);
         _tsp30Population = TspInstanceGenerator.GenerateInitialPopulation(POPULATION_SIZE, _tsp30DistanceMatrix, BENCHMARK_SEED);
         _tsp50Population = TspInstanceGenerator.GenerateInitialPopulation(POPULATION_SIZE, _tsp50DistanceMatrix, BENCHMARK_SEED);
-        
-        // Setup N-Queens instances
-        _nQueens16Population = NQueensInstanceGenerator.GenerateInitialPopulation(POPULATION_SIZE, 16, BENCHMARK_SEED);
-        _nQueens32Population = NQueensInstanceGenerator.GenerateInitialPopulation(POPULATION_SIZE, 32, BENCHMARK_SEED);
         
         // Setup Bin Packing instances
         (_binPacking50ItemSizes, _binPackingCapacity) = BinPackingInstanceGenerator.GenerateRandomInstance(50, 100.0, BENCHMARK_SEED);
@@ -119,46 +111,6 @@ public class GeneticAlgorithmBenchmarks
 
     #endregion
 
-    #region N-Queens Benchmarks
-
-    [Benchmark(Description = "N-Queens 16x16 (Tournament + OnePoint + Elitist)")]
-    public async Task<NQueensChromosome> NQueens16_Tournament_OnePoint_Elitist()
-    {
-        var population = CloneNQueensPopulation(_nQueens16Population);
-        
-        var result = await OpenGARunner<int>
-            .Initialize(population)
-            .WithRandomSeed(BENCHMARK_SEED)
-            .MutationRate(0.2f)
-            .ParentSelection(c => c.RegisterSingle(s => s.Tournament()))
-            .Crossover(c => c.RegisterSingle(s => s.OnePointCrossover()))
-            .SurvivorSelection(r => r.RegisterSingle(s => s.Elitist()))
-            .Termination(t => t.MaximumEpochs(MAX_GENERATIONS))
-            .RunToCompletionAsync();
-            
-        return (NQueensChromosome)result;
-    }
-
-    [Benchmark(Description = "N-Queens 32x32 (RouletteWheel + Uniform + Tournament)")]
-    public async Task<NQueensChromosome> NQueens32_RouletteWheel_Uniform_Tournament()
-    {
-        var population = CloneNQueensPopulation(_nQueens32Population);
-        
-        var result = await OpenGARunner<int>
-            .Initialize(population)
-            .WithRandomSeed(BENCHMARK_SEED)
-            .MutationRate(0.15f)
-            .ParentSelection(c => c.RegisterSingle(s => s.RouletteWheel()))
-            .Crossover(c => c.RegisterSingle(s => s.UniformCrossover()))
-            .SurvivorSelection(r => r.RegisterSingle(s => s.Tournament()))
-            .Termination(t => t.MaximumEpochs(MAX_GENERATIONS))
-            .RunToCompletionAsync();
-            
-        return (NQueensChromosome)result;
-    }
-
-    #endregion
-
     #region Bin Packing Benchmarks
 
     [Benchmark(Description = "BinPacking-50 Items (Tournament + OnePoint + Elitist)")]
@@ -209,14 +161,6 @@ public class GeneticAlgorithmBenchmarks
                       .ToArray();
     }
 
-    private NQueensChromosome[] CloneNQueensPopulation(NQueensChromosome[] original)
-    {
-        return original.Select(async chromosome => await chromosome.DeepCopyAsync())
-                      .Select(task => task.Result)
-                      .Cast<NQueensChromosome>()
-                      .ToArray();
-    }
-
     private BinPackingChromosome[] CloneBinPackingPopulation(BinPackingChromosome[] original)
     {
         return original.Select(async chromosome => await chromosome.DeepCopyAsync())
@@ -241,7 +185,6 @@ public static class BenchmarkAnalyzer
         Console.WriteLine();
 
         await AnalyzeTSP();
-        await AnalyzeNQueens();
         await AnalyzeBinPacking();
         
         Console.WriteLine("Analysis completed.");
@@ -304,62 +247,6 @@ public static class BenchmarkAnalyzer
         Console.WriteLine($"  Best Distance: {distance50:F2}");
         Console.WriteLine($"  Fitness: {fitness50:F6}");
         Console.WriteLine($"  Route: {string.Join(" → ", tspResult50.Genes.Take(10))}...");
-        Console.WriteLine();
-    }
-
-    private static async Task AnalyzeNQueens()
-    {
-        Console.WriteLine("N-QUEENS PROBLEM ANALYSIS");
-        Console.WriteLine("-".PadRight(50, '-'));
-        
-        // N-Queens 16x16 analysis
-        var population16 = NQueensInstanceGenerator.GenerateInitialPopulation(100, 16, 42);
-        
-        var bestNQueens16 = await OpenGARunner<int>
-            .Initialize(population16)
-            .WithRandomSeed(42)
-            .MutationRate(0.2f)
-            .ParentSelection(c => c.RegisterSingle(s => s.Tournament()))
-            .Crossover(c => c.RegisterSingle(s => s.OnePointCrossover()))
-            .SurvivorSelection(r => r.RegisterSingle(s => s.Elitist()))
-            .Termination(t => t.MaximumEpochs(500))
-            .RunToCompletionAsync();
-            
-        var nQueensResult16 = (NQueensChromosome)bestNQueens16;
-        var conflicts16 = nQueensResult16.GetConflicts();
-        var fitness16 = await nQueensResult16.CalculateFitnessAsync();
-        var isSolution16 = nQueensResult16.IsSolution();
-        
-        Console.WriteLine($"N-Queens 16x16:");
-        Console.WriteLine($"  Conflicts: {conflicts16}");
-        Console.WriteLine($"  Fitness: {fitness16:F6}");
-        Console.WriteLine($"  Valid Solution: {isSolution16}");
-        Console.WriteLine($"  Queen Positions: [{string.Join(", ", nQueensResult16.Genes)}]");
-        Console.WriteLine();
-        
-        // N-Queens 32x32 analysis
-        var population32 = NQueensInstanceGenerator.GenerateInitialPopulation(100, 32, 42);
-        
-        var bestNQueens32 = await OpenGARunner<int>
-            .Initialize(population32)
-            .WithRandomSeed(42)
-            .MutationRate(0.15f)
-            .ParentSelection(c => c.RegisterSingle(s => s.RouletteWheel()))
-            .Crossover(c => c.RegisterSingle(s => s.UniformCrossover()))
-            .SurvivorSelection(r => r.RegisterSingle(s => s.Tournament()))
-            .Termination(t => t.MaximumEpochs(500))
-            .RunToCompletionAsync();
-            
-        var nQueensResult32 = (NQueensChromosome)bestNQueens32;
-        var conflicts32 = nQueensResult32.GetConflicts();
-        var fitness32 = await nQueensResult32.CalculateFitnessAsync();
-        var isSolution32 = nQueensResult32.IsSolution();
-        
-        Console.WriteLine($"N-Queens 32x32:");
-        Console.WriteLine($"  Conflicts: {conflicts32}");
-        Console.WriteLine($"  Fitness: {fitness32:F6}");
-        Console.WriteLine($"  Valid Solution: {isSolution32}");
-        Console.WriteLine($"  Queen Positions: [{string.Join(", ", nQueensResult32.Genes.Take(10))}...]");
         Console.WriteLine();
     }
 

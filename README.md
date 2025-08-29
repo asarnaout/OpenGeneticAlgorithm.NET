@@ -269,7 +269,6 @@ OpenGA.Net has been rigorously tested on classic optimization problems to demons
 
 ### 🔬 **Benchmark Problems**
 - **🗺️ Traveling Salesman Problem (TSP)**: 30 and 50 city instances
-- **♛ N-Queens Problem**: 16×16 and 32×32 board configurations  
 - **📦 Bin Packing Problem**: 50 and 100 item optimization
 
 ### ⚡ **Performance Highlights**
@@ -283,14 +282,11 @@ OpenGA.Net has been rigorously tested on classic optimization problems to demons
 |---------|----------|----------------|-------------|---------|
 | TSP | 30 cities | 345ms | 64.6% better than random tour | ⭐⭐⭐⭐⭐ |
 | TSP | 50 cities | 370ms | 53.4% better than random tour | ⭐⭐⭐⭐⭐ |
-| N-Queens | 16×16 | 185ms | 1-3 conflicts (99%+ solved) | ⭐⭐⭐⭐⭐ |
-| N-Queens | 32×32 | 230ms | 7-10 conflicts (98%+ solved) | ⭐⭐⭐⭐ |
 | Bin Packing | 50 items | 350ms | 18-19 bins (vs 18 optimal) | ⭐⭐⭐⭐⭐ |
 | Bin Packing | 100 items | 110ms | 36 bins (optimal!) | ⭐⭐⭐⭐⭐ |
 
 **Result Interpretation:**
 - **TSP**: % improvement over random tours (showing significant optimization capability)
-- **N-Queens**: Conflicts between queens (0 = perfect, very low conflict rates achieved)  
 - **Bin Packing**: Bins used (achieving optimal or near-optimal solutions)
 
 ### 🏃 **Run Benchmarks Yourself**
