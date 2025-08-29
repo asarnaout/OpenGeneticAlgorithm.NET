@@ -1,25 +1,25 @@
 using OpenGA.Net.Extensions;
 
-namespace OpenGA.Net.ReplacementStrategies;
+namespace OpenGA.Net.SurvivorSelectionStrategies;
 
 /// <summary>
-/// Boltzmann replacement strategy that uses temperature-based elimination probabilities with decay.
+/// Boltzmann survivor selection strategy that uses temperature-based elimination probabilities with decay.
 /// This strategy applies the Boltzmann distribution to control elimination pressure through a temperature parameter
 /// that decays over epochs.
 /// 
-/// In Boltzmann replacement:
+/// In Boltzmann survivor selection:
 /// 1. Elimination probability is calculated using exp((maxFitness - fitness) / temperature) (inverse fitness)
 /// 2. Higher temperature leads to more uniform elimination (exploration)
 /// 3. Lower temperature leads to more fitness-based elimination (exploitation)
 /// 4. Temperature starts at the specified initial value and decays over time using the specified decay rate
 /// 5. Temperature never goes below 0 (for linear decay) or approaches 0 asymptotically (for exponential decay)
 /// 
-/// This approach provides a smooth transition from exploration to exploitation over time for replacement selection.
+/// This approach provides a smooth transition from exploration to exploitation over time for survivor selection.
 /// </summary>
-public class BoltzmannReplacementStrategy<T>(double temperatureDecayRate, double initialTemperature = 1.0, bool useExponentialDecay = true) : BaseReplacementStrategy<T>
+public class BoltzmannSurvivorSelectionStrategy<T>(double temperatureDecayRate, double initialTemperature = 1.0, bool useExponentialDecay = true) : BaseSurvivorSelectionStrategy<T>
 {
     /// <summary>
-    /// The recommended offspring generation rate for Boltzmann replacement strategy.
+    /// The recommended offspring generation rate for Boltzmann survivor selection strategy.
     /// This moderate turnover rate (40%) works well with temperature-controlled selection pressure.
     /// </summary>
     internal override float RecommendedOffspringGenerationRate => 0.4f;

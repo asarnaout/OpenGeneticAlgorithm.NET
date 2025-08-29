@@ -1,16 +1,16 @@
 using OpenGA.Net.Extensions;
 
-namespace OpenGA.Net.ReplacementStrategies;
+namespace OpenGA.Net.SurvivorSelectionStrategies;
 
 /// <summary>
-/// A tournament-based replacement strategy that eliminates chromosomes through competitive tournaments.
+/// A tournament-based survivor selection strategy that eliminates chromosomes through competitive tournaments.
 /// Chromosomes compete in tournaments where the least fit individuals are more likely to be eliminated.
 /// This strategy uses the WeightedRouletteWheel to add stochastic selection within tournaments.
 /// </summary>
-public class TournamentReplacementStrategy<T> : BaseReplacementStrategy<T>
+public class TournamentSurvivorSelectionStrategy<T> : BaseSurvivorSelectionStrategy<T>
 {
     /// <summary>
-    /// The recommended offspring generation rate for tournament replacement strategy.
+    /// The recommended offspring generation rate for tournament survivor selection strategy.
     /// This moderate to high turnover rate (50%) works well with tournament selection's inherent fitness preservation.
     /// </summary>
     internal override float RecommendedOffspringGenerationRate => 0.5f;
@@ -19,7 +19,7 @@ public class TournamentReplacementStrategy<T> : BaseReplacementStrategy<T>
     private readonly bool _stochasticTournament;
 
     /// <summary>
-    /// Initializes a new instance of the TournamentReplacementStrategy.
+    /// Initializes a new instance of the TournamentSurvivorSelectionStrategy.
     /// </summary>
     /// <param name="tournamentSize">
     /// The number of chromosomes that participate in each tournament. Must be at least 2.
@@ -32,7 +32,7 @@ public class TournamentReplacementStrategy<T> : BaseReplacementStrategy<T>
     /// <exception cref="ArgumentOutOfRangeException">
     /// Thrown when tournamentSize is less than 2.
     /// </exception>
-    public TournamentReplacementStrategy(int tournamentSize, bool stochasticTournament = false)
+    public TournamentSurvivorSelectionStrategy(int tournamentSize, bool stochasticTournament = false)
     {
         if (tournamentSize < 2)
         {
@@ -200,7 +200,7 @@ public class TournamentReplacementStrategy<T> : BaseReplacementStrategy<T>
     }
 
     /// <summary>
-    /// Gets the tournament size used by this replacement strategy.
+    /// Gets the tournament size used by this survivor selection strategy.
     /// </summary>
     public int TournamentSize => _tournamentSize;
 

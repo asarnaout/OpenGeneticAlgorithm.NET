@@ -1,15 +1,15 @@
 using OpenGA.Net.OperatorSelectionPolicies;
-using OpenGA.Net.ReplacementStrategies;
+using OpenGA.Net.SurvivorSelectionStrategies;
 
-namespace OpenGA.Net.Tests.ReplacementStrategies;
+namespace OpenGA.Net.Tests.SurvivorSelectionStrategies;
 
-public class MultiReplacementStrategyConfigurationTests
+public class MultiSurvivorSelectionStrategyConfigurationTests
 {
     [Fact]
     public void RegisterMulti_WithMultipleStrategies_ShouldRegisterAllStrategies()
     {
         // Arrange
-        var registration = new ReplacementStrategyRegistration<int>();
+        var registration = new SurvivorSelectionStrategyRegistration<int>();
 
         // Act
         registration.RegisterMulti(m => m
@@ -19,18 +19,18 @@ public class MultiReplacementStrategyConfigurationTests
         );
 
         // Assert
-        var strategies = registration.GetRegisteredReplacementStrategies();
+        var strategies = registration.GetRegisteredSurvivorSelectionStrategies();
         Assert.Equal(3, strategies.Count);
-        Assert.IsType<ElitistReplacementStrategy<int>>(strategies[0]);
-        Assert.IsType<TournamentReplacementStrategy<int>>(strategies[1]);
-        Assert.IsType<RandomEliminationReplacementStrategy<int>>(strategies[2]);
+        Assert.IsType<ElitistSurvivorSelectionStrategy<int>>(strategies[0]);
+        Assert.IsType<TournamentSurvivorSelectionStrategy<int>>(strategies[1]);
+        Assert.IsType<RandomEliminationSurvivorSelectionStrategy<int>>(strategies[2]);
     }
 
     [Fact]
     public void RegisterMulti_WithCustomWeights_ShouldApplyCustomWeightPolicy()
     {
         // Arrange
-        var registration = new ReplacementStrategyRegistration<int>();
+        var registration = new SurvivorSelectionStrategyRegistration<int>();
 
         // Act
         registration.RegisterMulti(m => m
@@ -41,10 +41,10 @@ public class MultiReplacementStrategyConfigurationTests
         registration.ValidateAndDefault();
 
         // Assert
-        var policy = registration.GetReplacementSelectionPolicy();
+        var policy = registration.GetSurvivorSelectionSelectionPolicy();
         Assert.IsType<CustomWeightPolicy>(policy);
         
-        var strategies = registration.GetRegisteredReplacementStrategies();
+        var strategies = registration.GetRegisteredSurvivorSelectionStrategies();
         Assert.Equal(0.7f, strategies[0].CustomWeight);
         Assert.Equal(0.3f, strategies[1].CustomWeight);
     }
@@ -53,7 +53,7 @@ public class MultiReplacementStrategyConfigurationTests
     public void RegisterMulti_WithoutCustomWeights_ShouldApplyAdaptivePursuitPolicy()
     {
         // Arrange
-        var registration = new ReplacementStrategyRegistration<int>();
+        var registration = new SurvivorSelectionStrategyRegistration<int>();
 
         // Act
         registration.RegisterMulti(m => m
@@ -64,7 +64,7 @@ public class MultiReplacementStrategyConfigurationTests
         registration.ValidateAndDefault();
 
         // Assert
-        var policy = registration.GetReplacementSelectionPolicy();
+        var policy = registration.GetSurvivorSelectionSelectionPolicy();
         Assert.IsType<AdaptivePursuitPolicy>(policy);
     }
 
@@ -72,7 +72,7 @@ public class MultiReplacementStrategyConfigurationTests
     public void RegisterMulti_WithExplicitPolicy_ShouldUseSpecifiedPolicy()
     {
         // Arrange
-        var registration = new ReplacementStrategyRegistration<int>();
+        var registration = new SurvivorSelectionStrategyRegistration<int>();
 
         // Act
         registration.RegisterMulti(m => m
@@ -84,7 +84,7 @@ public class MultiReplacementStrategyConfigurationTests
         registration.ValidateAndDefault();
 
         // Assert
-        var policy = registration.GetReplacementSelectionPolicy();
+        var policy = registration.GetSurvivorSelectionSelectionPolicy();
         Assert.IsType<RandomChoicePolicy>(policy);
     }
 
@@ -92,26 +92,26 @@ public class MultiReplacementStrategyConfigurationTests
     public void RegisterSingle_ShouldApplyFirstChoicePolicy()
     {
         // Arrange
-        var registration = new ReplacementStrategyRegistration<int>();
+        var registration = new SurvivorSelectionStrategyRegistration<int>();
 
         // Act
         registration.RegisterSingle(s => s.Elitist(0.1f));
         registration.ValidateAndDefault();
 
         // Assert
-        var policy = registration.GetReplacementSelectionPolicy();
+        var policy = registration.GetSurvivorSelectionSelectionPolicy();
         Assert.IsType<FirstChoicePolicy>(policy);
         
-        var strategies = registration.GetRegisteredReplacementStrategies();
+        var strategies = registration.GetRegisteredSurvivorSelectionStrategies();
         Assert.Single(strategies);
-        Assert.IsType<ElitistReplacementStrategy<int>>(strategies[0]);
+        Assert.IsType<ElitistSurvivorSelectionStrategy<int>>(strategies[0]);
     }
 
     [Fact]
     public void OverrideOffspringGenerationRate_ShouldSetCorrectValue()
     {
         // Arrange
-        var registration = new ReplacementStrategyRegistration<int>();
+        var registration = new SurvivorSelectionStrategyRegistration<int>();
 
         // Act
         registration.RegisterSingle(s => s.Elitist())
@@ -125,12 +125,12 @@ public class MultiReplacementStrategyConfigurationTests
     public void OverrideOffspringGenerationRate_WithInvalidValue_ShouldThrowArgumentOutOfRangeException()
     {
         // Arrange
-        var registration = new ReplacementStrategyRegistration<int>();
+        var registration = new SurvivorSelectionStrategyRegistration<int>();
 
         // Act & Assert
         Assert.Throws<ArgumentOutOfRangeException>(() => 
             registration.OverrideOffspringGenerationRate(-0.1f));
-            
+        
         Assert.Throws<ArgumentOutOfRangeException>(() => 
             registration.OverrideOffspringGenerationRate(1.1f));
     }

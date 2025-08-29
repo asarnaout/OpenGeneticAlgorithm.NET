@@ -282,7 +282,7 @@ public static class TspSolver
                                     .WithCrossoverRate(0.85f)
                                     .RegisterSingle(o => o.OnePointCrossover())
                                 )
-                        .Replacement(c => c.RegisterSingle(o => o.Elitist()))
+                        .SurvivorSelection(c => c.RegisterSingle(o => o.Elitist()))
                         .Termination(c => c.MaximumEpochs(epochs).MaximumDuration(TimeSpan.FromMinutes(1)))
                         ;
 
@@ -341,7 +341,7 @@ public static class TspSolver
         Console.WriteLine($"  Mutation rate: {mutationRate:P1}");
         Console.WriteLine($"  Crossover rate: 85%");
         Console.WriteLine($"  Selection: Tournament + Elitist");
-        Console.WriteLine($"  Replacement: Elitist");
+        Console.WriteLine($"  Survivor Selection: Elitist");
 
         // Configure and run the genetic algorithm
         Console.WriteLine("\nStarting genetic algorithm...");
@@ -351,7 +351,7 @@ public static class TspSolver
                         .MutationRate(mutationRate)
                         .ParentSelection(c => c.Elitist())
                         .Crossover(s => s.WithCrossoverRate(0.85f).RegisterSingle(o => o.OnePointCrossover()))
-                        .Replacement(c => c.RegisterSingle(s => s.Elitist()))
+                        .SurvivorSelection(c => c.RegisterSingle(s => s.Elitist()))
                         .Termination(c => c.MaximumEpochs(epochs).MaximumDuration(TimeSpan.FromMinutes(1)));
 
         // Start the genetic algorithm

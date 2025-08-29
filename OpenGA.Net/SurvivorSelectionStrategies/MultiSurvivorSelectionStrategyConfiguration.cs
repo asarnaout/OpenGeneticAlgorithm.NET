@@ -1,56 +1,56 @@
-namespace OpenGA.Net.ReplacementStrategies;
+namespace OpenGA.Net.SurvivorSelectionStrategies;
 
 using OpenGA.Net.Exceptions;
 using OpenGA.Net.OperatorSelectionPolicies;
 
 /// <summary>
-/// Configuration class specifically for multiple replacement strategies with weight support.
-/// This class provides the same replacement strategy methods as ReplacementStrategyConfiguration
+/// Configuration class specifically for multiple survivor selection strategies with weight support.
+/// This class provides the same survivor selection strategy methods as SurvivorSelectionStrategyConfiguration
 /// but with optional weight parameters for use in multi-strategy scenarios.
 /// </summary>
 /// <typeparam name="T">The type of gene values contained within chromosomes</typeparam>
-public class MultiReplacementStrategyConfiguration<T>
+public class MultiSurvivorSelectionStrategyConfiguration<T>
 {
-    internal IList<BaseReplacementStrategy<T>> ReplacementStrategies = [];
+    internal IList<BaseSurvivorSelectionStrategy<T>> SurvivorSelectionStrategies = [];
 
     private readonly OperatorSelectionPolicyConfiguration _policyConfig = new();
 
     /// <summary>
-    /// Apply random elimination replacement strategy. Eliminates chromosomes randomly from the population 
+    /// Apply random elimination survivor selection strategy. Eliminates chromosomes randomly from the population 
     /// to make room for offspring, ensuring population size is maintained.
     /// Each chromosome has an equal chance of being eliminated.
     /// </summary>
     /// <param name="customWeight">Optional custom weight for this strategy when used with multiple strategies. Higher weights increase selection probability.</param>
-    public MultiReplacementStrategyConfiguration<T> Random(float? customWeight = null)
+    public MultiSurvivorSelectionStrategyConfiguration<T> Random(float? customWeight = null)
     {
-        var result = new RandomEliminationReplacementStrategy<T>();
+        var result = new RandomEliminationSurvivorSelectionStrategy<T>();
         if (customWeight.HasValue)
         {
             result.WithCustomWeight(customWeight.Value);
         }
-        ReplacementStrategies.Add(result);
+        SurvivorSelectionStrategies.Add(result);
         return this;
     }
 
     /// <summary>
-    /// Apply generational replacement strategy. Completely replaces the entire parent population with offspring.
+    /// Apply generational survivor selection strategy. Completely replaces the entire parent population with offspring.
     /// In this strategy, no parent chromosomes survive to the next generation - the entire population
     /// is renewed with the offspring generation.
     /// </summary>
     /// <param name="customWeight">Optional custom weight for this strategy when used with multiple strategies. Higher weights increase selection probability.</param>
-    public MultiReplacementStrategyConfiguration<T> Generational(float? customWeight = null)
+    public MultiSurvivorSelectionStrategyConfiguration<T> Generational(float? customWeight = null)
     {
-        var result = new GenerationalReplacementStrategy<T>();
+        var result = new GenerationalSurvivorSelectionStrategy<T>();
         if (customWeight.HasValue)
         {
             result.WithCustomWeight(customWeight.Value);
         }
-        ReplacementStrategies.Add(result);
+        SurvivorSelectionStrategies.Add(result);
         return this;
     }
 
     /// <summary>
-    /// Apply elitist replacement strategy. Protects the top-performing chromosomes (elites) from elimination
+    /// Apply elitist survivor selection strategy. Protects the top-performing chromosomes (elites) from elimination
     /// based on their fitness values, while allowing the remaining population to be replaced with offspring.
     /// This ensures that the best solutions are preserved across generations.
     /// </summary>
@@ -62,7 +62,7 @@ public class MultiReplacementStrategyConfiguration<T>
     /// <exception cref="ArgumentOutOfRangeException">
     /// Thrown when elitePercentage is not between 0.0 and 1.0.
     /// </exception>
-    public MultiReplacementStrategyConfiguration<T> Elitist(float elitePercentage = 0.1f, float? customWeight = null)
+    public MultiSurvivorSelectionStrategyConfiguration<T> Elitist(float elitePercentage = 0.1f, float? customWeight = null)
     {
         if (elitePercentage < 0.0f || elitePercentage > 1.0f)
         {
@@ -72,17 +72,17 @@ public class MultiReplacementStrategyConfiguration<T>
                 "Elite percentage must be between 0.0 and 1.0.");
         }
 
-        var result = new ElitistReplacementStrategy<T>(elitePercentage);
+        var result = new ElitistSurvivorSelectionStrategy<T>(elitePercentage);
         if (customWeight.HasValue)
         {
             result.WithCustomWeight(customWeight.Value);
         }
-        ReplacementStrategies.Add(result);
+        SurvivorSelectionStrategies.Add(result);
         return this;
     }
 
     /// <summary>
-    /// Apply tournament-based replacement strategy. Eliminates chromosomes through competitive tournaments
+    /// Apply tournament-based survivor selection strategy. Eliminates chromosomes through competitive tournaments
     /// where the least fit individuals are more likely to be eliminated.
     /// </summary>
     /// <param name="tournamentSize">
@@ -97,7 +97,7 @@ public class MultiReplacementStrategyConfiguration<T>
     /// <exception cref="ArgumentOutOfRangeException">
     /// Thrown when tournamentSize is less than 3.
     /// </exception>
-    public MultiReplacementStrategyConfiguration<T> Tournament(int tournamentSize = 3, bool stochasticTournament = true, float? customWeight = null)
+    public MultiSurvivorSelectionStrategyConfiguration<T> Tournament(int tournamentSize = 3, bool stochasticTournament = true, float? customWeight = null)
     {
         if (tournamentSize < 3)
         {
@@ -107,53 +107,53 @@ public class MultiReplacementStrategyConfiguration<T>
                 "Tournament size must be at least 3.");
         }
 
-        var result = new TournamentReplacementStrategy<T>(tournamentSize, stochasticTournament);
+        var result = new TournamentSurvivorSelectionStrategy<T>(tournamentSize, stochasticTournament);
         if (customWeight.HasValue)
         {
             result.WithCustomWeight(customWeight.Value);
         }
-        ReplacementStrategies.Add(result);
+        SurvivorSelectionStrategies.Add(result);
         return this;
     }
 
     /// <summary>
-    /// Apply age-based replacement strategy. Eliminates chromosomes based on their age using a weighted
+    /// Apply age-based survivor selection strategy. Eliminates chromosomes based on their age using a weighted
     /// roulette wheel where older chromosomes have higher probability of being eliminated.
     /// This encourages population turnover while maintaining some genetic diversity.
     /// </summary>
     /// <param name="customWeight">Optional custom weight for this strategy when used with multiple strategies. Higher weights increase selection probability.</param>
-    public MultiReplacementStrategyConfiguration<T> AgeBased(float? customWeight = null)
+    public MultiSurvivorSelectionStrategyConfiguration<T> AgeBased(float? customWeight = null)
     {
-        var result = new AgeBasedReplacementStrategy<T>();
+        var result = new AgeBasedSurvivorSelectionStrategy<T>();
         if (customWeight.HasValue)
         {
             result.WithCustomWeight(customWeight.Value);
         }
-        ReplacementStrategies.Add(result);
+        SurvivorSelectionStrategies.Add(result);
         return this;
     }
 
     /// <summary>
-    /// Apply a custom replacement strategy. Requires an instance of a subclass of <see cref="BaseReplacementStrategy<T>">BaseReplacementStrategy<T></see>
+    /// Apply a custom survivor selection strategy. Requires an instance of a subclass of <see cref="BaseSurvivorSelectionStrategy<T>">BaseSurvivorSelectionStrategy<T></see>
     /// to dictate how chromosomes are eliminated from the population to make room for offspring.
     /// </summary>
-    /// <param name="replacementStrategy">The custom replacement strategy to apply</param>
+    /// <param name="survivorSelectionStrategy">The custom survivor selection strategy to apply</param>
     /// <param name="customWeight">Optional custom weight for this strategy when used with multiple strategies. Higher weights increase selection probability.</param>
-    public MultiReplacementStrategyConfiguration<T> Custom(BaseReplacementStrategy<T> replacementStrategy, float? customWeight = null)
+    public MultiSurvivorSelectionStrategyConfiguration<T> Custom(BaseSurvivorSelectionStrategy<T> survivorSelectionStrategy, float? customWeight = null)
     {
-        ArgumentNullException.ThrowIfNull(replacementStrategy, nameof(replacementStrategy));
+        ArgumentNullException.ThrowIfNull(survivorSelectionStrategy, nameof(survivorSelectionStrategy));
         
         if (customWeight.HasValue)
         {
-            replacementStrategy.WithCustomWeight(customWeight.Value);
+            survivorSelectionStrategy.WithCustomWeight(customWeight.Value);
         }
         
-        ReplacementStrategies.Add(replacementStrategy);
+        SurvivorSelectionStrategies.Add(survivorSelectionStrategy);
         return this;
     }
 
     /// <summary>
-    /// Apply Boltzmann replacement strategy that uses temperature-based elimination probabilities with exponential decay.
+    /// Apply Boltzmann survivor selection strategy that uses temperature-based elimination probabilities with exponential decay.
     /// This strategy applies the Boltzmann distribution to control elimination pressure through a temperature parameter
     /// that starts at the specified initial value and decays exponentially over epochs: T(t) = T₀ × e^(-α×t).
     /// Higher temperature leads to more uniform elimination (exploration), while lower temperature leads to more fitness-based elimination (exploitation).
@@ -165,7 +165,7 @@ public class MultiReplacementStrategyConfiguration<T>
     /// Must be greater than 0. Defaults to 1.0.</param>
     /// <param name="customWeight">Optional custom weight for this strategy when used with multiple strategies. Higher weights increase selection probability.</param>
     /// <exception cref="ArgumentException">Thrown when temperatureDecayRate is less than 0 or initialTemperature is less than or equal to 0.</exception>
-    public MultiReplacementStrategyConfiguration<T> Boltzmann(double temperatureDecayRate = 0.05, double initialTemperature = 1.0, float? customWeight = null)
+    public MultiSurvivorSelectionStrategyConfiguration<T> Boltzmann(double temperatureDecayRate = 0.05, double initialTemperature = 1.0, float? customWeight = null)
     {
         if (temperatureDecayRate < 0)
         {
@@ -177,17 +177,17 @@ public class MultiReplacementStrategyConfiguration<T>
             throw new ArgumentException("Initial temperature must be greater than 0.", nameof(initialTemperature));
         }
         
-        var result = new BoltzmannReplacementStrategy<T>(temperatureDecayRate, initialTemperature, useExponentialDecay: true);
+        var result = new BoltzmannSurvivorSelectionStrategy<T>(temperatureDecayRate, initialTemperature, useExponentialDecay: true);
         if (customWeight.HasValue)
         {
             result.WithCustomWeight(customWeight.Value);
         }
-        ReplacementStrategies.Add(result);
+        SurvivorSelectionStrategies.Add(result);
         return this;
     }
 
     /// <summary>
-    /// Apply Boltzmann replacement strategy that uses temperature-based elimination probabilities with linear decay.
+    /// Apply Boltzmann survivor selection strategy that uses temperature-based elimination probabilities with linear decay.
     /// This strategy applies the Boltzmann distribution to control elimination pressure through a temperature parameter
     /// that starts at the specified initial value and decays linearly over epochs: T(t) = T₀ - α×t.
     /// Higher temperature leads to more uniform elimination (exploration), while lower temperature leads to more fitness-based elimination (exploitation).
@@ -199,7 +199,7 @@ public class MultiReplacementStrategyConfiguration<T>
     /// Must be greater than 0. Defaults to 1.0.</param>
     /// <param name="customWeight">Optional custom weight for this strategy when used with multiple strategies. Higher weights increase selection probability.</param>
     /// <exception cref="ArgumentException">Thrown when temperatureDecayRate is less than 0 or initialTemperature is less than or equal to 0.</exception>
-    public MultiReplacementStrategyConfiguration<T> BoltzmannWithLinearDecay(double temperatureDecayRate = 0.01, double initialTemperature = 1.0, float? customWeight = null)
+    public MultiSurvivorSelectionStrategyConfiguration<T> BoltzmannWithLinearDecay(double temperatureDecayRate = 0.01, double initialTemperature = 1.0, float? customWeight = null)
     {
         if (temperatureDecayRate < 0)
         {
@@ -211,23 +211,23 @@ public class MultiReplacementStrategyConfiguration<T>
             throw new ArgumentException("Initial temperature must be greater than 0.", nameof(initialTemperature));
         }
         
-        var result = new BoltzmannReplacementStrategy<T>(temperatureDecayRate, initialTemperature, useExponentialDecay: false);
+        var result = new BoltzmannSurvivorSelectionStrategy<T>(temperatureDecayRate, initialTemperature, useExponentialDecay: false);
         if (customWeight.HasValue)
         {
             result.WithCustomWeight(customWeight.Value);
         }
-        ReplacementStrategies.Add(result);
+        SurvivorSelectionStrategies.Add(result);
         return this;
     }
 
     /// <summary>
-    /// Configures the operator selection policy that determines how replacement strategies are chosen
+    /// Configures the operator selection policy that determines how survivor selection strategies are chosen
     /// when multiple strategies are registered.
     /// 
     /// This method allows explicit configuration of the operator selection policy, overriding
     /// OpenGARunner's automatic defaults. However, there are important interaction rules:
     /// 
-    /// - If replacement strategies have custom weights (> 0) but a non-CustomWeight policy is applied,
+    /// - If survivor selection strategies have custom weights (> 0) but a non-CustomWeight policy is applied,
     ///   OpenGARunner will throw an OperatorSelectionPolicyConflictException during DefaultMissingStrategies()
     /// - If multiple strategies exist without custom weights and no policy is specified, AdaptivePursuitPolicy is applied
     /// - If custom weights are detected without an explicit policy, CustomWeightPolicy is automatically applied
@@ -248,14 +248,14 @@ public class MultiReplacementStrategyConfiguration<T>
     /// </exception>
     /// <example>
     /// <code>
-    /// .Replacement(r => r.RegisterMulti(m => m
+    /// .SurvivorSelection(r => r.RegisterMulti(m => m
     ///     .Elitist(0.1f)
     ///     .Tournament(3)
     ///     .WithPolicy(p => p.AdaptivePursuit())
     /// ))
     /// </code>
     /// </example>
-    public MultiReplacementStrategyConfiguration<T> WithPolicy(Action<OperatorSelectionPolicyConfiguration> policyConfigurator)
+    public MultiSurvivorSelectionStrategyConfiguration<T> WithPolicy(Action<OperatorSelectionPolicyConfiguration> policyConfigurator)
     {
         ArgumentNullException.ThrowIfNull(policyConfigurator, nameof(policyConfigurator));
 
@@ -265,21 +265,21 @@ public class MultiReplacementStrategyConfiguration<T>
 
     internal void ValidateAndDefault()
     {
-        if (ReplacementStrategies is [])
+        if (SurvivorSelectionStrategies is [])
         {
             Elitist();
             _policyConfig.FirstChoice();
         }
         else
         {
-            var hasCustomWeights = ReplacementStrategies.Any(strategy => strategy.CustomWeight > 0);
+            var hasCustomWeights = SurvivorSelectionStrategies.Any(strategy => strategy.CustomWeight > 0);
 
             if (_policyConfig.Policy is not null)
             {
                 if (hasCustomWeights && _policyConfig.Policy is not CustomWeightPolicy)
                 {
                     throw new OperatorSelectionPolicyConflictException(
-                        @"Cannot apply a non-CustomWeight operator selection policy when replacement strategies 
+                        @"Cannot apply a non-CustomWeight operator selection policy when survivor selection strategies 
                             have custom weights. Either remove the custom weights using WithCustomWeight(0) or use 
                             CustomWeights().");
                 }
@@ -291,15 +291,15 @@ public class MultiReplacementStrategyConfiguration<T>
             }
             else
             {
-                // If multiple replacement strategies and no operator policy specified then default to adaptive pursuit
+                // If multiple survivor selection strategies and no operator policy specified then default to adaptive pursuit
                 _policyConfig.AdaptivePursuit();
             }
         }
 
-        _policyConfig.Policy!.ApplyOperators([..ReplacementStrategies]);
+        _policyConfig.Policy!.ApplyOperators([..SurvivorSelectionStrategies]);
     }
 
-    internal OperatorSelectionPolicy GetReplacementSelectionPolicy()
+    internal OperatorSelectionPolicy GetSurvivorSelectionSelectionPolicy()
     {
         return _policyConfig.Policy;
     }

@@ -1,6 +1,6 @@
 using OpenGA.Net.ParentSelectors;
 using OpenGA.Net.CrossoverStrategies;
-using OpenGA.Net.ReplacementStrategies;
+using OpenGA.Net.SurvivorSelectionStrategies;
 using OpenGA.Net.Termination;
 using OpenGA.Net.Exceptions;
 
@@ -14,7 +14,7 @@ namespace OpenGA.Net.Tests;
 /// - Basic Configuration and Validation Tests
 /// - Missing Strategy Configuration Tests  
 /// - Reproduction Selector Integration Tests (Random, Fitness-Weighted, Elitist, Tournament)
-/// - Replacement Strategy Integration Tests (Generational, Elitist, Tournament, Age-Based)
+/// - Survivor Selection Strategy Integration Tests (Generational, Elitist, Tournament, Age-Based)
 /// - Termination Strategy Integration Tests (Max Epochs, Max Duration, Target Std Dev, Multiple)
 /// - Population Size and Offspring Generation Tests
 /// - Crossover Strategy Integration Tests (One Point, Uniform, K-Point)
@@ -160,7 +160,7 @@ public class OpenGARunnerIntegrationTests
         // Act & Assert
         Assert.Throws<ArgumentOutOfRangeException>(() => 
             OpenGARunner<int>.Initialize(population)
-                .Replacement(config => {
+                .SurvivorSelection(config => {
                     config.RegisterSingle(s => s.Elitist());
                     config.OverrideOffspringGenerationRate(invalidRate);
                 })
@@ -177,7 +177,7 @@ public class OpenGARunnerIntegrationTests
         // Arrange
         var population = CreateDiversePopulation(5);
         var runner = OpenGARunner<int>.Initialize(population)
-            .Replacement(config => config.RegisterSingle(s => s.Generational()))
+            .SurvivorSelection(config => config.RegisterSingle(s => s.Generational()))
             .Termination(config => config.MaximumEpochs(5));
 
         // Act & Assert - Should not throw, should use default Tournament reproduction selector
@@ -186,7 +186,7 @@ public class OpenGARunnerIntegrationTests
     }
 
     [Fact]
-    public void RunToCompletion_WithoutReplacementStrategy_UsesDefaultElitistStrategy()
+    public void RunToCompletion_WithoutSurvivorSelectionStrategy_UsesDefaultElitistStrategy()
     {
         // Arrange
         var population = CreateDiversePopulation(5);
@@ -194,7 +194,7 @@ public class OpenGARunnerIntegrationTests
             .ParentSelection(config => config.Random())
             .Termination(config => config.MaximumEpochs(5));
 
-        // Act & Assert - Should not throw, should use default Elitist replacement strategy
+        // Act & Assert - Should not throw, should use default Elitist survivor selection strategy
         var result = runner.RunToCompletion();
         Assert.NotNull(result);
     }
@@ -206,7 +206,7 @@ public class OpenGARunnerIntegrationTests
         var population = CreateDiversePopulation(5);
         var runner = OpenGARunner<int>.Initialize(population)
             .ParentSelection(config => config.Random())
-            .Replacement(config => config.RegisterSingle(s => s.Generational()))
+            .SurvivorSelection(config => config.RegisterSingle(s => s.Generational()))
             .Termination(config => config.MaximumEpochs(3));
 
         // Act & Assert - Should not throw, should use default OnePoint crossover
@@ -221,7 +221,7 @@ public class OpenGARunnerIntegrationTests
         var population = CreateDiversePopulation(5);
         var runner = OpenGARunner<int>.Initialize(population)
             .ParentSelection(config => config.Random())
-            .Replacement(config => config.RegisterSingle(s => s.Generational()))
+            .SurvivorSelection(config => config.RegisterSingle(s => s.Generational()))
             .MutationRate(0.1f)
             .Crossover(s => {
                 s.RegisterSingle(c => c.OnePointCrossover());
@@ -255,7 +255,7 @@ public class OpenGARunnerIntegrationTests
         
         var runner = OpenGARunner<int>.Initialize(population)
             .ParentSelection(config => config.Random())
-            .Replacement(config => config.RegisterSingle(s => s.Elitist(0.2f)))
+            .SurvivorSelection(config => config.RegisterSingle(s => s.Elitist(0.2f)))
             .Termination(config => config.MaximumEpochs(10))
             .MutationRate(0.3f)
             .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.WithCrossoverRate(0.8f); });
@@ -280,7 +280,7 @@ public class OpenGARunnerIntegrationTests
         
         var runner = OpenGARunner<int>.Initialize(population)
             .ParentSelection(config => config.RouletteWheel())
-            .Replacement(config => config.RegisterSingle(s => s.Elitist(0.1f)))
+            .SurvivorSelection(config => config.RegisterSingle(s => s.Elitist(0.1f)))
             .Termination(config => config.MaximumEpochs(15))
             .MutationRate(0.2f)
             .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.WithCrossoverRate(0.9f); });
@@ -304,7 +304,7 @@ public class OpenGARunnerIntegrationTests
         
         var runner = OpenGARunner<int>.Initialize(population)
             .ParentSelection(config => config.Elitist(0.3f, 0.1f, true))
-            .Replacement(config => config.RegisterSingle(s => s.Elitist(0.2f)))
+            .SurvivorSelection(config => config.RegisterSingle(s => s.Elitist(0.2f)))
             .Termination(config => config.MaximumEpochs(12))
             .MutationRate(0.1f)
             .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.WithCrossoverRate(0.8f); });
@@ -327,7 +327,7 @@ public class OpenGARunnerIntegrationTests
         
         var runner = OpenGARunner<int>.Initialize(population)
             .ParentSelection(config => config.Tournament(true))
-            .Replacement(config => config.RegisterSingle(s => s.Random()))
+            .SurvivorSelection(config => config.RegisterSingle(s => s.Random()))
             .Termination(config => config.MaximumEpochs(8))
             .MutationRate(0.25f)
             .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.WithCrossoverRate(0.7f); });
@@ -343,17 +343,17 @@ public class OpenGARunnerIntegrationTests
 
     #endregion
 
-    #region Replacement Strategy Integration Tests
+    #region Survivor Selection Strategy Integration Tests
 
     [Fact]
-    public void RunToCompletion_WithGenerationalReplacement_ReplacesEntirePopulation()
+    public void RunToCompletion_WithGenerationalSurvivorSelection_ReplacesEntirePopulation()
     {
         // Arrange
         var population = CreateDiversePopulation(8);
         
         var runner = OpenGARunner<int>.Initialize(population)
             .ParentSelection(config => config.Random())
-            .Replacement(config => config.RegisterSingle(s => s.Generational()))
+            .SurvivorSelection(config => config.RegisterSingle(s => s.Generational()))
             .Termination(config => config.MaximumEpochs(5))
             .MutationRate(0.3f)
             .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.WithCrossoverRate(0.8f); });
@@ -363,12 +363,12 @@ public class OpenGARunnerIntegrationTests
 
         // Assert
         Assert.NotNull(result);
-        // With generational replacement, we still get a valid result
+        // With generational survivor selection, we still get a valid result
         Assert.True(result.Fitness >= 0);
     }
 
     [Fact]
-    public void RunToCompletion_WithElitistReplacement_MaintainsBestIndividuals()
+    public void RunToCompletion_WithElitistSurvivorSelection_MaintainsBestIndividuals()
     {
         // Arrange
         var population = CreateDiversePopulation(15);
@@ -376,7 +376,7 @@ public class OpenGARunnerIntegrationTests
         
         var runner = OpenGARunner<int>.Initialize(population)
             .ParentSelection(config => config.RouletteWheel())
-            .Replacement(config => config.RegisterSingle(s => s.Elitist(0.3f))) // Protect top 30%
+            .SurvivorSelection(config => config.RegisterSingle(s => s.Elitist(0.3f))) // Protect top 30%
             .Termination(config => config.MaximumEpochs(10))
             .MutationRate(0.2f)
             .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.WithCrossoverRate(0.9f); });
@@ -386,20 +386,20 @@ public class OpenGARunnerIntegrationTests
 
         // Assert
         Assert.NotNull(result);
-        // Elitist replacement should preserve the best fitness
+        // Elitist survivor selection should preserve the best fitness
         Assert.True(result.Fitness >= initialBestFitness, 
-            "Elitist replacement should preserve best individuals");
+            "Elitist survivor selection should preserve best individuals");
     }
 
     [Fact]
-    public void RunToCompletion_WithTournamentReplacement_WorksCorrectly()
+    public void RunToCompletion_WithTournamentSurvivorSelection_WorksCorrectly()
     {
         // Arrange
         var population = CreateDiversePopulation(12);
         
         var runner = OpenGARunner<int>.Initialize(population)
             .ParentSelection(config => config.Random())
-            .Replacement(config => config.RegisterSingle(s => s.Tournament(4, true)))
+            .SurvivorSelection(config => config.RegisterSingle(s => s.Tournament(4, true)))
             .Termination(config => config.MaximumEpochs(8))
             .MutationRate(0.3f)
             .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.WithCrossoverRate(0.7f); });
@@ -413,14 +413,14 @@ public class OpenGARunnerIntegrationTests
     }
 
     [Fact]
-    public void RunToCompletion_WithAgeBasedReplacement_WorksCorrectly()
+    public void RunToCompletion_WithAgeBasedSurvivorSelection_WorksCorrectly()
     {
         // Arrange
         var population = CreateDiversePopulation(10);
         
         var runner = OpenGARunner<int>.Initialize(population)
             .ParentSelection(config => config.Random())
-            .Replacement(config => config.RegisterSingle(s => s.AgeBased()))
+            .SurvivorSelection(config => config.RegisterSingle(s => s.AgeBased()))
             .Termination(config => config.MaximumEpochs(8))
             .MutationRate(0.25f)
             .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.WithCrossoverRate(0.8f); });
@@ -446,7 +446,7 @@ public class OpenGARunnerIntegrationTests
         
         var runner = OpenGARunner<int>.Initialize(population)
             .ParentSelection(config => config.Random())
-            .Replacement(config => config.RegisterSingle(s => s.Generational()))
+            .SurvivorSelection(config => config.RegisterSingle(s => s.Generational()))
             .Termination(config => config.MaximumEpochs(maxEpochs))
             .MutationRate(0.2f)
             .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.WithCrossoverRate(0.8f); });
@@ -472,7 +472,7 @@ public class OpenGARunnerIntegrationTests
         
         var runner = OpenGARunner<int>.Initialize(population)
             .ParentSelection(config => config.Random())
-            .Replacement(config => config.RegisterSingle(s => s.Generational()))
+            .SurvivorSelection(config => config.RegisterSingle(s => s.Generational()))
             .Termination(config => config.MaximumDuration(maxDuration))
             .MutationRate(0.2f)
             .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.WithCrossoverRate(0.8f); });
@@ -497,7 +497,7 @@ public class OpenGARunnerIntegrationTests
         
         var runner = OpenGARunner<int>.Initialize(population)
             .ParentSelection(config => config.Random())
-            .Replacement(config => config.RegisterSingle(s => s.Elitist(0.5f))) // High elitism
+            .SurvivorSelection(config => config.RegisterSingle(s => s.Elitist(0.5f))) // High elitism
             .Termination(config => config.TargetStandardDeviation(5.0, 3))
             .MutationRate(0.05f) // Low mutation to maintain convergence
             .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.WithCrossoverRate(0.6f); });
@@ -523,7 +523,7 @@ public class OpenGARunnerIntegrationTests
         
         var runner = OpenGARunner<int>.Initialize(population)
             .ParentSelection(config => config.Random())
-            .Replacement(config => config.RegisterSingle(s => s.Elitist(0.2f))) // Keep best chromosomes
+            .SurvivorSelection(config => config.RegisterSingle(s => s.Elitist(0.2f))) // Keep best chromosomes
             .Termination(config => config.TargetFitness(targetFitness))
             .MutationRate(0.1f)
             .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.WithCrossoverRate(0.8f); });
@@ -546,7 +546,7 @@ public class OpenGARunnerIntegrationTests
         
         var runner = OpenGARunner<int>.Initialize(population)
             .ParentSelection(config => config.Random())
-            .Replacement(config => config.RegisterSingle(s => s.Generational()))
+            .SurvivorSelection(config => config.RegisterSingle(s => s.Generational()))
             .Termination(config => config
                 .MaximumEpochs(3) // Should trigger first
                 .MaximumDuration(TimeSpan.FromMinutes(1))
@@ -581,7 +581,7 @@ public class OpenGARunnerIntegrationTests
         
         var runner = OpenGARunner<int>.Initialize(population)
             .ParentSelection(config => config.Random())
-            .Replacement(config => config.RegisterSingle(s => s.Elitist(0.2f)))
+            .SurvivorSelection(config => config.RegisterSingle(s => s.Elitist(0.2f)))
             .Termination(config => config.MaximumEpochs(5))
             .MutationRate(0.2f)
             .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.WithCrossoverRate(0.8f); });
@@ -605,7 +605,7 @@ public class OpenGARunnerIntegrationTests
         
         var runner = OpenGARunner<int>.Initialize(population)
             .ParentSelection(config => config.Random())
-            .Replacement(config => {
+            .SurvivorSelection(config => {
                 config.RegisterSingle(s => s.Generational());
                 config.OverrideOffspringGenerationRate(generationRate);
             })
@@ -629,7 +629,7 @@ public class OpenGARunnerIntegrationTests
         
         var runner = OpenGARunner<int>.Initialize(population, 0.5f, 1.5f) // min 50%, max 150% (15 from 10)
             .ParentSelection(config => config.Random())
-            .Replacement(config => config.RegisterSingle(s => s.Elitist(0.3f)))
+            .SurvivorSelection(config => config.RegisterSingle(s => s.Elitist(0.3f)))
             .Termination(config => config.MaximumEpochs(6))
             .MutationRate(0.3f)
             .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.WithCrossoverRate(0.9f); });
@@ -658,7 +658,7 @@ public class OpenGARunnerIntegrationTests
                 s.RegisterSingle(config => config.OnePointCrossover()); 
                 s.WithCrossoverRate(0.8f); 
             })
-            .Replacement(config => config.RegisterSingle(s => s.Generational()))
+            .SurvivorSelection(config => config.RegisterSingle(s => s.Generational()))
             .Termination(config => config.MaximumEpochs(6))
             .MutationRate(0.2f);
 
@@ -682,7 +682,7 @@ public class OpenGARunnerIntegrationTests
                 s.RegisterSingle(config => config.UniformCrossover()); 
                 s.WithCrossoverRate(0.8f); 
             })
-            .Replacement(config => config.RegisterSingle(s => s.Generational()))
+            .SurvivorSelection(config => config.RegisterSingle(s => s.Generational()))
             .Termination(config => config.MaximumEpochs(6))
             .MutationRate(0.2f);
 
@@ -706,7 +706,7 @@ public class OpenGARunnerIntegrationTests
                 s.RegisterSingle(config => config.KPointCrossover(2)); 
                 s.WithCrossoverRate(0.8f); 
             })
-            .Replacement(config => config.RegisterSingle(s => s.Generational()))
+            .SurvivorSelection(config => config.RegisterSingle(s => s.Generational()))
             .Termination(config => config.MaximumEpochs(6))
             .MutationRate(0.2f);
 
@@ -736,7 +736,7 @@ public class OpenGARunnerIntegrationTests
                 s.RegisterSingle(config => config.KPointCrossover(2)); 
                 s.WithCrossoverRate(0.85f); 
             })
-            .Replacement(config => {
+            .SurvivorSelection(config => {
                 config.RegisterSingle(s => s.Elitist(0.15f));
                 config.OverrideOffspringGenerationRate(0.8f);
             })
@@ -772,7 +772,7 @@ public class OpenGARunnerIntegrationTests
             .MutationRate(0.05f) // Low mutation
             .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.WithCrossoverRate(0.95f); }) // High crossover
             .ParentSelection(config => config.RouletteWheel())
-            .Replacement(config => config.RegisterSingle(s => s.Elitist(0.25f)))
+            .SurvivorSelection(config => config.RegisterSingle(s => s.Elitist(0.25f)))
             .Termination(config => config.MaximumEpochs(10));
 
         // Act
@@ -794,7 +794,7 @@ public class OpenGARunnerIntegrationTests
             .MutationRate(0.4f) // High mutation
             .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.WithCrossoverRate(0.5f); }) // Lower crossover
             .ParentSelection(config => config.Random())
-            .Replacement(config => config.RegisterSingle(s => s.Random()))
+            .SurvivorSelection(config => config.RegisterSingle(s => s.Random()))
             .Termination(config => config.MaximumEpochs(8));
 
         // Act
@@ -818,7 +818,7 @@ public class OpenGARunnerIntegrationTests
         {
             var runner = OpenGARunner<int>.Initialize(CreateDiversePopulation(10))
                 .ParentSelection(config => config.Random())
-                .Replacement(config => config.RegisterSingle(s => s.Generational()))
+                .SurvivorSelection(config => config.RegisterSingle(s => s.Generational()))
                 .Termination(config => config.MaximumEpochs(5))
                 .MutationRate(0.2f)
                 .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.WithCrossoverRate(0.8f); });
@@ -849,7 +849,7 @@ public class OpenGARunnerIntegrationTests
         
         var runner = OpenGARunner<int>.Initialize(population)
             .ParentSelection(config => config.Random())
-            .Replacement(config => config.RegisterSingle(s => s.Generational()))
+            .SurvivorSelection(config => config.RegisterSingle(s => s.Generational()))
             .Termination(config => config.MaximumEpochs(3))
             .MutationRate(0.3f)
             .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.WithCrossoverRate(0.8f); });
@@ -870,7 +870,7 @@ public class OpenGARunnerIntegrationTests
         
         var runner = OpenGARunner<int>.Initialize(population)
             .ParentSelection(config => config.Random())
-            .Replacement(config => config.RegisterSingle(s => s.Elitist(1.0f))) // Protect the only chromosome
+            .SurvivorSelection(config => config.RegisterSingle(s => s.Elitist(1.0f))) // Protect the only chromosome
             .Termination(config => config.MaximumEpochs(3))
             .MutationRate(0.2f)
             .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.WithCrossoverRate(0.8f); });

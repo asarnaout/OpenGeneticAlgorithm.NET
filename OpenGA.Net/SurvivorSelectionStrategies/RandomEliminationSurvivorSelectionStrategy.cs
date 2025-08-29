@@ -1,9 +1,9 @@
 using OpenGA.Net.Extensions;
 
-namespace OpenGA.Net.ReplacementStrategies;
+namespace OpenGA.Net.SurvivorSelectionStrategies;
 
 /// <summary>
-/// A random replacement strategy that eliminates chromosomes from the population to make room for offspring.
+/// A random survivor selection strategy that eliminates chromosomes from the population to make room for offspring.
 /// Each chromosome has an equal chance of being eliminated, but the total number of eliminations is controlled
 /// to exactly match the number of offspring that need to be accommodated.
 /// 
@@ -12,20 +12,20 @@ namespace OpenGA.Net.ReplacementStrategies;
 /// 
 /// Example usage:
 /// <code>
-/// // Create a replacement strategy for random elimination
-/// var replacementStrategy = new RandomEliminationReplacementStrategy&lt;int&gt;();
+/// // Create a survivor selection strategy for random elimination
+/// var survivorSelectionStrategy = new RandomEliminationSurvivorSelectionStrategy&lt;int&gt;();
 /// 
-/// // Apply replacement to create new population (size will be maintained)
-/// var newPopulation = replacementStrategy.ApplyReplacement(
+/// // Apply survivor selection to create new population (size will be maintained)
+/// var newPopulation = survivorSelectionStrategy.ApplySurvivorSelection(
 ///     currentPopulation, 
 ///     offspring, 
 ///     random);
 /// </code>
 /// </summary>
-public class RandomEliminationReplacementStrategy<T> : BaseReplacementStrategy<T>
+public class RandomEliminationSurvivorSelectionStrategy<T> : BaseSurvivorSelectionStrategy<T>
 {
     /// <summary>
-    /// The recommended offspring generation rate for random elimination replacement strategy.
+    /// The recommended offspring generation rate for random elimination survivor selection strategy.
     /// This conservative turnover rate (25%) reduces the risk of losing good solutions through random elimination.
     /// </summary>
     internal override float RecommendedOffspringGenerationRate => 0.25f;

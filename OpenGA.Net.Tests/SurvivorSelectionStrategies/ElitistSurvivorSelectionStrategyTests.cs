@@ -1,8 +1,8 @@
-using OpenGA.Net.ReplacementStrategies;
+using OpenGA.Net.SurvivorSelectionStrategies;
 
-namespace OpenGA.Net.Tests.ReplacementStrategies;
+namespace OpenGA.Net.Tests.SurvivorSelectionStrategies;
 
-public class ElitistReplacementStrategyTests
+public class ElitistSurvivorSelectionStrategyTests
 {
     [Theory]
     [InlineData(-0.1f)]
@@ -11,7 +11,7 @@ public class ElitistReplacementStrategyTests
     public void Elitist_WithInvalidElitePercentage_ShouldThrowException(float invalidPercentage)
     {
         // Arrange
-        var configuration = new ReplacementStrategyConfiguration<int>();
+        var configuration = new SurvivorSelectionStrategyConfiguration<int>();
 
         // Act & Assert
         var exception = Assert.Throws<ArgumentOutOfRangeException>(() => 
@@ -24,7 +24,7 @@ public class ElitistReplacementStrategyTests
     public void SelectChromosomesForElimination_WithEmptyPopulation_ShouldReturnEmpty()
     {
         // Arrange
-        var strategy = new ElitistReplacementStrategy<int>(0.1f);
+        var strategy = new ElitistSurvivorSelectionStrategy<int>(0.1f);
         var random = new Random(42);
         var population = Array.Empty<Chromosome<int>>();
         var offspring = new[] { new DummyChromosome([1, 2, 3]) };
@@ -40,7 +40,7 @@ public class ElitistReplacementStrategyTests
     public void SelectChromosomesForElimination_WithEmptyOffspring_ShouldReturnEmpty()
     {
         // Arrange
-        var strategy = new ElitistReplacementStrategy<int>(0.1f);
+        var strategy = new ElitistSurvivorSelectionStrategy<int>(0.1f);
         var random = new Random(42);
         var population = new[] { new DummyChromosome([1, 2, 3]) };
         var offspring = Array.Empty<Chromosome<int>>();
@@ -56,7 +56,7 @@ public class ElitistReplacementStrategyTests
     public void SelectChromosomesForElimination_ShouldProtectEliteChromosomes()
     {
         // Arrange
-        var strategy = new ElitistReplacementStrategy<int>(0.2f); // Protect top 20%
+        var strategy = new ElitistSurvivorSelectionStrategy<int>(0.2f); // Protect top 20%
         var random = new Random(42);
         
         // Create population with known fitness values (based on average of genes)
@@ -98,7 +98,7 @@ public class ElitistReplacementStrategyTests
     public void SelectChromosomesForElimination_WithHighElitePercentage_ShouldLimitEliminations()
     {
         // Arrange
-        var strategy = new ElitistReplacementStrategy<int>(0.8f); // Protect 80%
+        var strategy = new ElitistSurvivorSelectionStrategy<int>(0.8f); // Protect 80%
         var random = new Random(42);
         
         var population = new[]
@@ -131,10 +131,10 @@ public class ElitistReplacementStrategyTests
     }
 
     [Fact]
-    public void ApplyReplacement_ShouldMaintainElites()
+    public void ApplySurvivorSelection_ShouldMaintainElites()
     {
         // Arrange
-        var strategy = new ElitistReplacementStrategy<int>(0.4f); // Protect top 40%
+        var strategy = new ElitistSurvivorSelectionStrategy<int>(0.4f); // Protect top 40%
         var random = new Random(42);
         
         var population = new[]
@@ -153,7 +153,7 @@ public class ElitistReplacementStrategyTests
         };
 
         // Act
-        var newPopulation = strategy.ApplyReplacement(population, offspring, random);
+        var newPopulation = strategy.ApplySurvivorSelection(population, offspring, random);
 
         // Assert
         // New population should contain elites + offspring
@@ -181,7 +181,7 @@ public class ElitistReplacementStrategyTests
     public void SelectChromosomesForElimination_WithZeroElitePercentage_ShouldBehaveLikeRandomElimination()
     {
         // Arrange
-        var strategy = new ElitistReplacementStrategy<int>(0.0f); // No elites protected
+        var strategy = new ElitistSurvivorSelectionStrategy<int>(0.0f); // No elites protected
         var random = new Random(42);
         
         var population = new[]
@@ -208,7 +208,7 @@ public class ElitistReplacementStrategyTests
     public void SelectChromosomesForElimination_WithOneHundredPercentElite_ShouldEliminateNothing()
     {
         // Arrange
-        var strategy = new ElitistReplacementStrategy<int>(1.0f); // Protect everyone
+        var strategy = new ElitistSurvivorSelectionStrategy<int>(1.0f); // Protect everyone
         var random = new Random(42);
         
         var population = new[]
@@ -233,7 +233,7 @@ public class ElitistReplacementStrategyTests
     public void SelectChromosomesForElimination_ShouldRespectFitnessOrdering()
     {
         // Arrange
-        var strategy = new ElitistReplacementStrategy<int>(0.5f); // Protect top 50%
+        var strategy = new ElitistSurvivorSelectionStrategy<int>(0.5f); // Protect top 50%
         var random = new Random(42);
         
         var population = new[]

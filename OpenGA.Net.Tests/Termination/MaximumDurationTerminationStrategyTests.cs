@@ -1,7 +1,7 @@
 using OpenGA.Net.Termination;
 using OpenGA.Net.ParentSelectors;
 using OpenGA.Net.CrossoverStrategies;
-using OpenGA.Net.ReplacementStrategies;
+using OpenGA.Net.SurvivorSelectionStrategies;
 using System.Diagnostics;
 
 namespace OpenGA.Net.Tests.Termination;

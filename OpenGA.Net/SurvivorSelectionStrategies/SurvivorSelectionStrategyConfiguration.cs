@@ -1,37 +1,37 @@
 using OpenGA.Net.OperatorSelectionPolicies;
 
-namespace OpenGA.Net.ReplacementStrategies;
+namespace OpenGA.Net.SurvivorSelectionStrategies;
 
-public class ReplacementStrategyConfiguration<T>
+public class SurvivorSelectionStrategyConfiguration<T>
 {
-    internal BaseReplacementStrategy<T>? ReplacementStrategy { get; private set; }
+    internal BaseSurvivorSelectionStrategy<T>? SurvivorSelectionStrategy { get; private set; }
 
     private readonly OperatorSelectionPolicyConfiguration _policyConfig = new();
 
     /// <summary>
-    /// Apply random elimination replacement strategy. Eliminates chromosomes randomly from the population 
+    /// Apply random elimination survivor selection strategy. Eliminates chromosomes randomly from the population 
     /// to make room for offspring, ensuring population size is maintained.
     /// Each chromosome has an equal chance of being eliminated.
     /// </summary>
     public void Random()
     {
-        var result = new RandomEliminationReplacementStrategy<T>();
-        ReplacementStrategy = result;
+        var result = new RandomEliminationSurvivorSelectionStrategy<T>();
+        SurvivorSelectionStrategy = result;
     }
 
     /// <summary>
-    /// Apply generational replacement strategy. Completely replaces the entire parent population with offspring.
+    /// Apply generational survivor selection strategy. Completely replaces the entire parent population with offspring.
     /// In this strategy, no parent chromosomes survive to the next generation - the entire population
     /// is renewed with the offspring generation.
     /// </summary>
     public void Generational()
     {
-        var result = new GenerationalReplacementStrategy<T>();
-        ReplacementStrategy = result;
+        var result = new GenerationalSurvivorSelectionStrategy<T>();
+        SurvivorSelectionStrategy = result;
     }
 
     /// <summary>
-    /// Apply elitist replacement strategy. Protects the top-performing chromosomes (elites) from elimination
+    /// Apply elitist survivor selection strategy. Protects the top-performing chromosomes (elites) from elimination
     /// based on their fitness values, while allowing the remaining population to be replaced with offspring.
     /// This ensures that the best solutions are preserved across generations.
     /// </summary>
@@ -52,12 +52,12 @@ public class ReplacementStrategyConfiguration<T>
                 "Elite percentage must be between 0.0 and 1.0.");
         }
 
-        var result = new ElitistReplacementStrategy<T>(elitePercentage);
-        ReplacementStrategy = result;
+        var result = new ElitistSurvivorSelectionStrategy<T>(elitePercentage);
+        SurvivorSelectionStrategy = result;
     }
 
     /// <summary>
-    /// Apply tournament-based replacement strategy. Eliminates chromosomes through competitive tournaments
+    /// Apply tournament-based survivor selection strategy. Eliminates chromosomes through competitive tournaments
     /// where the least fit individuals are more likely to be eliminated.
     /// </summary>
     /// <param name="tournamentSize">
@@ -81,34 +81,34 @@ public class ReplacementStrategyConfiguration<T>
                 "Tournament size must be at least 3.");
         }
 
-        var result = new TournamentReplacementStrategy<T>(tournamentSize, stochasticTournament);
-        ReplacementStrategy = result;
+        var result = new TournamentSurvivorSelectionStrategy<T>(tournamentSize, stochasticTournament);
+        SurvivorSelectionStrategy = result;
     }
 
     /// <summary>
-    /// Apply age-based replacement strategy. Eliminates chromosomes based on their age using a weighted
+    /// Apply age-based survivor selection strategy. Eliminates chromosomes based on their age using a weighted
     /// roulette wheel where older chromosomes have higher probability of being eliminated.
     /// This encourages population turnover while maintaining some genetic diversity.
     /// </summary>
     public void AgeBased()
     {
-        var result = new AgeBasedReplacementStrategy<T>();
-        ReplacementStrategy = result;
+        var result = new AgeBasedSurvivorSelectionStrategy<T>();
+        SurvivorSelectionStrategy = result;
     }
 
     /// <summary>
-    /// Apply a custom replacement strategy. Requires an instance of a subclass of <see cref="BaseReplacementStrategy<T>">BaseReplacementStrategy<T></see>
+    /// Apply a custom survivor selection strategy. Requires an instance of a subclass of <see cref="BaseSurvivorSelectionStrategy<T>">BaseSurvivorSelectionStrategy<T></see>
     /// to dictate how chromosomes are eliminated from the population to make room for offspring.
     /// </summary>
-    /// <param name="replacementStrategy">The custom replacement strategy to apply</param>
-    public void Custom(BaseReplacementStrategy<T> replacementStrategy)
+    /// <param name="survivorSelectionStrategy">The custom survivor selection strategy to apply</param>
+    public void Custom(BaseSurvivorSelectionStrategy<T> survivorSelectionStrategy)
     {
-        ArgumentNullException.ThrowIfNull(replacementStrategy, nameof(replacementStrategy));
-        ReplacementStrategy = replacementStrategy;
+        ArgumentNullException.ThrowIfNull(survivorSelectionStrategy, nameof(survivorSelectionStrategy));
+        SurvivorSelectionStrategy = survivorSelectionStrategy;
     }
 
     /// <summary>
-    /// Apply Boltzmann replacement strategy that uses temperature-based elimination probabilities with exponential decay.
+    /// Apply Boltzmann survivor selection strategy that uses temperature-based elimination probabilities with exponential decay.
     /// This strategy applies the Boltzmann distribution to control elimination pressure through a temperature parameter
     /// that starts at the specified initial value and decays exponentially over epochs: T(t) = T₀ × e^(-α×t).
     /// Higher temperature leads to more uniform elimination (exploration), while lower temperature leads to more fitness-based elimination (exploitation).
@@ -131,12 +131,12 @@ public class ReplacementStrategyConfiguration<T>
             throw new ArgumentException("Initial temperature must be greater than 0.", nameof(initialTemperature));
         }
         
-        var result = new BoltzmannReplacementStrategy<T>(temperatureDecayRate, initialTemperature, useExponentialDecay: true);
-        ReplacementStrategy = result;
+        var result = new BoltzmannSurvivorSelectionStrategy<T>(temperatureDecayRate, initialTemperature, useExponentialDecay: true);
+        SurvivorSelectionStrategy = result;
     }
 
     /// <summary>
-    /// Apply Boltzmann replacement strategy that uses temperature-based elimination probabilities with linear decay.
+    /// Apply Boltzmann survivor selection strategy that uses temperature-based elimination probabilities with linear decay.
     /// This strategy applies the Boltzmann distribution to control elimination pressure through a temperature parameter
     /// that starts at the specified initial value and decays linearly over epochs: T(t) = T₀ - α×t.
     /// Higher temperature leads to more uniform elimination (exploration), while lower temperature leads to more fitness-based elimination (exploitation).
@@ -159,23 +159,23 @@ public class ReplacementStrategyConfiguration<T>
             throw new ArgumentException("Initial temperature must be greater than 0.", nameof(initialTemperature));
         }
         
-        var result = new BoltzmannReplacementStrategy<T>(temperatureDecayRate, initialTemperature, useExponentialDecay: false);
-        ReplacementStrategy = result;
+        var result = new BoltzmannSurvivorSelectionStrategy<T>(temperatureDecayRate, initialTemperature, useExponentialDecay: false);
+        SurvivorSelectionStrategy = result;
     }
 
     internal void ValidateAndDefault()
     {
-        if (ReplacementStrategy is null)
+        if (SurvivorSelectionStrategy is null)
         {
             Elitist();
         }
 
         _policyConfig.FirstChoice();
 
-        _policyConfig.Policy!.ApplyOperators([ReplacementStrategy!]);
+        _policyConfig.Policy!.ApplyOperators([SurvivorSelectionStrategy!]);
     }
 
-    internal OperatorSelectionPolicy GetReplacementSelectionPolicy()
+    internal OperatorSelectionPolicy GetSurvivorSelectionSelectionPolicy()
     {
         return _policyConfig.Policy;
     }

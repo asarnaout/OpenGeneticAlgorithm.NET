@@ -1,7 +1,7 @@
 using OpenGA.Net.Exceptions;
 using OpenGA.Net.ParentSelectors;
 using OpenGA.Net.CrossoverStrategies;
-using OpenGA.Net.ReplacementStrategies;
+using OpenGA.Net.SurvivorSelectionStrategies;
 using OpenGA.Net.Termination;
 using OpenGA.Net.OperatorSelectionPolicies;
 using OpenGA.Net.Extensions;
@@ -25,7 +25,7 @@ public class OpenGARunner<T>
 
     private readonly CrossoverStrategyRegistration<T> _crossoverStrategyRegistration = new();
 
-    private readonly ReplacementStrategyRegistration<T> _replacementStrategyRegistration = new();
+    private readonly SurvivorSelectionStrategyRegistration<T> _survivorSelectionStrategyRegistration = new();
 
     private readonly TerminationStrategyConfiguration<T> _terminationStrategyConfig = new();
 
@@ -117,11 +117,11 @@ public class OpenGARunner<T>
         return this;
     }
 
-    public OpenGARunner<T> Replacement(Action<ReplacementStrategyRegistration<T>> replacementStrategyRegistration)
+    public OpenGARunner<T> SurvivorSelection(Action<SurvivorSelectionStrategyRegistration<T>> survivorSelectionStrategyRegistration)
     {
-        ArgumentNullException.ThrowIfNull(replacementStrategyRegistration, nameof(replacementStrategyRegistration));
+        ArgumentNullException.ThrowIfNull(survivorSelectionStrategyRegistration, nameof(survivorSelectionStrategyRegistration));
 
-        replacementStrategyRegistration(_replacementStrategyRegistration);
+        survivorSelectionStrategyRegistration(_survivorSelectionStrategyRegistration);
 
         return this;
     }
@@ -186,7 +186,7 @@ public class OpenGARunner<T>
 
         _crossoverStrategyRegistration.ValidateAndDefault();
         
-        _replacementStrategyRegistration.ValidateAndDefault();
+        _survivorSelectionStrategyRegistration.ValidateAndDefault();
     }
 
     /// <summary>
@@ -226,29 +226,29 @@ public class OpenGARunner<T>
     }
 
     /// <summary>
-    /// Updates the Adaptive Pursuit Policy with performance feedback from a replacement operation.
+    /// Updates the Adaptive Pursuit Policy with performance feedback from a survivor selection operation.
     /// 
     /// Rationale:
-    /// - Replacement quality is better captured by changes in the population as a whole, not only the single best individual.
-    /// - We therefore use mean fitness improvement from pre- to post-replacement as the primary reward signal.
+    /// - Survivor selection quality is better captured by changes in the population as a whole, not only the single best individual.
+    /// - We therefore use mean fitness improvement from pre- to post-survivor selection as the primary reward signal.
     /// - To encourage maintaining healthy exploration, we add a diversity component based on the change in fitness standard deviation.
-    /// - Metrics are computed immediately after replacement and before mutation/repair to isolate the replacement effect.
+    /// - Metrics are computed immediately after survivor selection and before mutation/repair to isolate the survivor selection effect.
     /// </summary>
-    private static void UpdateAdaptivePursuitRewardForReplacement(
+    private static void UpdateAdaptivePursuitRewardForSurvivorSelection(
         AdaptivePursuitPolicy adaptivePursuit,
-        BaseReplacementStrategy<T> replacementStrategy,
-        Chromosome<T>[] preReplacementPopulation,
-        Chromosome<T>[] postReplacementPopulation)
+        BaseSurvivorSelectionStrategy<T> survivorSelectionStrategy,
+        Chromosome<T>[] preSurvivorSelectionPopulation,
+        Chromosome<T>[] postSurvivorSelectionPopulation)
     {
         // Fitness arrays
-        var preFitnesses = preReplacementPopulation.Select(c => c.Fitness).ToArray();
-        var postFitnesses = postReplacementPopulation.Select(c => c.Fitness).ToArray();
+        var preFitnesses = preSurvivorSelectionPopulation.Select(c => c.Fitness).ToArray();
+        var postFitnesses = postSurvivorSelectionPopulation.Select(c => c.Fitness).ToArray();
 
         // Primary signal: mean fitness improvement across the whole population
         var preMean = preFitnesses.Average();
         var postMean = postFitnesses.Average();
 
-        // Normalization scale: use the fitness range of the pre-replacement population to keep scale consistent
+        // Normalization scale: use the fitness range of the pre-survivor selection population to keep scale consistent
         var preRange = preFitnesses.Max() - preFitnesses.Min();
 
         // Diversity component: change in standard deviation (positive favors exploration)
@@ -259,7 +259,7 @@ public class OpenGARunner<T>
         // Feed the signals to Adaptive Pursuit. We map mean improvement to the primary reward path,
         // and use diversity change as the auxiliary term (internally weighted by diversityWeight).
         adaptivePursuit.UpdateReward(
-            replacementStrategy,
+            survivorSelectionStrategy,
             preMean,
             postMean,
             preRange,
@@ -270,16 +270,16 @@ public class OpenGARunner<T>
     /// Executes the genetic algorithm until one of the configured termination conditions is met.
     /// 
     /// This method runs the complete genetic algorithm process, including:
-    /// - Validating that all required strategies (parent selection, crossover, replacement) are configured
+    /// - Validating that all required strategies (parent selection, crossover, survivor selection) are configured
     /// - Applying a default termination strategy (100 epochs) if none is specified
-    /// - Iteratively evolving the population through selection, crossover, mutation, and replacement
+    /// - Iteratively evolving the population through selection, crossover, mutation, and survivor selection
     /// - Tracking algorithm state including current epoch, duration, and fitness metrics
     /// - Terminating when any configured termination condition is satisfied
     /// 
     /// The algorithm follows these steps each generation:
     /// 1. Check termination conditions
     /// 2. Generate offspring through reproduction selection and crossover
-    /// 3. Apply replacement strategy to create new population
+    /// 3. Apply survivor selection strategy to create new population
     /// 4. Apply mutation and genetic repair to all chromosomes
     /// 5. Update chromosome ages and reset offspring ages
     /// </summary>
@@ -304,10 +304,10 @@ public class OpenGARunner<T>
 
             List<Chromosome<T>> offspring = [];
 
-            var replacementSelectionPolicy = _replacementStrategyRegistration.GetReplacementSelectionPolicy();
-            var replacementStrategy = (BaseReplacementStrategy<T>)replacementSelectionPolicy.SelectOperator(_random, CurrentEpoch);
+            var survivorSelectionSelectionPolicy = _survivorSelectionStrategyRegistration.GetSurvivorSelectionSelectionPolicy();
+            var survivorSelectionStrategy = (BaseSurvivorSelectionStrategy<T>)survivorSelectionSelectionPolicy.SelectOperator(_random, CurrentEpoch);
 
-            var requiredNumberOfOffspring = CalculateOptimalOffspringCount(replacementStrategy);
+            var requiredNumberOfOffspring = CalculateOptimalOffspringCount(survivorSelectionStrategy);
 
             var maxCouplesPerBatch = Math.Max(requiredNumberOfOffspring, _maxNumberOfChromosomes);
 
@@ -357,15 +357,15 @@ public class OpenGARunner<T>
                 }
             }
 
-            // Keep a snapshot to isolate replacement impact (copy array to avoid in-place modifications)
-            var preReplacementPopulation = Population.ToArray();
+            // Keep a snapshot to isolate survivor selection impact (copy array to avoid in-place modifications)
+            var preSurvivorSelectionPopulation = Population.ToArray();
 
-            Population = replacementStrategy.ApplyReplacement(Population, [.. offspring], _random, CurrentEpoch);
+            Population = survivorSelectionStrategy.ApplySurvivorSelection(Population, [.. offspring], _random, CurrentEpoch);
 
-            // Update Adaptive Pursuit for replacement based on immediate post-replacement population (before mutation)
-            if (replacementSelectionPolicy is AdaptivePursuitPolicy adaptiveReplacement)
+            // Update Adaptive Pursuit for survivor selection based on immediate post-survivor selection population (before mutation)
+            if (survivorSelectionSelectionPolicy is AdaptivePursuitPolicy adaptiveSurvivorSelection)
             {
-                UpdateAdaptivePursuitRewardForReplacement(adaptiveReplacement, replacementStrategy, preReplacementPopulation, Population);
+                UpdateAdaptivePursuitRewardForSurvivorSelection(adaptiveSurvivorSelection, survivorSelectionStrategy, preSurvivorSelectionPopulation, Population);
             }
 
             foreach (var chromosome in Population)
@@ -392,19 +392,19 @@ public class OpenGARunner<T>
         return Population.OrderByDescending(c => c.Fitness).First();
     }
 
-    private int CalculateOptimalOffspringCount(BaseReplacementStrategy<T> replacementStrategy)
+    private int CalculateOptimalOffspringCount(BaseSurvivorSelectionStrategy<T> survivorSelectionStrategy)
     {
         int result;
         var currentPopulationSize = Population.Length;
 
-        var customOverride = _replacementStrategyRegistration.GetOffspringGenerationRateOverride();
+        var customOverride = _survivorSelectionStrategyRegistration.GetOffspringGenerationRateOverride();
         if (customOverride.HasValue)
         {
             result = Math.Max(1, (int)(currentPopulationSize * customOverride.Value));
         }
         else
         {
-            result = Math.Max(1, (int)(currentPopulationSize * replacementStrategy.RecommendedOffspringGenerationRate));
+            result = Math.Max(1, (int)(currentPopulationSize * survivorSelectionStrategy.RecommendedOffspringGenerationRate));
         }
 
         // Ensure the result respects population bounds
@@ -417,12 +417,12 @@ public class OpenGARunner<T>
 
         if (result <= 0)
         {
-            throw new InvalidOperationException("Required number of offspring must be greater than zero. Check replacement strategy configuration.");
+            throw new InvalidOperationException("Required number of offspring must be greater than zero. Check survivor selection strategy configuration.");
         }
 
         if (result > _maxNumberOfChromosomes * 2)
         {
-            throw new InvalidOperationException($"Required number of offspring ({result}) exceeds reasonable bounds (maximum: {_maxNumberOfChromosomes * 2}). This may indicate an issue with the replacement strategy configuration.");
+            throw new InvalidOperationException($"Required number of offspring ({result}) exceeds reasonable bounds (maximum: {_maxNumberOfChromosomes * 2}). This may indicate an issue with the survivor selection strategy configuration.");
         }
 
         return result;

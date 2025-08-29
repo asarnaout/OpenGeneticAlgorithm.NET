@@ -1,9 +1,9 @@
 using OpenGA.Net.Extensions;
 
-namespace OpenGA.Net.ReplacementStrategies;
+namespace OpenGA.Net.SurvivorSelectionStrategies;
 
 /// <summary>
-/// An elitist replacement strategy that guarantees survival for the top-performing chromosomes
+/// An elitist survivor selection strategy that guarantees survival for the top-performing chromosomes
 /// based on their fitness values. This strategy protects a specified percentage of the best
 /// chromosomes from elimination, ensuring that the fittest individuals survive to the next generation.
 /// 
@@ -13,22 +13,22 @@ namespace OpenGA.Net.ReplacementStrategies;
 /// 
 /// Example usage:
 /// <code>
-/// // Create an elitist replacement strategy protecting top 15% of population
-/// var replacementStrategy = new ElitistReplacementStrategy&lt;int&gt;(0.15);
+/// // Create an elitist survivor selection strategy protecting top 15% of population
+/// var survivorSelectionStrategy = new ElitistSurvivorSelectionStrategy&lt;int&gt;(0.15);
 /// 
-/// // Apply replacement to create new population (elites protected)
-/// var newPopulation = replacementStrategy.ApplyReplacement(
+/// // Apply survivor selection to create new population (elites protected)
+/// var newPopulation = survivorSelectionStrategy.ApplySurvivorSelection(
 ///     currentPopulation, 
 ///     offspring, 
 ///     random);
 /// </code>
 /// </summary>
-public class ElitistReplacementStrategy<T> (float elitePercentage = 0.1f): BaseReplacementStrategy<T>
+public class ElitistSurvivorSelectionStrategy<T> (float elitePercentage = 0.1f): BaseSurvivorSelectionStrategy<T>
 {
     internal readonly float ElitePercentage = elitePercentage;
 
     /// <summary>
-    /// The recommended offspring generation rate for elitist replacement strategy.
+    /// The recommended offspring generation rate for elitist survivor selection strategy.
     /// This strategy generates offspring to replace all non-elite chromosomes (1.0 - ElitePercentage).
     /// </summary>
     internal override float RecommendedOffspringGenerationRate => 1.0f - ElitePercentage;

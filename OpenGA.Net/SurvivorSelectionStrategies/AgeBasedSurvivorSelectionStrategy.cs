@@ -1,7 +1,7 @@
-namespace OpenGA.Net.ReplacementStrategies;
+namespace OpenGA.Net.SurvivorSelectionStrategies;
 
 /// <summary>
-/// An age-based replacement strategy that selects chromosomes for elimination based on their age.
+/// An age-based survivor selection strategy that selects chromosomes for elimination based on their age.
 /// Older chromosomes (those that have survived more generations) have a higher probability of being
 /// eliminated using a weighted roulette wheel selection mechanism.
 /// 
@@ -13,20 +13,20 @@ namespace OpenGA.Net.ReplacementStrategies;
 /// 
 /// Example usage:
 /// <code>
-/// // Create an age-based replacement strategy
-/// var replacementStrategy = new AgeBasedReplacementStrategy&lt;int&gt;();
+/// // Create an age-based survivor selection strategy
+/// var survivorSelectionStrategy = new AgeBasedSurvivorSelectionStrategy&lt;int&gt;();
 /// 
-/// // Apply replacement to create new population (older chromosomes more likely to be eliminated)
-/// var newPopulation = replacementStrategy.ApplyReplacement(
+/// // Apply survivor selection to create new population (older chromosomes more likely to be eliminated)
+/// var newPopulation = survivorSelectionStrategy.ApplySurvivorSelection(
 ///     currentPopulation, 
 ///     offspring, 
 ///     random);
 /// </code>
 /// </summary>
-public class AgeBasedReplacementStrategy<T> : BaseReplacementStrategy<T>
+public class AgeBasedSurvivorSelectionStrategy<T> : BaseSurvivorSelectionStrategy<T>
 {
     /// <summary>
-    /// The recommended offspring generation rate for age-based replacement strategy.
+    /// The recommended offspring generation rate for age-based survivor selection strategy.
     /// This moderate turnover rate (35%) maintains diversity while preserving some experienced chromosomes.
     /// </summary>
     internal override float RecommendedOffspringGenerationRate => 0.35f;

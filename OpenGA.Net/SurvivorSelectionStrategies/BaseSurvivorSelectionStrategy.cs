@@ -1,13 +1,13 @@
-namespace OpenGA.Net.ReplacementStrategies;
+namespace OpenGA.Net.SurvivorSelectionStrategies;
 
 /// <summary>
-/// Base class for all replacement strategies. Replacement strategies determine which chromosomes
+/// Base class for all survivor selection strategies. Survivor selection strategies determine which chromosomes
 /// from the current population should be eliminated to make room for new offspring.
 /// </summary>
-public abstract class BaseReplacementStrategy<T> : BaseOperator
+public abstract class BaseSurvivorSelectionStrategy<T> : BaseOperator
 {
     /// <summary>
-    /// The recommended offspring generation rate for this specific replacement strategy.
+    /// The recommended offspring generation rate for this specific survivor selection strategy.
     /// Each strategy defines its own optimal rate based on its selection characteristics.
     /// </summary>
     internal abstract float RecommendedOffspringGenerationRate { get; }
@@ -27,15 +27,15 @@ public abstract class BaseReplacementStrategy<T> : BaseOperator
         int currentEpoch = 0);
 
     /// <summary>
-    /// Applies the replacement strategy to create a new population by eliminating selected chromosomes
+    /// Applies the survivor selection strategy to create a new population by eliminating selected chromosomes
     /// and adding offspring.
     /// </summary>
     /// <param name="population">The current population of chromosomes</param>
     /// <param name="offspring">The newly generated offspring chromosomes</param>
     /// <param name="random">Random number generator for stochastic operations</param>
     /// <param name="currentEpoch">The current epoch/generation number (defaults to 0 for non-epoch-aware strategies)</param>
-    /// <returns>The new population after replacement</returns>
-    public virtual Chromosome<T>[] ApplyReplacement(
+    /// <returns>The new population after survivor selection</returns>
+    public virtual Chromosome<T>[] ApplySurvivorSelection(
         Chromosome<T>[] population, 
         Chromosome<T>[] offspring, 
         Random random,
