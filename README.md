@@ -233,10 +233,10 @@ public class MySurvivorSelectionStrategy<T> : BaseSurvivorSelectionStrategy<T>
 }
 
 // Custom reproduction selector
-public class MyParentSelector<T> : BaseParentSelector<T>
+public class MyParentSelector<T> : BaseParentSelectorStrategy<T>
 {
-    protected internal override IEnumerable<Chromosome<T>> SelectParents(
-        Chromosome<T>[] population, int numberOfParents, Random random)
+    protected internal override IEnumerable<Couple<T>> SelectMatingPairs(
+        Chromosome<T>[] population, Random random, int minimumNumberOfCouples)
     {
         // Your custom parent selection logic
     }

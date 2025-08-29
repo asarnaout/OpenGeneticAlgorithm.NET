@@ -1,6 +1,6 @@
-namespace OpenGA.Net.ParentSelectors;
+namespace OpenGA.Net.ParentSelectorStrategies;
 
-public class ElitistParentSelector<T>(bool allowMatingElitesWithNonElites, float proportionOfElitesInPopulation, float proportionOfNonElitesAllowedToMate) : BaseParentSelector<T>
+public class ElitistParentSelectorStrategy<T>(bool allowMatingElitesWithNonElites, float proportionOfElitesInPopulation, float proportionOfNonElitesAllowedToMate) : BaseParentSelectorStrategy<T>
 {
     internal bool AllowMatingElitesWithNonElites { get; } = allowMatingElitesWithNonElites;
     internal float ProportionOfNonElitesAllowedToMate { get; } = proportionOfNonElitesAllowedToMate;

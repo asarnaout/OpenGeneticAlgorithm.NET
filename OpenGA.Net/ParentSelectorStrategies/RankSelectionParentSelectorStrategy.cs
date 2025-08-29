@@ -1,6 +1,6 @@
-namespace OpenGA.Net.ParentSelectors;
+namespace OpenGA.Net.ParentSelectorStrategies;
 
-public class RankSelectionParentSelector<T> : BaseParentSelector<T>
+public class RankSelectionParentSelectorStrategy<T> : BaseParentSelectorStrategy<T>
 {
     protected internal override IEnumerable<Couple<T>> SelectMatingPairs(Chromosome<T>[] population, Random random, int minimumNumberOfCouples)
     {

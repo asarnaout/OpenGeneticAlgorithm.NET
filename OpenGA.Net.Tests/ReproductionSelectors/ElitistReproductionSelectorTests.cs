@@ -1,6 +1,6 @@
-using OpenGA.Net.ParentSelectors;
+using OpenGA.Net.ParentSelectorStrategies;
 
-namespace OpenGA.Net.Tests.ParentSelectors;
+namespace OpenGA.Net.Tests.ParentSelectorStrategies;
 
 public class ElitistParentSelectorTests
 {
@@ -28,7 +28,7 @@ public class ElitistParentSelectorTests
     [InlineData(1, 0.9, 1, 100, 0)] //Case of interest
     public void OnlyElitesAllowedToMate(int populationSize, float proportionOfElites, int exactNumberOfElites, int minimumNumberOfCouples, int expectedMinimumNumberOfCouples)
     {
-    var selector = new ElitistParentSelector<int>(false, proportionOfElites, 0.0f);
+    var selector = new ElitistParentSelectorStrategy<int>(false, proportionOfElites, 0.0f);
 
         var random = new Random();
 
@@ -78,7 +78,7 @@ public class ElitistParentSelectorTests
     [InlineData(1, 0.9, 1, 0.1, 0, 0)] //Case of interest
     public void NonElitesAllowedToMateWithElites(int populationSize, float proportionOfElites, int exactNumberOfElites, float proportionOfNonElitesAllowedToMate, int minimumNumberOfCouples, int expectedMinimumNumberOfCouples)
     {
-    var selector = new ElitistParentSelector<int>(true, proportionOfElites, proportionOfNonElitesAllowedToMate);
+    var selector = new ElitistParentSelectorStrategy<int>(true, proportionOfElites, proportionOfNonElitesAllowedToMate);
 
         var random = new Random();
 
@@ -123,7 +123,7 @@ public class ElitistParentSelectorTests
     [InlineData(1, 0.9, 1, 0.1, 0, 0)]
     public void NonElitesRestrictedFromMatingWithElites(int populationSize, float proportionOfElites, int exactNumberOfElites, float proportionOfNonElitesAllowedToMate, int minimumNumberOfCouples, int expectedMinimumNumberOfCouples)
     {
-    var selector = new ElitistParentSelector<int>(false, proportionOfElites, proportionOfNonElitesAllowedToMate);
+    var selector = new ElitistParentSelectorStrategy<int>(false, proportionOfElites, proportionOfNonElitesAllowedToMate);
 
         var random = new Random();
 
@@ -160,7 +160,7 @@ public class ElitistParentSelectorTests
     [Fact]
     public void WillProduceUniformCouplesIfOnlyTwoMembersExistInThePopulation()
     {
-    var selector = new ElitistParentSelector<int>(false, 0.3f, 0.2f);
+    var selector = new ElitistParentSelectorStrategy<int>(false, 0.3f, 0.2f);
 
         var random = new Random();
 

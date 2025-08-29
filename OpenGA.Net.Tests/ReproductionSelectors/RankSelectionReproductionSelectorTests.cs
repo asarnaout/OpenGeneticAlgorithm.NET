@@ -1,13 +1,13 @@
-using OpenGA.Net.ParentSelectors;
+using OpenGA.Net.ParentSelectorStrategies;
 
-namespace OpenGA.Net.Tests.ParentSelectors;
+namespace OpenGA.Net.Tests.ParentSelectorStrategies;
 
 public class RankSelectionParentSelectorTests
 {
     [Fact]
     public void WillFailIfThereThereIsLessThanTwoIndividuals()
     {
-    var selector = new RankSelectionParentSelector<int>();
+    var selector = new RankSelectionParentSelectorStrategy<int>();
 
         var random = new Random();
 
@@ -21,7 +21,7 @@ public class RankSelectionParentSelectorTests
     [Fact]
     public void WillProduceUniformCouplesIfOnlyTwoMembersExistInThePopulation()
     {
-    var selector = new RankSelectionParentSelector<int>();
+    var selector = new RankSelectionParentSelectorStrategy<int>();
 
         var random = new Random();
 
@@ -52,7 +52,7 @@ public class RankSelectionParentSelectorTests
     [Fact]
     public void RankSelectionWillPreferTheMostFitChromosomesOverALargeNumberOfRuns()
     {
-    var selector = new RankSelectionParentSelector<int>();
+    var selector = new RankSelectionParentSelectorStrategy<int>();
 
         var random = new Random();
 
@@ -101,7 +101,7 @@ public class RankSelectionParentSelectorTests
     [Fact]
     public void RankSelectionShouldAssignCorrectRanksBasedOnFitness()
     {
-    var selector = new RankSelectionParentSelector<int>();
+    var selector = new RankSelectionParentSelectorStrategy<int>();
         var random = new Random(42); // Fixed seed for reproducibility
 
         // Create chromosomes with known, distinct fitness values
@@ -133,7 +133,7 @@ public class RankSelectionParentSelectorTests
     [Fact]
     public void RankSelectionShouldHandleIdenticalFitnessValues()
     {
-    var selector = new RankSelectionParentSelector<int>();
+    var selector = new RankSelectionParentSelectorStrategy<int>();
         var random = new Random(42);
 
         // Create chromosomes with identical fitness values
@@ -176,8 +176,8 @@ public class RankSelectionParentSelectorTests
     [Fact]
     public void RankSelectionShouldReduceSelectionPressureComparedToFitnessWeighted()
     {
-    var rankSelector = new RankSelectionParentSelector<int>();
-    var fitnessSelector = new FitnessWeightedRouletteWheelParentSelector<int>();
+    var rankSelector = new RankSelectionParentSelectorStrategy<int>();
+    var fitnessSelector = new FitnessWeightedRouletteWheelParentSelectorStrategy<int>();
         var random = new Random(42);
 
         // Create population with one very fit chromosome and several average ones
@@ -216,7 +216,7 @@ public class RankSelectionParentSelectorTests
     [Fact]
     public void RankSelectionShouldProduceValidCouplesWithMinimumRequirement()
     {
-    var selector = new RankSelectionParentSelector<int>();
+    var selector = new RankSelectionParentSelectorStrategy<int>();
         var random = new Random();
 
         var population = GenerateRandomPopulation(10, random);

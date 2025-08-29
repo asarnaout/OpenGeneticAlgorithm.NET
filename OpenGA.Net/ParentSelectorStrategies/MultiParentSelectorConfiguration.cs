@@ -1,4 +1,4 @@
-namespace OpenGA.Net.ParentSelectors;
+namespace OpenGA.Net.ParentSelectorStrategies;
 
 using OpenGA.Net.Exceptions;
 using OpenGA.Net.OperatorSelectionPolicies;
@@ -11,7 +11,7 @@ using OpenGA.Net.OperatorSelectionPolicies;
 /// <typeparam name="T">The type of gene values contained within chromosomes</typeparam>
 public class MultiParentSelectorConfiguration<T>
 {
-    internal IList<BaseParentSelector<T>> ParentSelectors = [];
+    internal IList<BaseParentSelectorStrategy<T>> ParentSelectors = [];
 
     private readonly OperatorSelectionPolicyConfiguration _policyConfig = new();
 
@@ -21,7 +21,7 @@ public class MultiParentSelectorConfiguration<T>
     /// <param name="customWeight">Optional custom weight for this strategy when used with multiple strategies. Higher weights increase selection probability.</param>
     public MultiParentSelectorConfiguration<T> Random(float? customWeight = null)
     {
-        var result = new RandomParentSelector<T>();
+        var result = new RandomParentSelectorStrategy<T>();
         if (customWeight.HasValue)
         {
             result.WithCustomWeight(customWeight.Value);
@@ -36,7 +36,7 @@ public class MultiParentSelectorConfiguration<T>
     /// <param name="customWeight">Optional custom weight for this strategy when used with multiple strategies. Higher weights increase selection probability.</param>
     public MultiParentSelectorConfiguration<T> RouletteWheel(float? customWeight = null)
     {
-        var result = new FitnessWeightedRouletteWheelParentSelector<T>();
+        var result = new FitnessWeightedRouletteWheelParentSelectorStrategy<T>();
         if (customWeight.HasValue)
         {
             result.WithCustomWeight(customWeight.Value);
@@ -55,7 +55,7 @@ public class MultiParentSelectorConfiguration<T>
     /// <param name="customWeight">Optional custom weight for this strategy when used with multiple strategies. Higher weights increase selection probability.</param>
     public MultiParentSelectorConfiguration<T> Tournament(bool stochasticTournament = true, float? customWeight = null)
     {
-        var result = new TournamentParentSelector<T>(stochasticTournament);
+        var result = new TournamentParentSelectorStrategy<T>(stochasticTournament);
         if (customWeight.HasValue)
         {
             result.WithCustomWeight(customWeight.Value);
@@ -77,7 +77,7 @@ public class MultiParentSelectorConfiguration<T>
     /// <param name="customWeight">Optional custom weight for this strategy when used with multiple strategies. Higher weights increase selection probability.</param>
     public MultiParentSelectorConfiguration<T> Rank(float? customWeight = null)
     {
-        var result = new RankSelectionParentSelector<T>();
+        var result = new RankSelectionParentSelectorStrategy<T>();
         if (customWeight.HasValue)
         {
             result.WithCustomWeight(customWeight.Value);
@@ -110,8 +110,8 @@ public class MultiParentSelectorConfiguration<T>
         {
             throw new ArgumentException("Initial temperature must be greater than 0.", nameof(initialTemperature));
         }
-        
-        var result = new BoltzmannParentSelector<T>(temperatureDecayRate, initialTemperature, useExponentialDecay: true);
+
+        var result = new BoltzmannParentSelectorStrategy<T>(temperatureDecayRate, initialTemperature, useExponentialDecay: true);
         if (customWeight.HasValue)
         {
             result.WithCustomWeight(customWeight.Value);
@@ -144,8 +144,8 @@ public class MultiParentSelectorConfiguration<T>
         {
             throw new ArgumentException("Initial temperature must be greater than 0.", nameof(initialTemperature));
         }
-        
-        var result = new BoltzmannParentSelector<T>(temperatureDecayRate, initialTemperature, useExponentialDecay: false);
+
+        var result = new BoltzmannParentSelectorStrategy<T>(temperatureDecayRate, initialTemperature, useExponentialDecay: false);
         if (customWeight.HasValue)
         {
             result.WithCustomWeight(customWeight.Value);
@@ -173,7 +173,7 @@ public class MultiParentSelectorConfiguration<T>
             throw new ArgumentOutOfRangeException(nameof(proportionOfNonElitesAllowedToMate), "Value must be between 0 and 1.");
         }
 
-        var result = new ElitistParentSelector<T>(allowMatingElitesWithNonElites, proportionOfElitesInPopulation, proportionOfNonElitesAllowedToMate);
+        var result = new ElitistParentSelectorStrategy<T>(allowMatingElitesWithNonElites, proportionOfElitesInPopulation, proportionOfNonElitesAllowedToMate);
         if (customWeight.HasValue)
         {
             result.WithCustomWeight(customWeight.Value);
@@ -183,12 +183,12 @@ public class MultiParentSelectorConfiguration<T>
     }
 
     /// <summary>
-    /// Apply a custom strategy for choosing mating parents. Requires an instance of a subclass of <see cref="BaseParentSelector<T>">BaseParentSelector<T></see>
+    /// Apply a custom strategy for choosing mating parents. Requires an instance of a subclass of <see cref="BaseParentSelectorStrategy<T>">BaseParentSelectorStrategy<T></see>
     /// to dictate which individuals will be chosen to take part in the crossover process.
     /// </summary>
     /// <param name="parentSelector">The custom parent selector instance to add.</param>
     /// <param name="customWeight">Optional custom weight for this strategy when used with multiple strategies. Higher weights increase selection probability.</param>
-    public MultiParentSelectorConfiguration<T> Custom(BaseParentSelector<T> parentSelector, float? customWeight = null)
+    public MultiParentSelectorConfiguration<T> Custom(BaseParentSelectorStrategy<T> parentSelector, float? customWeight = null)
     {
         ArgumentNullException.ThrowIfNull(parentSelector, nameof(parentSelector));
         

@@ -1,6 +1,6 @@
-namespace OpenGA.Net.ParentSelectors;
+namespace OpenGA.Net.ParentSelectorStrategies;
 
-public class FitnessWeightedRouletteWheelParentSelector<T> : BaseParentSelector<T>
+public class FitnessWeightedRouletteWheelParentSelectorStrategy<T> : BaseParentSelectorStrategy<T>
 {
     protected internal override IEnumerable<Couple<T>> SelectMatingPairs(Chromosome<T>[] population, Random random, int minimumNumberOfCouples)
     {

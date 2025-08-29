@@ -1,11 +1,10 @@
-using OpenGA.Net.Exceptions;
 using OpenGA.Net.OperatorSelectionPolicies;
 
-namespace OpenGA.Net.ParentSelectors;
+namespace OpenGA.Net.ParentSelectorStrategies;
 
 public class ParentSelectorConfiguration<T>
 {
-    internal BaseParentSelector<T> ParentSelector = default!;
+    internal BaseParentSelectorStrategy<T> ParentSelector = default!;
 
     private readonly OperatorSelectionPolicyConfiguration _policyConfig = new();
 
@@ -14,7 +13,7 @@ public class ParentSelectorConfiguration<T>
     /// </summary>
     public void Random()
     {
-        var result = new RandomParentSelector<T>();
+        var result = new RandomParentSelectorStrategy<T>();
         ParentSelector = result;
     }
 
@@ -23,7 +22,7 @@ public class ParentSelectorConfiguration<T>
     /// </summary>
     public void RouletteWheel()
     {
-        var result = new FitnessWeightedRouletteWheelParentSelector<T>();
+        var result = new FitnessWeightedRouletteWheelParentSelectorStrategy<T>();
         ParentSelector = result;
     }
 
@@ -36,15 +35,15 @@ public class ParentSelectorConfiguration<T>
     /// out of the n-individuals, where the probability of winning is proportional to each individual's fitness.</param>
     public void Tournament(bool stochasticTournament = true)
     {
-        var result = new TournamentParentSelector<T>(stochasticTournament);
+        var result = new TournamentParentSelectorStrategy<T>(stochasticTournament);
         ParentSelector = result;
     }
 
     /// <summary>
-    /// Apply a custom strategy for choosing mating parents. Requires an instance of a subclass of <see cref="BaseParentSelector<T>">BaseParentSelector<T></see>
+    /// Apply a custom strategy for choosing mating parents. Requires an instance of a subclass of <see cref="BaseParentSelectorStrategy<T>">BaseParentSelectorStrategy<T></see>
     /// to dictate which individuals will be chosen to take part in the crossover process.
     /// </summary>
-    public void Custom(BaseParentSelector<T> parentSelector)
+    public void Custom(BaseParentSelectorStrategy<T> parentSelector)
     {
         ArgumentNullException.ThrowIfNull(parentSelector, nameof(parentSelector));
         ParentSelector = parentSelector;
@@ -62,7 +61,7 @@ public class ParentSelectorConfiguration<T>
     /// </summary>
     public void Rank()
     {
-        var result = new RankSelectionParentSelector<T>();
+        var result = new RankSelectionParentSelectorStrategy<T>();
         ParentSelector = result;
     }
 
@@ -89,8 +88,8 @@ public class ParentSelectorConfiguration<T>
         {
             throw new ArgumentException("Initial temperature must be greater than 0.", nameof(initialTemperature));
         }
-        
-        var result = new BoltzmannParentSelector<T>(temperatureDecayRate, initialTemperature, useExponentialDecay: true);
+
+        var result = new BoltzmannParentSelectorStrategy<T>(temperatureDecayRate, initialTemperature, useExponentialDecay: true);
         ParentSelector = result;
     }
 
@@ -117,8 +116,8 @@ public class ParentSelectorConfiguration<T>
         {
             throw new ArgumentException("Initial temperature must be greater than 0.", nameof(initialTemperature));
         }
-        
-        var result = new BoltzmannParentSelector<T>(temperatureDecayRate, initialTemperature, useExponentialDecay: false);
+
+        var result = new BoltzmannParentSelectorStrategy<T>(temperatureDecayRate, initialTemperature, useExponentialDecay: false);
         ParentSelector = result;
     }
 
@@ -140,7 +139,7 @@ public class ParentSelectorConfiguration<T>
             throw new ArgumentOutOfRangeException(nameof(proportionOfNonElitesAllowedToMate), "Value must be between 0 and 1.");
         }
 
-        var result = new ElitistParentSelector<T>(allowMatingElitesWithNonElites, proportionOfElitesInPopulation, proportionOfNonElitesAllowedToMate);
+        var result = new ElitistParentSelectorStrategy<T>(allowMatingElitesWithNonElites, proportionOfElitesInPopulation, proportionOfNonElitesAllowedToMate);
         ParentSelector = result;
     }
 

@@ -1,4 +1,4 @@
-using OpenGA.Net.ParentSelectors;
+using OpenGA.Net.ParentSelectorStrategies;
 using OpenGA.Net.CrossoverStrategies;
 using OpenGA.Net.SurvivorSelectionStrategies;
 using OpenGA.Net.Termination;

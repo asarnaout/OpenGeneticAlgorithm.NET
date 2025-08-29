@@ -1,8 +1,8 @@
 using OpenGA.Net.Extensions;
 
-namespace OpenGA.Net.ParentSelectors;
+namespace OpenGA.Net.ParentSelectorStrategies;
 
-public class TournamentParentSelector<T>(bool stochasticTournament) : BaseParentSelector<T>
+public class TournamentParentSelectorStrategy<T>(bool stochasticTournament) : BaseParentSelectorStrategy<T>
 {
     public bool StochasticTournament { get; } = stochasticTournament;
 

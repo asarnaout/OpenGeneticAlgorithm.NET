@@ -1,48 +1,48 @@
-using OpenGA.Net.ParentSelectors;
+using OpenGA.Net.ParentSelectorStrategies;
 
-namespace OpenGA.Net.Tests.ParentSelectors;
+namespace OpenGA.Net.Tests.ParentSelectorStrategies;
 
 public class BoltzmannParentSelectorTests
 {
     [Fact]
     public void Constructor_WithValidDecayRate_ShouldCreateInstance()
     {
-    var selector = new BoltzmannParentSelector<int>(0.01);
+    var selector = new BoltzmannParentSelectorStrategy<int>(0.01);
         Assert.NotNull(selector);
     }
 
     [Fact]
     public void Constructor_WithZeroDecayRate_ShouldCreateInstance()
     {
-    var selector = new BoltzmannParentSelector<int>(0.0);
+    var selector = new BoltzmannParentSelectorStrategy<int>(0.0);
         Assert.NotNull(selector);
     }
 
     [Fact]
     public void Constructor_WithCustomInitialTemperature_ShouldCreateInstance()
     {
-    var selector = new BoltzmannParentSelector<int>(0.01, 2.0);
+    var selector = new BoltzmannParentSelectorStrategy<int>(0.01, 2.0);
         Assert.NotNull(selector);
     }
 
     [Fact]
     public void Constructor_WithLinearDecay_ShouldCreateInstance()
     {
-    var selector = new BoltzmannParentSelector<int>(0.01, 1.0, useExponentialDecay: false);
+    var selector = new BoltzmannParentSelectorStrategy<int>(0.01, 1.0, useExponentialDecay: false);
         Assert.NotNull(selector);
     }
 
     [Fact]
     public void Constructor_WithExponentialDecay_ShouldCreateInstance()
     {
-    var selector = new BoltzmannParentSelector<int>(0.01, 1.0, useExponentialDecay: true);
+    var selector = new BoltzmannParentSelectorStrategy<int>(0.01, 1.0, useExponentialDecay: true);
         Assert.NotNull(selector);
     }
 
     [Fact]
     public void SelectMatingPairs_WithEmptyPopulation_ShouldReturnEmptyResult()
     {
-    var selector = new BoltzmannParentSelector<int>(0.01);
+    var selector = new BoltzmannParentSelectorStrategy<int>(0.01);
         var random = new Random();
         var population = Array.Empty<DummyChromosome>();
 
@@ -54,7 +54,7 @@ public class BoltzmannParentSelectorTests
     [Fact]
     public void SelectMatingPairs_WithSingleIndividual_ShouldReturnEmptyResult()
     {
-    var selector = new BoltzmannParentSelector<int>(0.01);
+    var selector = new BoltzmannParentSelectorStrategy<int>(0.01);
         var random = new Random();
         var population = GenerateRandomPopulation(1, random);
 
@@ -66,7 +66,7 @@ public class BoltzmannParentSelectorTests
     [Fact]
     public void SelectMatingPairs_WithTwoIndividuals_ShouldProduceUniformCouples()
     {
-    var selector = new BoltzmannParentSelector<int>(0.01);
+    var selector = new BoltzmannParentSelectorStrategy<int>(0.01);
         var random = new Random();
         var population = GenerateRandomPopulation(2, random);
         var minimumNumberOfCouples = 100;
@@ -85,7 +85,7 @@ public class BoltzmannParentSelectorTests
     [Fact]
     public void SelectMatingPairs_ShouldReturnRequestedNumberOfCouples()
     {
-    var selector = new BoltzmannParentSelector<int>(0.01);
+    var selector = new BoltzmannParentSelectorStrategy<int>(0.01);
         var random = new Random();
         var population = GenerateRandomPopulation(10, random);
         var minimumNumberOfCouples = 50;
@@ -98,7 +98,7 @@ public class BoltzmannParentSelectorTests
     [Fact]
     public void SelectMatingPairs_ShouldProduceDistinctParentsInEachCouple()
     {
-    var selector = new BoltzmannParentSelector<int>(0.01);
+    var selector = new BoltzmannParentSelectorStrategy<int>(0.01);
         var random = new Random();
         var population = GenerateRandomPopulation(10, random);
         var minimumNumberOfCouples = 100;
@@ -114,7 +114,7 @@ public class BoltzmannParentSelectorTests
     [Fact]
     public void SelectMatingPairs_AtEpochZero_ShouldUseInitialTemperature()
     {
-    var selector = new BoltzmannParentSelector<int>(0.1); // High decay rate
+    var selector = new BoltzmannParentSelectorStrategy<int>(0.1); // High decay rate
         var random = new Random(42); // Fixed seed for reproducibility
 
         // Create population with clear fitness hierarchy
@@ -164,7 +164,7 @@ public class BoltzmannParentSelectorTests
     [Fact]
     public void SelectMatingPairs_AtLaterEpochs_ShouldShowIncreasedSelectionPressure()
     {
-    var selector = new BoltzmannParentSelector<int>(0.1); // Decay rate of 0.1 per epoch
+    var selector = new BoltzmannParentSelectorStrategy<int>(0.1); // Decay rate of 0.1 per epoch
         var random = new Random(42); // Fixed seed for reproducibility
 
         // Create population with clear fitness hierarchy
@@ -206,7 +206,7 @@ public class BoltzmannParentSelectorTests
     [Fact]
     public void SelectMatingPairs_WithZeroDecayRate_ShouldMaintainConstantTemperature()
     {
-    var selector = new BoltzmannParentSelector<int>(0.0); // No decay
+    var selector = new BoltzmannParentSelectorStrategy<int>(0.0); // No decay
         var random = new Random(42);
         
         // Create population with clear fitness hierarchy
@@ -243,8 +243,8 @@ public class BoltzmannParentSelectorTests
     [Fact]
     public void SelectMatingPairs_ExponentialDecayVsLinearDecay_ShouldShowDifferentBehavior()
     {
-    var exponentialSelector = new BoltzmannParentSelector<int>(0.1, 1.0, useExponentialDecay: true);
-    var linearSelector = new BoltzmannParentSelector<int>(0.1, 1.0, useExponentialDecay: false);
+    var exponentialSelector = new BoltzmannParentSelectorStrategy<int>(0.1, 1.0, useExponentialDecay: true);
+    var linearSelector = new BoltzmannParentSelectorStrategy<int>(0.1, 1.0, useExponentialDecay: false);
         var random = new Random(42);
         
         // Create population with clear fitness hierarchy
@@ -277,7 +277,7 @@ public class BoltzmannParentSelectorTests
     [Fact]
     public void SelectMatingPairs_WithZeroFitnessChromosomes_ShouldHandleGracefully()
     {
-    var selector = new BoltzmannParentSelector<int>(0.01);
+    var selector = new BoltzmannParentSelectorStrategy<int>(0.01);
         var random = new Random();
         
         // Create chromosomes with zero fitness
@@ -304,7 +304,7 @@ public class BoltzmannParentSelectorTests
     [Fact]
     public void SelectMatingPairs_WithoutEpochParameter_ShouldDefaultToEpochZero()
     {
-    var selector = new BoltzmannParentSelector<int>(0.1);
+    var selector = new BoltzmannParentSelectorStrategy<int>(0.1);
         var random = new Random(42);
         
         // Create simple population

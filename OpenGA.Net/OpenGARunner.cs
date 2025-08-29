@@ -1,5 +1,5 @@
 using OpenGA.Net.Exceptions;
-using OpenGA.Net.ParentSelectors;
+using OpenGA.Net.ParentSelectorStrategies;
 using OpenGA.Net.CrossoverStrategies;
 using OpenGA.Net.SurvivorSelectionStrategies;
 using OpenGA.Net.Termination;
@@ -455,7 +455,7 @@ public class OpenGARunner<T>
     /// </summary>
     private static void UpdateAdaptivePursuitRewardForParentSelection(
         AdaptivePursuitPolicy adaptivePursuit,
-        BaseParentSelector<T> parentSelector,
+        BaseParentSelectorStrategy<T> parentSelector,
         Chromosome<T>[] population,
         IEnumerable<Couple<T>> selectedCouples)
     {
@@ -544,7 +544,7 @@ public class OpenGARunner<T>
                 var couplesForThisBatch = Math.Min(maxCouplesPerBatch, remainingOffspringNeeded * 2); // Generate extra to account for failed crossovers
                 
                 var parentSelectorPolicy = _parentSelectorRegistration.GetParentSelectorSelectionPolicy();
-                var parentSelector = (BaseParentSelector<T>)parentSelectorPolicy.SelectOperator(_random, CurrentEpoch);
+                var parentSelector = (BaseParentSelectorStrategy<T>)parentSelectorPolicy.SelectOperator(_random, CurrentEpoch);
                 var couples = parentSelector.SelectMatingPairs(Population, _random, couplesForThisBatch, CurrentEpoch);
 
                 if (parentSelectorPolicy is AdaptivePursuitPolicy parentAdaptivePursuit)

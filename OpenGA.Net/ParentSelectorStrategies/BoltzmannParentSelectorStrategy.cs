@@ -1,6 +1,6 @@
-namespace OpenGA.Net.ParentSelectors;
+namespace OpenGA.Net.ParentSelectorStrategies;
 
-public class BoltzmannParentSelector<T>(double temperatureDecayRate, double initialTemperature = 1.0, bool useExponentialDecay = true) : BaseParentSelector<T>
+public class BoltzmannParentSelectorStrategy<T>(double temperatureDecayRate, double initialTemperature = 1.0, bool useExponentialDecay = true) : BaseParentSelectorStrategy<T>
 {
     private readonly double _temperatureDecayRate = temperatureDecayRate;
     private readonly double _initialTemperature = initialTemperature;

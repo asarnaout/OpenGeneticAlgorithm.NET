@@ -1,13 +1,13 @@
-using OpenGA.Net.ParentSelectors;
+using OpenGA.Net.ParentSelectorStrategies;
 
-namespace OpenGA.Net.Tests.ParentSelectors;
+namespace OpenGA.Net.Tests.ParentSelectorStrategies;
 
 public class RandomParentSelectorTests
 {
     [Fact]
     public void WillFailIfThereThereIsLessThanTwoIndividuals()
     {
-    var selector = new RandomParentSelector<int>();
+    var selector = new RandomParentSelectorStrategy<int>();
 
         var random = new Random();
 
@@ -21,7 +21,7 @@ public class RandomParentSelectorTests
     [Fact]
     public void WillProduceUniformCouplesIfOnlyTwoMembersExistInThePopulation()
     {
-    var selector = new RandomParentSelector<int>();
+    var selector = new RandomParentSelectorStrategy<int>();
 
         var random = new Random();
 
@@ -43,7 +43,7 @@ public class RandomParentSelectorTests
     [Fact]
     public void WillSucceedOtherwise()
     {
-    var selector = new RandomParentSelector<int>();
+    var selector = new RandomParentSelectorStrategy<int>();
 
         var random = new Random();
 

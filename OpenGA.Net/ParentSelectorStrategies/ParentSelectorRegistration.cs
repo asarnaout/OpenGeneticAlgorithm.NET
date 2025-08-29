@@ -1,6 +1,6 @@
 using OpenGA.Net.OperatorSelectionPolicies;
 
-namespace OpenGA.Net.ParentSelectors;
+namespace OpenGA.Net.ParentSelectorStrategies;
 
 /// <summary>
 /// Provides configuration and registration capabilities for parent selector strategies in the genetic algorithm.

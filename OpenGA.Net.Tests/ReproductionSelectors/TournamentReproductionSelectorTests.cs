@@ -1,13 +1,13 @@
-using OpenGA.Net.ParentSelectors;
+using OpenGA.Net.ParentSelectorStrategies;
 
-namespace OpenGA.Net.Tests.ParentSelectors;
+namespace OpenGA.Net.Tests.ParentSelectorStrategies;
 
 public class TournamentParentSelectorTests
 {
     [Fact]
     public void WillFailIfThereThereIsLessThanTwoIndividuals()
     {
-    var selector = new TournamentParentSelector<int>(false);
+    var selector = new TournamentParentSelectorStrategy<int>(false);
 
         var random = new Random();
 
@@ -21,7 +21,7 @@ public class TournamentParentSelectorTests
     [Fact]
     public void WillProduceUniformCouplesIfOnlyTwoMembersExistInThePopulation()
     {
-    var selector = new TournamentParentSelector<int>(false);
+    var selector = new TournamentParentSelectorStrategy<int>(false);
 
         var random = new Random();
 
@@ -43,7 +43,7 @@ public class TournamentParentSelectorTests
     [Fact]
     public void WillRunIfTheTournamentSizeIsLargerThanThePopulationSize()
     {
-    var selector = new TournamentParentSelector<int>(true);
+    var selector = new TournamentParentSelectorStrategy<int>(true);
 
         var random = new Random();
 
@@ -59,7 +59,7 @@ public class TournamentParentSelectorTests
     [Fact]
     public void WillRunOnNonStochasticTournaments()
     {
-    var selector = new TournamentParentSelector<int>(false);
+    var selector = new TournamentParentSelectorStrategy<int>(false);
 
         var random = new Random();
 
@@ -83,7 +83,7 @@ public class TournamentParentSelectorTests
     [Fact]
     public void WillRunWithStochasticTournaments()
     {
-    var selector = new TournamentParentSelector<int>(true);
+    var selector = new TournamentParentSelectorStrategy<int>(true);
 
         var random = new Random();
 

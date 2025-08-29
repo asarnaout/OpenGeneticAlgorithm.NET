@@ -1,6 +1,6 @@
-namespace OpenGA.Net.ParentSelectors;
+namespace OpenGA.Net.ParentSelectorStrategies;
 
-public abstract class BaseParentSelector<T> : BaseOperator
+public abstract class BaseParentSelectorStrategy<T> : BaseOperator
 {
     protected internal abstract IEnumerable<Couple<T>> SelectMatingPairs(Chromosome<T>[] population, Random random, int minimumNumberOfCouples);
 
