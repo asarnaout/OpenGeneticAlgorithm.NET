@@ -29,7 +29,7 @@ public class OpenGARunner<T>
 
     private readonly TerminationStrategyConfiguration<T> _terminationStrategyConfig = new();
 
-    private Chromosome<T>[] Population { get; set; } = [];
+    internal Chromosome<T>[] Population { get; set; } = [];
 
     internal double HighestFitness => Population.Max(c => c.Fitness);
 
