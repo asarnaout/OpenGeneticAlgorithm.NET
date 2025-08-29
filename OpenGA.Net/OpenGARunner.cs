@@ -565,7 +565,7 @@ public class OpenGARunner<T>
             {
                 if (_random.NextDouble() <= _mutationRate)
                 {
-                    await chromosome.MutateAsync();
+                    await chromosome.MutateAsync(_random);
                     chromosome.InvalidateFitness();
                 }
 

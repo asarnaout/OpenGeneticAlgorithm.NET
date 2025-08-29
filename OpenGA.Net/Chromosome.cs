@@ -62,7 +62,8 @@ public abstract class Chromosome<T>(IList<T> genes) : IEquatable<Chromosome<T>>
     /// Override this method to provide a custom Mutation implementation to the Chromosome. An example of a mutation
     /// is to randomly delete a member of the <see cref="Genes">Genes</see> array.
     /// </summary>
-    public abstract Task MutateAsync();
+    /// <param name="random">Random number generator for deterministic mutation operations</param>
+    public abstract Task MutateAsync(Random random);
 
     /// <summary>
     /// Invalidates the cached fitness value, forcing it to be recalculated on next access.

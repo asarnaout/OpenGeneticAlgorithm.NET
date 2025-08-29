@@ -11,12 +11,11 @@ public class CrossoverAgeResetTests
 
         public override Task<double> CalculateFitnessAsync() => Task.FromResult((double)Genes.Sum());
 
-        public override Task MutateAsync()
+        public override Task MutateAsync(Random random)
         {
             // Simple mutation for testing
             if (Genes.Count > 0)
             {
-                var random = new Random();
                 var index = random.Next(Genes.Count);
                 Genes[index] = random.Next(100);
             }

@@ -19,10 +19,8 @@ public class DummyChromosome(List<int> genes) : Chromosome<int>(genes)
         return Task.FromResult<Chromosome<int>>(new DummyChromosome(list));
     }
 
-    public override Task MutateAsync()
+    public override Task MutateAsync(Random random)
     {
-        var random = new Random();
-
         Genes[random.Next(0, Genes.Count)]++;
         
         return Task.CompletedTask;
