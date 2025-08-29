@@ -9,22 +9,6 @@ namespace OpenGA.Net.ParentSelectorStrategies;
 public abstract class BaseParentSelectorStrategy<T> : BaseOperator
 {
     /// <summary>
-    /// Selects mating pairs from the population for crossover operations with epoch awareness.
-    /// This virtual method provides a default implementation that delegates to the epoch-unaware version
-    /// for strategies that don't need epoch information. Strategies that require epoch information
-    /// (such as Boltzmann selection with temperature decay) should override this method.
-    /// </summary>
-    /// <param name="population">The current population of chromosomes to select parents from</param>
-    /// <param name="random">Random number generator for stochastic selection operations</param>
-    /// <param name="minimumNumberOfCouples">The minimum number of mating pairs that should be selected</param>
-    /// <param name="currentEpoch">The current epoch/generation number, used for epoch-aware strategies like Boltzmann selection. Defaults to 0.</param>
-    /// <returns>A collection of chromosome couples (mating pairs) selected for crossover</returns>
-    protected internal virtual async Task<IEnumerable<Couple<T>>> SelectMatingPairsAsync(Chromosome<T>[] population, Random random, int minimumNumberOfCouples, int currentEpoch = 0)
-    {
-        return await SelectMatingPairsAsync(population, random, minimumNumberOfCouples);
-    }
-
-    /// <summary>
     /// Abstract method that must be implemented by concrete parent selector strategies to define
     /// the core parent selection logic. This method performs the actual selection of mating pairs
     /// from the population based on the specific strategy's algorithm.
@@ -33,7 +17,7 @@ public abstract class BaseParentSelectorStrategy<T> : BaseOperator
     /// <param name="random">Random number generator for stochastic selection operations</param>
     /// <param name="minimumNumberOfCouples">The minimum number of mating pairs that should be selected</param>
     /// <returns>A collection of chromosome couples (mating pairs) selected for crossover</returns>
-    protected internal abstract Task<IEnumerable<Couple<T>>> SelectMatingPairsAsync(Chromosome<T>[] population, Random random, int minimumNumberOfCouples);
+    protected internal abstract Task<IEnumerable<Couple<T>>> SelectMatingPairsAsync(Chromosome<T>[] population, Random random, int minimumNumberOfCouples, int currentEpoch = 0);
 
     /// <summary>
     /// Creates mating pairs using stochastic selection with a weighted roulette wheel.
