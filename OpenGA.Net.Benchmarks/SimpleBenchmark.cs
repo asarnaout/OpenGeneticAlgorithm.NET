@@ -16,6 +16,7 @@ public static class SimpleBenchmark
         Console.WriteLine();
 
         await RunTspBenchmarks();
+        await RunKnapsackBenchmarks();
         await RunBinPackingBenchmarks();
     }
 
@@ -81,6 +82,82 @@ public static class SimpleBenchmark
         Console.WriteLine($"  Random Avg: {randomBaseline50:F0}");
         Console.WriteLine($"  Improvement: {improvement50:F1}% better than random");
         Console.WriteLine($"  Fitness: {await tsp50.CalculateFitnessAsync():F6}");
+        Console.WriteLine();
+    }
+
+    private static async Task RunKnapsackBenchmarks()
+    {
+        Console.WriteLine("KNAPSACK PROBLEM - Performance Results");
+        Console.WriteLine("-".PadRight(60, '-'));
+        
+        // Knapsack 50 items
+        var (weights50, values50, capacity50) = KnapsackInstanceGenerator.GenerateRandomInstance(50, 42);
+        var population50 = KnapsackInstanceGenerator.GenerateInitialPopulation(50, weights50, values50, capacity50, 42);
+        var upperBound50 = KnapsackInstanceGenerator.CalculateUpperBound(weights50, values50, capacity50);
+        var (greedyValue50, greedyWeight50, greedyItems50) = KnapsackInstanceGenerator.CalculateGreedyBaseline(weights50, values50, capacity50);
+        
+        var sw = Stopwatch.StartNew();
+        var result50 = await OpenGARunner<bool>
+            .Initialize(population50)
+            .WithRandomSeed(42)
+            .MutationRate(0.1f)
+            .ParentSelection(c => c.RegisterSingle(s => s.Tournament()))
+            .Crossover(c => c.RegisterSingle(s => s.UniformCrossover()))
+            .SurvivorSelection(r => r.RegisterSingle(s => s.Elitist()))
+            .Termination(t => t.MaximumEpochs(200))
+            .RunToCompletionAsync();
+        sw.Stop();
+        
+        var knapsack50 = (KnapsackChromosome)result50;
+        var gaValue50 = knapsack50.GetTotalValue();
+        var gaWeight50 = knapsack50.GetTotalWeight();
+        var improvement50 = ((gaValue50 - greedyValue50) / greedyValue50) * 100;
+        var efficiencyVsOptimal50 = (gaValue50 / upperBound50) * 100;
+        
+        Console.WriteLine($"Knapsack 50 Items:");
+        Console.WriteLine($"  Time: {sw.ElapsedMilliseconds:N0} ms");
+        Console.WriteLine($"  GA Value: {gaValue50:F1} (Weight: {gaWeight50:F1}/{capacity50:F1})");
+        Console.WriteLine($"  Greedy Value: {greedyValue50:F1}");
+        Console.WriteLine($"  Upper Bound: {upperBound50:F1}");
+        Console.WriteLine($"  Improvement over Greedy: {improvement50:F1}%");
+        Console.WriteLine($"  Efficiency vs Upper Bound: {efficiencyVsOptimal50:F1}%");
+        Console.WriteLine($"  Valid Solution: {knapsack50.IsValidSolution()}");
+        Console.WriteLine($"  Fitness: {await knapsack50.CalculateFitnessAsync():F1}");
+        Console.WriteLine();
+        
+        // Knapsack 100 items
+        var (weights100, values100, capacity100) = KnapsackInstanceGenerator.GenerateRandomInstance(100, 42);
+        var population100 = KnapsackInstanceGenerator.GenerateInitialPopulation(50, weights100, values100, capacity100, 42);
+        var upperBound100 = KnapsackInstanceGenerator.CalculateUpperBound(weights100, values100, capacity100);
+        var (greedyValue100, greedyWeight100, greedyItems100) = KnapsackInstanceGenerator.CalculateGreedyBaseline(weights100, values100, capacity100);
+        
+        sw.Restart();
+        var result100 = await OpenGARunner<bool>
+            .Initialize(population100)
+            .WithRandomSeed(42)
+            .MutationRate(0.08f)
+            .ParentSelection(c => c.RegisterSingle(s => s.Tournament()))
+            .Crossover(c => c.RegisterSingle(s => s.UniformCrossover()))
+            .SurvivorSelection(r => r.RegisterSingle(s => s.Elitist()))
+            .Termination(t => t.MaximumEpochs(250))
+            .RunToCompletionAsync();
+        sw.Stop();
+        
+        var knapsack100 = (KnapsackChromosome)result100;
+        var gaValue100 = knapsack100.GetTotalValue();
+        var gaWeight100 = knapsack100.GetTotalWeight();
+        var improvement100 = ((gaValue100 - greedyValue100) / greedyValue100) * 100;
+        var efficiencyVsOptimal100 = (gaValue100 / upperBound100) * 100;
+        
+        Console.WriteLine($"Knapsack 100 Items:");
+        Console.WriteLine($"  Time: {sw.ElapsedMilliseconds:N0} ms");
+        Console.WriteLine($"  GA Value: {gaValue100:F1} (Weight: {gaWeight100:F1}/{capacity100:F1})");
+        Console.WriteLine($"  Greedy Value: {greedyValue100:F1}");
+        Console.WriteLine($"  Upper Bound: {upperBound100:F1}");
+        Console.WriteLine($"  Improvement over Greedy: {improvement100:F1}%");
+        Console.WriteLine($"  Efficiency vs Upper Bound: {efficiencyVsOptimal100:F1}%");
+        Console.WriteLine($"  Valid Solution: {knapsack100.IsValidSolution()}");
+        Console.WriteLine($"  Fitness: {await knapsack100.CalculateFitnessAsync():F1}");
         Console.WriteLine();
     }
 

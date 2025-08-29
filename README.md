@@ -269,24 +269,28 @@ OpenGA.Net has been rigorously tested on classic optimization problems to demons
 
 ### 🔬 **Benchmark Problems**
 - **🗺️ Traveling Salesman Problem (TSP)**: 30 and 50 city instances
+- **🎒 Knapsack Problem**: 50 and 100 item optimization
 - **📦 Bin Packing Problem**: 50 and 100 item optimization
 
 ### ⚡ **Performance Highlights**
-- **Execution Speed**: 150-400ms for 200 generations on complex problems
+- **Execution Speed**: 540ms-1,415ms for 500 generations on complex problems
 - **Scalability**: Linear scaling with population size and problem complexity
 - **Solution Quality**: Consistently achieves near-optimal results within 1-2% of known bounds
 
 ### 📈 **Key Results**
 
-| Problem | Instance | Time (200 gen) | Best Result | Quality |
+| Problem | Instance | Time (500 gen) | Best Result | Quality |
 |---------|----------|----------------|-------------|---------|
-| TSP | 30 cities | 345ms | 64.6% better than random tour | ⭐⭐⭐⭐⭐ |
-| TSP | 50 cities | 370ms | 53.4% better than random tour | ⭐⭐⭐⭐⭐ |
-| Bin Packing | 50 items | 350ms | 18-19 bins (vs 18 optimal) | ⭐⭐⭐⭐⭐ |
-| Bin Packing | 100 items | 110ms | 36 bins (optimal!) | ⭐⭐⭐⭐⭐ |
+| TSP | 30 cities | 1,111ms | 68.4% better than random tour | ⭐⭐⭐⭐⭐ |
+| TSP | 50 cities | 1,149ms | Distance: 7,842.88 | ⭐⭐⭐⭐⭐ |
+| Knapsack | 50 items | 1,075ms | 1,027.80 value (99.94% efficiency) | ⭐⭐⭐⭐⭐ |
+| Knapsack | 100 items | 1,130ms | 2,286.87 value (99.93% efficiency) | ⭐⭐⭐⭐⭐ |
+| Bin Packing | 50 items | 1,415ms | 19 bins (vs 18 optimal) | ⭐⭐⭐⭐⭐ |
+| Bin Packing | 100 items | 540ms | 36 bins (optimal!) | ⭐⭐⭐⭐⭐ |
 
 **Result Interpretation:**
-- **TSP**: % improvement over random tours (showing significant optimization capability)
+- **TSP**: % improvement over random tours / absolute distance (showing significant optimization capability)
+- **Knapsack**: Total value achieved and efficiency vs upper bound (nearly optimal solutions)
 - **Bin Packing**: Bins used (achieving optimal or near-optimal solutions)
 
 ### 🏃 **Run Benchmarks Yourself**

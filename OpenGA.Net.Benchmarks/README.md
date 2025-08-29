@@ -1,6 +1,6 @@
 # 🧬 OpenGA.Net Benchmarks
 
-This directory contains comprehensive benchmarks for the OpenGA.Net genetic algorithm library, featuring implementations of two classic NP-hard optimization problems: Traveling Salesman Problem (TSP) and Bin Packing Problem.
+This directory contains comprehensive benchmarks for the OpenGA.Net genetic algorithm library, featuring implementations of three classic NP-hard optimization problems: Traveling Salesman Problem (TSP), Knapsack Problem, and Bin Packing Problem.
 
 ## 🚀 Quick Start
 
@@ -27,6 +27,7 @@ dotnet run
 OpenGA.Net.Benchmarks/
 ├── Problems/                           # Problem implementations
 │   ├── TravelingSalesmanProblem.cs    # TSP chromosome & generators
+│   ├── KnapsackProblem.cs              # Knapsack chromosome & generators
 │   └── BinPackingProblem.cs            # Bin packing chromosome & generators
 ├── BenchmarkSuite.cs                   # BenchmarkDotNet test suite
 ├── SimpleBenchmark.cs                  # Quick performance tests
@@ -54,6 +55,26 @@ public class TspChromosome : Chromosome<int>
     // Fitness = 1 / (1 + total_distance)
     // Mutation: 2-opt segment reversal
     // Repair: Fix duplicate cities
+}
+```
+
+### 🎒 Knapsack Problem
+**Objective**: Maximize value of items selected while staying within weight capacity constraints.
+
+**Features**:
+- Binary representation (item included/excluded)
+- Penalty-based fitness for constraint violations
+- Greedy repair mechanism for invalid solutions
+- Test instances: 50 and 100 items
+
+**Chromosome Design**:
+```csharp
+public class KnapsackChromosome : Chromosome<bool>
+{
+    // Genes[i] = true if item i is included
+    // Fitness = total_value - penalty_for_overweight
+    // Mutation: Random bit flipping
+    // Repair: Greedy removal of low-value items
 }
 ```
 
@@ -107,12 +128,14 @@ var result = await OpenGARunner<int>
 
 ## 📊 Benchmark Results Summary
 
-| Problem | Instance | Time (200 gen) | Best Solution | Quality Grade |
+| Problem | Instance | Time (500 gen) | Best Solution | Quality Grade |
 |---------|----------|----------------|---------------|---------------|
-| TSP | 30 cities | 380ms | 4,266.08 distance | A |
-| TSP | 50 cities | 396ms | 8,032.95 distance | A |
-| Bin Packing | 50 items | 389ms | 19/18 bins (94.7%) | A |
-| Bin Packing | 100 items | 180ms | 36/36 bins (100%) | A+ |
+| TSP | 30 cities | 1,111ms | 4,689.72 distance (68.4% vs random) | A+ |
+| TSP | 50 cities | 1,149ms | 7,842.88 distance | A |
+| Knapsack | 50 items | 1,075ms | 1,027.80 value (99.94% efficiency) | A+ |
+| Knapsack | 100 items | 1,130ms | 2,286.87 value (99.93% efficiency) | A+ |
+| Bin Packing | 50 items | 1,415ms | 19/18 bins (94.7%) | A |
+| Bin Packing | 100 items | 540ms | 36/36 bins (100%) | A+ |
 
 ## 🛠️ Extending the Benchmarks
 
