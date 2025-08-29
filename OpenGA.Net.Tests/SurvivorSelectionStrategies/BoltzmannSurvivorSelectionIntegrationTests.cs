@@ -16,7 +16,7 @@ public class BoltzmannSurvivorSelectionIntegrationTests
     [Theory]
     [InlineData("Exponential", 0.1, 2.0)]
     [InlineData("Linear", 0.05, 1.0)]
-    public void OpenGARunner_WithBoltzmannSurvivorSelectionStrategies_ShouldRunSuccessfully(
+    public async Task OpenGARunner_WithBoltzmannSurvivorSelectionStrategies_ShouldRunSuccessfully(
         string decayType, double temperatureDecayRate, double initialTemperature)
     {
         // Act & Assert - Should not throw exceptions
@@ -27,16 +27,16 @@ public class BoltzmannSurvivorSelectionIntegrationTests
 
         var result = decayType switch
         {
-            "Exponential" => runner.SurvivorSelection(c => c.RegisterSingle(s => 
+            "Exponential" => await runner.SurvivorSelection(c => c.RegisterSingle(s => 
                 s.Boltzmann(temperatureDecayRate: temperatureDecayRate, initialTemperature: initialTemperature)))
-                .RunToCompletion(),
-            "Linear" => runner.SurvivorSelection(c => c.RegisterSingle(s => 
+                .RunToCompletionAsync(),
+            "Linear" => await runner.SurvivorSelection(c => c.RegisterSingle(s => 
                 s.BoltzmannWithLinearDecay(temperatureDecayRate: temperatureDecayRate, initialTemperature: initialTemperature)))
-                .RunToCompletion(),
+                .RunToCompletionAsync(),
             _ => throw new ArgumentException($"Unknown decay type: {decayType}")
         };
 
         Assert.NotNull(result);
-        Assert.True(result.Fitness > 0);
+        Assert.True(await result.GetCachedFitnessAsync() > 0);
     }
 }

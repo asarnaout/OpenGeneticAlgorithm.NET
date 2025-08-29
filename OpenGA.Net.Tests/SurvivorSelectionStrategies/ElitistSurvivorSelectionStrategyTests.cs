@@ -21,7 +21,7 @@ public class ElitistSurvivorSelectionStrategyTests
     }
 
     [Fact]
-    public void SelectChromosomesForElimination_WithEmptyPopulation_ShouldReturnEmpty()
+    public async Task SelectChromosomesForElimination_WithEmptyPopulation_ShouldReturnEmpty()
     {
         // Arrange
         var strategy = new ElitistSurvivorSelectionStrategy<int>(0.1f);
@@ -30,14 +30,14 @@ public class ElitistSurvivorSelectionStrategyTests
         var offspring = new[] { new DummyChromosome([1, 2, 3]) };
 
         // Act
-        var result = strategy.SelectChromosomesForElimination(population, offspring, random);
+        var result = await strategy.SelectChromosomesForEliminationAsync(population, offspring, random);
 
         // Assert
         Assert.Empty(result);
     }
 
     [Fact]
-    public void SelectChromosomesForElimination_WithEmptyOffspring_ShouldReturnEmpty()
+    public async Task SelectChromosomesForElimination_WithEmptyOffspring_ShouldReturnEmpty()
     {
         // Arrange
         var strategy = new ElitistSurvivorSelectionStrategy<int>(0.1f);
@@ -46,14 +46,14 @@ public class ElitistSurvivorSelectionStrategyTests
         var offspring = Array.Empty<Chromosome<int>>();
 
         // Act
-        var result = strategy.SelectChromosomesForElimination(population, offspring, random);
+        var result = await strategy.SelectChromosomesForEliminationAsync(population, offspring, random);
 
         // Assert
         Assert.Empty(result);
     }
 
     [Fact]
-    public void SelectChromosomesForElimination_ShouldProtectEliteChromosomes()
+    public async Task SelectChromosomesForElimination_ShouldProtectEliteChromosomes()
     {
         // Arrange
         var strategy = new ElitistSurvivorSelectionStrategy<int>(0.2f); // Protect top 20%
@@ -76,7 +76,7 @@ public class ElitistSurvivorSelectionStrategyTests
         };
 
         // Act
-        var eliminated = strategy.SelectChromosomesForElimination(population, offspring, random).ToArray();
+        var eliminated = (await strategy.SelectChromosomesForEliminationAsync(population, offspring, random)).ToArray();
 
         // Assert
         // Should eliminate 2 chromosomes (same as offspring count)
@@ -95,7 +95,7 @@ public class ElitistSurvivorSelectionStrategyTests
     }
 
     [Fact]
-    public void SelectChromosomesForElimination_WithHighElitePercentage_ShouldLimitEliminations()
+    public async Task SelectChromosomesForElimination_WithHighElitePercentage_ShouldLimitEliminations()
     {
         // Arrange
         var strategy = new ElitistSurvivorSelectionStrategy<int>(0.8f); // Protect 80%
@@ -118,7 +118,7 @@ public class ElitistSurvivorSelectionStrategyTests
         };
 
         // Act
-        var eliminated = strategy.SelectChromosomesForElimination(population, offspring, random).ToArray();
+        var eliminated = (await strategy.SelectChromosomesForEliminationAsync(population, offspring, random)).ToArray();
 
         // Assert
         // With 80% elite protection, only 1 chromosome (20% of 5) can be eliminated
@@ -131,7 +131,7 @@ public class ElitistSurvivorSelectionStrategyTests
     }
 
     [Fact]
-    public void ApplySurvivorSelection_ShouldMaintainElites()
+    public async Task ApplySurvivorSelection_ShouldMaintainElites()
     {
         // Arrange
         var strategy = new ElitistSurvivorSelectionStrategy<int>(0.4f); // Protect top 40%
@@ -153,7 +153,7 @@ public class ElitistSurvivorSelectionStrategyTests
         };
 
         // Act
-        var newPopulation = strategy.ApplySurvivorSelection(population, offspring, random);
+        var newPopulation = await strategy.ApplySurvivorSelectionAsync(population, offspring, random);
 
         // Assert
         // New population should contain elites + offspring
@@ -178,7 +178,7 @@ public class ElitistSurvivorSelectionStrategyTests
     }
 
     [Fact]
-    public void SelectChromosomesForElimination_WithZeroElitePercentage_ShouldBehaveLikeRandomElimination()
+    public async Task SelectChromosomesForElimination_WithZeroElitePercentage_ShouldBehaveLikeRandomElimination()
     {
         // Arrange
         var strategy = new ElitistSurvivorSelectionStrategy<int>(0.0f); // No elites protected
@@ -196,7 +196,7 @@ public class ElitistSurvivorSelectionStrategyTests
         };
 
         // Act
-        var eliminated = strategy.SelectChromosomesForElimination(population, offspring, random).ToArray();
+        var eliminated = (await strategy.SelectChromosomesForEliminationAsync(population, offspring, random)).ToArray();
 
         // Assert
         Assert.Single(eliminated);
@@ -205,7 +205,7 @@ public class ElitistSurvivorSelectionStrategyTests
     }
 
     [Fact]
-    public void SelectChromosomesForElimination_WithOneHundredPercentElite_ShouldEliminateNothing()
+    public async Task SelectChromosomesForElimination_WithOneHundredPercentElite_ShouldEliminateNothing()
     {
         // Arrange
         var strategy = new ElitistSurvivorSelectionStrategy<int>(1.0f); // Protect everyone
@@ -223,14 +223,14 @@ public class ElitistSurvivorSelectionStrategyTests
         };
 
         // Act
-        var eliminated = strategy.SelectChromosomesForElimination(population, offspring, random).ToArray();
+        var eliminated = (await strategy.SelectChromosomesForEliminationAsync(population, offspring, random)).ToArray();
 
         // Assert
         Assert.Empty(eliminated); // No one can be eliminated if everyone is elite
     }
 
     [Fact]
-    public void SelectChromosomesForElimination_ShouldRespectFitnessOrdering()
+    public async Task SelectChromosomesForElimination_ShouldRespectFitnessOrdering()
     {
         // Arrange
         var strategy = new ElitistSurvivorSelectionStrategy<int>(0.5f); // Protect top 50%
@@ -251,7 +251,7 @@ public class ElitistSurvivorSelectionStrategyTests
         };
 
         // Act
-        var eliminated = strategy.SelectChromosomesForElimination(population, offspring, random).ToArray();
+        var eliminated = (await strategy.SelectChromosomesForEliminationAsync(population, offspring, random)).ToArray();
 
         // Assert
         Assert.Equal(2, eliminated.Length);

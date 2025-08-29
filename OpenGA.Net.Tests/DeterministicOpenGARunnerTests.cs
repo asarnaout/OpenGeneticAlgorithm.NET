@@ -12,7 +12,7 @@ namespace OpenGA.Net.Tests;
 /// - Custom weights and parameter variations
 /// 
 /// The test suite is designed to run quickly (under 5 seconds total) while providing comprehensive coverage.
-/// Fixed version that correctly handles the fact that RunToCompletion() returns a single Chromosome<T>, not a collection.
+/// Fixed version that correctly handles the fact that RunToCompletionAsync() returns a single Chromosome<T>, not a collection.
 /// </summary>
 public class DeterministicOpenGARunnerTests
 {
@@ -80,11 +80,12 @@ public class DeterministicOpenGARunnerTests
     /// <summary>
     /// Validates that the genetic algorithm executed correctly by checking the final result and runner state
     /// </summary>
-    private static void ValidateGAExecution(Chromosome<int> result, OpenGARunner<int> runner, int expectedEpochs)
+    private static async Task ValidateGAExecution(Chromosome<int> result, OpenGARunner<int> runner, int expectedEpochs)
     {
         // Basic result validation
         Assert.NotNull(result);
-        Assert.True(result.Fitness > 0, "Best chromosome should have positive fitness");
+        var resultFitness = await result.GetCachedFitnessAsync();
+        Assert.True(resultFitness > 0, "Best chromosome should have positive fitness");
         Assert.True(result.Genes.Count > 0, "Best chromosome should have genes");
         
         // Verify runner state
@@ -96,9 +97,9 @@ public class DeterministicOpenGARunnerTests
         Assert.True(runner.Population.Length > 0, "Population should not be empty");
         
         // Verify the returned result is actually the best in the final population
-        var populationFitnesses = runner.Population.Select(c => c.Fitness).ToArray();
+        var populationFitnesses = await Task.WhenAll(runner.Population.Select(c => c.GetCachedFitnessAsync()));
         var maxPopulationFitness = populationFitnesses.Max();
-        Assert.Equal(maxPopulationFitness, result.Fitness); // Returned result should be the best chromosome in final population
+        Assert.Equal(maxPopulationFitness, resultFitness); // Returned result should be the best chromosome in final population
     }
 
     #endregion
@@ -106,7 +107,7 @@ public class DeterministicOpenGARunnerTests
     #region Single Parent Selector Strategy Tests
 
     [Fact]
-    public void RunToCompletion_WithRandomParentSelector_DeterministicResults()
+    public async Task RunToCompletion_WithRandomParentSelector_DeterministicResults()
     {
         // Arrange
         var population = CreateDiversePopulation(10, 123);
@@ -119,7 +120,7 @@ public class DeterministicOpenGARunnerTests
             .Termination(t => t.MaximumEpochs(10));
 
         // Act
-        var result1 = runner.RunToCompletion();
+        var result1 = await runner.RunToCompletionAsync();
         
         // Run again with same seed to verify deterministic behavior
         var runner2 = OpenGARunner<int>.Initialize(CreateDiversePopulation(10, 123))
@@ -130,22 +131,24 @@ public class DeterministicOpenGARunnerTests
             .MutationRate(0.1f)
             .Termination(t => t.MaximumEpochs(10));
         
-        var result2 = runner2.RunToCompletion();
+        var result2 = await runner2.RunToCompletionAsync();
 
         // Assert
-        ValidateGAExecution(result1, runner, 10);
-        ValidateGAExecution(result2, runner2, 10);
+        await ValidateGAExecution(result1, runner, 10);
+        await ValidateGAExecution(result2, runner2, 10);
         
         // Results should be identical due to same seed
         // Note: Even with same seed, some variance can occur due to population dynamics
         // so we check they're very close rather than exactly equal
-        Assert.InRange(Math.Abs(result1.Fitness - result2.Fitness), 0, 10.0); // Allow variance for genetic algorithms
+        var result1Fitness = await result1.GetCachedFitnessAsync();
+        var result2Fitness = await result2.GetCachedFitnessAsync();
+        Assert.InRange(Math.Abs(result1Fitness - result2Fitness), 0, 10.0); // Allow variance for genetic algorithms
         // Allow variance in gene count due to genetic algorithm operations and chromosome mutations
         Assert.InRange(Math.Abs(result1.Genes.Count - result2.Genes.Count), 0, 6);
     }
 
     [Fact]
-    public void RunToCompletion_WithRouletteWheelParentSelector_WorksCorrectly()
+    public async Task RunToCompletion_WithRouletteWheelParentSelector_WorksCorrectly()
     {
         // Arrange
         var population = CreateDiversePopulation(15, 234);
@@ -157,14 +160,14 @@ public class DeterministicOpenGARunnerTests
             .Termination(t => t.MaximumEpochs(8));
 
         // Act
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
 
         // Assert
-        ValidateGAExecution(result, runner, 8);
+        await ValidateGAExecution(result, runner, 8);
     }
 
     [Fact]
-    public void RunToCompletion_WithTournamentParentSelector_BothVariations()
+    public async Task RunToCompletion_WithTournamentParentSelector_BothVariations()
     {
         // Test with stochastic tournament
         var population1 = CreateDiversePopulation(12, 345);
@@ -173,7 +176,7 @@ public class DeterministicOpenGARunnerTests
             .ParentSelection(p => p.RegisterSingle(s => s.Tournament(stochasticTournament: true)))
             .Termination(t => t.MaximumEpochs(6));
 
-        var result1 = runner1.RunToCompletion();
+        var result1 = await runner1.RunToCompletionAsync();
 
         // Test with deterministic tournament
         var population2 = CreateDiversePopulation(12, 345);
@@ -182,15 +185,15 @@ public class DeterministicOpenGARunnerTests
             .ParentSelection(p => p.RegisterSingle(s => s.Tournament(stochasticTournament: false)))
             .Termination(t => t.MaximumEpochs(6));
 
-        var result2 = runner2.RunToCompletion();
+        var result2 = await runner2.RunToCompletionAsync();
 
         // Assert
-        ValidateGAExecution(result1, runner1, 6);
-        ValidateGAExecution(result2, runner2, 6);
+        await ValidateGAExecution(result1, runner1, 6);
+        await ValidateGAExecution(result2, runner2, 6);
     }
 
     [Fact]
-    public void RunToCompletion_WithRankParentSelector_WorksCorrectly()
+    public async Task RunToCompletion_WithRankParentSelector_WorksCorrectly()
     {
         // Arrange
         var population = CreateDiversePopulation(10, 456);
@@ -201,14 +204,14 @@ public class DeterministicOpenGARunnerTests
             .Termination(t => t.MaximumEpochs(7));
 
         // Act
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
 
         // Assert
-        ValidateGAExecution(result, runner, 7);
+        await ValidateGAExecution(result, runner, 7);
     }
 
     [Fact]
-    public void RunToCompletion_WithBoltzmannParentSelector_ExponentialDecay()
+    public async Task RunToCompletion_WithBoltzmannParentSelector_ExponentialDecay()
     {
         // Arrange
         var population = CreateDiversePopulation(8, 567);
@@ -218,14 +221,14 @@ public class DeterministicOpenGARunnerTests
             .Termination(t => t.MaximumEpochs(5));
 
         // Act
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
 
         // Assert
-        ValidateGAExecution(result, runner, 5);
+        await ValidateGAExecution(result, runner, 5);
     }
 
     [Fact]
-    public void RunToCompletion_WithBoltzmannLinearDecayParentSelector_WorksCorrectly()
+    public async Task RunToCompletion_WithBoltzmannLinearDecayParentSelector_WorksCorrectly()
     {
         // Arrange
         var population = CreateDiversePopulation(8, 678);
@@ -235,10 +238,10 @@ public class DeterministicOpenGARunnerTests
             .Termination(t => t.MaximumEpochs(5));
 
         // Act
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
 
         // Assert
-        ValidateGAExecution(result, runner, 5);
+        await ValidateGAExecution(result, runner, 5);
     }
 
     #endregion
@@ -246,7 +249,7 @@ public class DeterministicOpenGARunnerTests
     #region Multiple Parent Selector Strategy Tests
 
     [Fact]
-    public void RunToCompletion_WithMultipleParentSelectors_CustomWeights()
+    public async Task RunToCompletion_WithMultipleParentSelectors_CustomWeights()
     {
         // Arrange
         var population = CreateDiversePopulation(12, 789);
@@ -259,14 +262,14 @@ public class DeterministicOpenGARunnerTests
             .Termination(t => t.MaximumEpochs(8));
 
         // Act
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
 
         // Assert
-        ValidateGAExecution(result, runner, 8);
+        await ValidateGAExecution(result, runner, 8);
     }
 
     [Fact]
-    public void RunToCompletion_WithMultipleParentSelectors_AdaptivePursuitPolicy()
+    public async Task RunToCompletion_WithMultipleParentSelectors_AdaptivePursuitPolicy()
     {
         // Arrange
         var population = CreateDiversePopulation(15, 890);
@@ -286,14 +289,14 @@ public class DeterministicOpenGARunnerTests
             .Termination(t => t.MaximumEpochs(15));
 
         // Act
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
 
         // Assert
-        ValidateGAExecution(result, runner, 15);
+        await ValidateGAExecution(result, runner, 15);
     }
 
     [Fact]
-    public void RunToCompletion_WithMultipleParentSelectors_RandomChoicePolicy()
+    public async Task RunToCompletion_WithMultipleParentSelectors_RandomChoicePolicy()
     {
         // Arrange
         var population = CreateDiversePopulation(10, 901);
@@ -306,14 +309,14 @@ public class DeterministicOpenGARunnerTests
             .Termination(t => t.MaximumEpochs(6));
 
         // Act
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
 
         // Assert
-        ValidateGAExecution(result, runner, 6);
+        await ValidateGAExecution(result, runner, 6);
     }
 
     [Fact]
-    public void RunToCompletion_WithMultipleParentSelectors_RoundRobinPolicy()
+    public async Task RunToCompletion_WithMultipleParentSelectors_RoundRobinPolicy()
     {
         // Arrange
         var population = CreateDiversePopulation(8, 112);
@@ -327,10 +330,10 @@ public class DeterministicOpenGARunnerTests
             .Termination(t => t.MaximumEpochs(9));
 
         // Act
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
 
         // Assert
-        ValidateGAExecution(result, runner, 9);
+        await ValidateGAExecution(result, runner, 9);
     }
 
     #endregion
@@ -338,7 +341,7 @@ public class DeterministicOpenGARunnerTests
     #region Single Crossover Strategy Tests
 
     [Fact]
-    public void RunToCompletion_WithOnePointCrossover_DifferentRates()
+    public async Task RunToCompletion_WithOnePointCrossover_DifferentRates()
     {
         // Test with high crossover rate
         var population1 = CreateDiversePopulation(10, 223);
@@ -347,7 +350,7 @@ public class DeterministicOpenGARunnerTests
             .Crossover(c => c.RegisterSingle(s => s.OnePointCrossover()).WithCrossoverRate(0.95f))
             .Termination(t => t.MaximumEpochs(5));
 
-        var result1 = runner1.RunToCompletion();
+        var result1 = await runner1.RunToCompletionAsync();
 
         // Test with low crossover rate
         var population2 = CreateDiversePopulation(10, 223);
@@ -356,15 +359,15 @@ public class DeterministicOpenGARunnerTests
             .Crossover(c => c.RegisterSingle(s => s.OnePointCrossover()).WithCrossoverRate(0.1f))
             .Termination(t => t.MaximumEpochs(5));
 
-        var result2 = runner2.RunToCompletion();
+        var result2 = await runner2.RunToCompletionAsync();
 
         // Assert
-        ValidateGAExecution(result1, runner1, 5);
-        ValidateGAExecution(result2, runner2, 5);
+        await ValidateGAExecution(result1, runner1, 5);
+        await ValidateGAExecution(result2, runner2, 5);
     }
 
     [Fact]
-    public void RunToCompletion_WithUniformCrossover_WorksCorrectly()
+    public async Task RunToCompletion_WithUniformCrossover_WorksCorrectly()
     {
         // Arrange
         var population = CreateDiversePopulation(12, 334);
@@ -375,10 +378,10 @@ public class DeterministicOpenGARunnerTests
             .Termination(t => t.MaximumEpochs(7));
 
         // Act
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
 
         // Assert
-        ValidateGAExecution(result, runner, 7);
+        await ValidateGAExecution(result, runner, 7);
     }
 
     [Theory]
@@ -386,7 +389,7 @@ public class DeterministicOpenGARunnerTests
     [InlineData(2)]
     [InlineData(3)]
     [InlineData(4)]
-    public void RunToCompletion_WithKPointCrossover_DifferentPointCounts(int numberOfPoints)
+    public async Task RunToCompletion_WithKPointCrossover_DifferentPointCounts(int numberOfPoints)
     {
         // Arrange
         var population = CreateDiversePopulation(10, 445 + numberOfPoints);
@@ -396,10 +399,10 @@ public class DeterministicOpenGARunnerTests
             .Termination(t => t.MaximumEpochs(5));
 
         // Act
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
 
         // Assert
-        ValidateGAExecution(result, runner, 5);
+        await ValidateGAExecution(result, runner, 5);
     }
 
     #endregion
@@ -407,7 +410,7 @@ public class DeterministicOpenGARunnerTests
     #region Multiple Crossover Strategy Tests
 
     [Fact]
-    public void RunToCompletion_WithMultipleCrossoverStrategies_CustomWeights()
+    public async Task RunToCompletion_WithMultipleCrossoverStrategies_CustomWeights()
     {
         // Arrange
         var population = CreateDiversePopulation(15, 556);
@@ -420,14 +423,14 @@ public class DeterministicOpenGARunnerTests
             .Termination(t => t.MaximumEpochs(10));
 
         // Act
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
 
         // Assert
-        ValidateGAExecution(result, runner, 10);
+        await ValidateGAExecution(result, runner, 10);
     }
 
     [Fact]
-    public void RunToCompletion_WithMultipleCrossoverStrategies_AdaptivePursuitPolicy()
+    public async Task RunToCompletion_WithMultipleCrossoverStrategies_AdaptivePursuitPolicy()
     {
         // Arrange
         var population = CreateDiversePopulation(12, 667);
@@ -444,14 +447,14 @@ public class DeterministicOpenGARunnerTests
             .Termination(t => t.MaximumEpochs(12));
 
         // Act
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
 
         // Assert
-        ValidateGAExecution(result, runner, 12);
+        await ValidateGAExecution(result, runner, 12);
     }
 
     [Fact]
-    public void RunToCompletion_WithMultipleCrossoverStrategies_RoundRobinPolicy()
+    public async Task RunToCompletion_WithMultipleCrossoverStrategies_RoundRobinPolicy()
     {
         // Arrange
         var population = CreateDiversePopulation(8, 778);
@@ -465,10 +468,10 @@ public class DeterministicOpenGARunnerTests
             .Termination(t => t.MaximumEpochs(8));
 
         // Act
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
 
         // Assert
-        ValidateGAExecution(result, runner, 8);
+        await ValidateGAExecution(result, runner, 8);
     }
 
     #endregion
@@ -476,7 +479,7 @@ public class DeterministicOpenGARunnerTests
     #region Single Survivor Selection Strategy Tests
 
     [Fact]
-    public void RunToCompletion_WithRandomSurvivorSelection_WorksCorrectly()
+    public async Task RunToCompletion_WithRandomSurvivorSelection_WorksCorrectly()
     {
         // Arrange
         var population = CreateDiversePopulation(10, 889);
@@ -486,14 +489,14 @@ public class DeterministicOpenGARunnerTests
             .Termination(t => t.MaximumEpochs(6));
 
         // Act
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
 
         // Assert
-        ValidateGAExecution(result, runner, 6);
+        await ValidateGAExecution(result, runner, 6);
     }
 
     [Fact]
-    public void RunToCompletion_WithGenerationalSurvivorSelection_WorksCorrectly()
+    public async Task RunToCompletion_WithGenerationalSurvivorSelection_WorksCorrectly()
     {
         // Arrange
         var population = CreateDiversePopulation(8, 990);
@@ -503,17 +506,17 @@ public class DeterministicOpenGARunnerTests
             .Termination(t => t.MaximumEpochs(5));
 
         // Act
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
 
         // Assert
-        ValidateGAExecution(result, runner, 5);
+        await ValidateGAExecution(result, runner, 5);
     }
 
     [Theory]
     [InlineData(0.1f)]
     [InlineData(0.2f)]
     [InlineData(0.3f)]
-    public void RunToCompletion_WithElitistSurvivorSelection_DifferentElitePercentages(float elitePercentage)
+    public async Task RunToCompletion_WithElitistSurvivorSelection_DifferentElitePercentages(float elitePercentage)
     {
         // Arrange
         var population = CreateDiversePopulation(12, 101 + (int)(elitePercentage * 100));
@@ -523,17 +526,17 @@ public class DeterministicOpenGARunnerTests
             .Termination(t => t.MaximumEpochs(7));
 
         // Act
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
 
         // Assert
-        ValidateGAExecution(result, runner, 7);
+        await ValidateGAExecution(result, runner, 7);
     }
 
     [Theory]
     [InlineData(3, true)]
     [InlineData(4, false)]
     [InlineData(5, true)]
-    public void RunToCompletion_WithTournamentSurvivorSelection_DifferentConfigurations(int tournamentSize, bool stochasticTournament)
+    public async Task RunToCompletion_WithTournamentSurvivorSelection_DifferentConfigurations(int tournamentSize, bool stochasticTournament)
     {
         // Arrange
         var population = CreateDiversePopulation(15, 212 + tournamentSize);
@@ -543,14 +546,14 @@ public class DeterministicOpenGARunnerTests
             .Termination(t => t.MaximumEpochs(6));
 
         // Act
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
 
         // Assert
-        ValidateGAExecution(result, runner, 6);
+        await ValidateGAExecution(result, runner, 6);
     }
 
     [Fact]
-    public void RunToCompletion_WithAgeBasedSurvivorSelection_WorksCorrectly()
+    public async Task RunToCompletion_WithAgeBasedSurvivorSelection_WorksCorrectly()
     {
         // Arrange
         var population = CreateDiversePopulation(10, 323);
@@ -560,14 +563,14 @@ public class DeterministicOpenGARunnerTests
             .Termination(t => t.MaximumEpochs(8));
 
         // Act
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
 
         // Assert
-        ValidateGAExecution(result, runner, 8);
+        await ValidateGAExecution(result, runner, 8);
     }
 
     [Fact]
-    public void RunToCompletion_WithBoltzmannSurvivorSelection_ExponentialDecay()
+    public async Task RunToCompletion_WithBoltzmannSurvivorSelection_ExponentialDecay()
     {
         // Arrange
         var population = CreateDiversePopulation(12, 434);
@@ -577,14 +580,14 @@ public class DeterministicOpenGARunnerTests
             .Termination(t => t.MaximumEpochs(6));
 
         // Act
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
 
         // Assert
-        ValidateGAExecution(result, runner, 6);
+        await ValidateGAExecution(result, runner, 6);
     }
 
     [Fact]
-    public void RunToCompletion_WithBoltzmannLinearDecaySurvivorSelection_WorksCorrectly()
+    public async Task RunToCompletion_WithBoltzmannLinearDecaySurvivorSelection_WorksCorrectly()
     {
         // Arrange
         var population = CreateDiversePopulation(10, 545);
@@ -594,10 +597,10 @@ public class DeterministicOpenGARunnerTests
             .Termination(t => t.MaximumEpochs(7));
 
         // Act
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
 
         // Assert
-        ValidateGAExecution(result, runner, 7);
+        await ValidateGAExecution(result, runner, 7);
     }
 
     #endregion
@@ -605,7 +608,7 @@ public class DeterministicOpenGARunnerTests
     #region Multiple Survivor Selection Strategy Tests
 
     [Fact]
-    public void RunToCompletion_WithMultipleSurvivorSelectionStrategies_CustomWeights()
+    public async Task RunToCompletion_WithMultipleSurvivorSelectionStrategies_CustomWeights()
     {
         // Arrange
         var population = CreateDiversePopulation(15, 656);
@@ -618,14 +621,14 @@ public class DeterministicOpenGARunnerTests
             .Termination(t => t.MaximumEpochs(8));
 
         // Act
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
 
         // Assert
-        ValidateGAExecution(result, runner, 8);
+        await ValidateGAExecution(result, runner, 8);
     }
 
     [Fact]
-    public void RunToCompletion_WithMultipleSurvivorSelectionStrategies_AdaptivePursuitPolicy()
+    public async Task RunToCompletion_WithMultipleSurvivorSelectionStrategies_AdaptivePursuitPolicy()
     {
         // Arrange
         var population = CreateDiversePopulation(12, 767);
@@ -641,14 +644,14 @@ public class DeterministicOpenGARunnerTests
             .Termination(t => t.MaximumEpochs(10));
 
         // Act
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
 
         // Assert
-        ValidateGAExecution(result, runner, 10);
+        await ValidateGAExecution(result, runner, 10);
     }
 
     [Fact]
-    public void RunToCompletion_WithMultipleSurvivorSelectionStrategies_WithOffspringGenerationRate()
+    public async Task RunToCompletion_WithMultipleSurvivorSelectionStrategies_WithOffspringGenerationRate()
     {
         // Arrange
         var population = CreateDiversePopulation(10, 878);
@@ -661,10 +664,10 @@ public class DeterministicOpenGARunnerTests
             .Termination(t => t.MaximumEpochs(6));
 
         // Act
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
 
         // Assert
-        ValidateGAExecution(result, runner, 6);
+        await ValidateGAExecution(result, runner, 6);
     }
 
     #endregion
@@ -672,7 +675,7 @@ public class DeterministicOpenGARunnerTests
     #region Termination Strategy Tests
 
     [Fact]
-    public void RunToCompletion_WithMaximumEpochsTermination_ExactEpochCount()
+    public async Task RunToCompletion_WithMaximumEpochsTermination_ExactEpochCount()
     {
         // Arrange
         var population = CreateDiversePopulation(8, 989);
@@ -681,15 +684,15 @@ public class DeterministicOpenGARunnerTests
             .Termination(t => t.MaximumEpochs(12));
 
         // Act
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
 
         // Assert
-        ValidateGAExecution(result, runner, 12);
+        await ValidateGAExecution(result, runner, 12);
         Assert.Equal(12, runner.CurrentEpoch); // Should run exactly 12 epochs
     }
 
     [Fact]
-    public void RunToCompletion_WithMaximumDurationTermination_TerminatesWithinTime()
+    public async Task RunToCompletion_WithMaximumDurationTermination_TerminatesWithinTime()
     {
         // Arrange
         var population = CreateDiversePopulation(10, 101);
@@ -698,17 +701,18 @@ public class DeterministicOpenGARunnerTests
             .Termination(t => t.MaximumDuration(TimeSpan.FromMilliseconds(100)));
 
         // Act
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
 
         // Assert
         Assert.NotNull(result);
-        Assert.True(result.Fitness > 0);
+        var resultFitness = await result.GetCachedFitnessAsync();
+        Assert.True(resultFitness > 0);
         Assert.True(runner.CurrentEpoch >= 1); // Should run at least 1 epoch
         Assert.True(runner.StopWatch.Elapsed <= TimeSpan.FromMilliseconds(200)); // Allow some tolerance
     }
 
     [Fact]
-    public void RunToCompletion_WithTargetStandardDeviationTermination_ConvergesEarly()
+    public async Task RunToCompletion_WithTargetStandardDeviationTermination_ConvergesEarly()
     {
         // Arrange - use converged population to trigger early termination
         var population = CreateConvergedPopulation(8);
@@ -719,16 +723,17 @@ public class DeterministicOpenGARunnerTests
                 .MaximumEpochs(20)); // Backup termination
 
         // Act
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
 
         // Assert
         Assert.NotNull(result);
-        Assert.True(result.Fitness > 0);
+        var resultFitness = await result.GetCachedFitnessAsync();
+        Assert.True(resultFitness > 0);
         Assert.True(runner.CurrentEpoch < 20); // Should terminate early due to convergence
     }
 
     [Fact]
-    public void RunToCompletion_WithTargetFitnessTermination_TerminatesWhenReached()
+    public async Task RunToCompletion_WithTargetFitnessTermination_TerminatesWhenReached()
     {
         // Arrange - create population with one very high fitness chromosome
         var population = CreateDiversePopulation(5, 212);
@@ -741,18 +746,19 @@ public class DeterministicOpenGARunnerTests
                 .MaximumEpochs(15)); // Backup termination
 
         // Act
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
 
         // Assert
         Assert.NotNull(result);
-        Assert.True(result.Fitness > 0);
+        var resultFitness = await result.GetCachedFitnessAsync();
+        Assert.True(resultFitness > 0);
         Assert.True(runner.CurrentEpoch >= 1);
         // Since genetic algorithms can have significant variance, just check for reasonable improvement
-        Assert.True(result.Fitness >= 50.0);
+        Assert.True(resultFitness >= 50.0);
     }
 
     [Fact]
-    public void RunToCompletion_WithMultipleTerminationStrategies_TerminatesOnFirst()
+    public async Task RunToCompletion_WithMultipleTerminationStrategies_TerminatesOnFirst()
     {
         // Arrange
         var population = CreateDiversePopulation(10, 323);
@@ -764,11 +770,12 @@ public class DeterministicOpenGARunnerTests
                 .TargetStandardDeviation(0.5));
 
         // Act
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
 
         // Assert
         Assert.NotNull(result);
-        Assert.True(result.Fitness > 0);
+        var resultFitness = await result.GetCachedFitnessAsync();
+        Assert.True(resultFitness > 0);
         Assert.True(runner.CurrentEpoch >= 1);
         Assert.True(runner.CurrentEpoch <= 8); // Should not exceed max epochs
     }
@@ -781,7 +788,7 @@ public class DeterministicOpenGARunnerTests
     [InlineData(0.5f, 1.5f)]
     [InlineData(0.3f, 2.0f)]
     [InlineData(0.7f, 1.8f)]
-    public void RunToCompletion_WithDifferentPopulationSizePercentages_WorksCorrectly(float minPercentage, float maxPercentage)
+    public async Task RunToCompletion_WithDifferentPopulationSizePercentages_WorksCorrectly(float minPercentage, float maxPercentage)
     {
         // Arrange
         var population = CreateDiversePopulation(10, 434);
@@ -790,10 +797,10 @@ public class DeterministicOpenGARunnerTests
             .Termination(t => t.MaximumEpochs(5));
 
         // Act
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
 
         // Assert
-        ValidateGAExecution(result, runner, 5);
+        await ValidateGAExecution(result, runner, 5);
     }
 
     [Theory]
@@ -802,7 +809,7 @@ public class DeterministicOpenGARunnerTests
     [InlineData(0.5f)]
     [InlineData(0.8f)]
     [InlineData(1.0f)]
-    public void RunToCompletion_WithDifferentMutationRates_WorksCorrectly(float mutationRate)
+    public async Task RunToCompletion_WithDifferentMutationRates_WorksCorrectly(float mutationRate)
     {
         // Arrange
         var population = CreateDiversePopulation(8, 545 + (int)(mutationRate * 100));
@@ -812,10 +819,10 @@ public class DeterministicOpenGARunnerTests
             .Termination(t => t.MaximumEpochs(5));
 
         // Act
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
 
         // Assert
-        ValidateGAExecution(result, runner, 5);
+        await ValidateGAExecution(result, runner, 5);
     }
 
     #endregion
@@ -823,7 +830,7 @@ public class DeterministicOpenGARunnerTests
     #region Complex Configuration Tests
 
     [Fact]
-    public void RunToCompletion_WithComplexMultiOperatorConfiguration_AllAdaptivePursuit()
+    public async Task RunToCompletion_WithComplexMultiOperatorConfiguration_AllAdaptivePursuit()
     {
         // Arrange - Test all operators with adaptive pursuit
         var population = CreateDiversePopulation(20, 656);
@@ -849,18 +856,19 @@ public class DeterministicOpenGARunnerTests
             .Termination(t => t.MaximumEpochs(15));
 
         // Act
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
 
         // Assert
-        ValidateGAExecution(result, runner, 15);
+        await ValidateGAExecution(result, runner, 15);
         
         // Additional comprehensive validation
         Assert.True(runner.Population.Length <= 20 * 2); // Within max population bounds
-        Assert.True(runner.Population.All(c => c.Fitness > 0)); // All chromosomes have positive fitness
+        var populationFitnesses = await Task.WhenAll(runner.Population.Select(c => c.GetCachedFitnessAsync()));
+        Assert.True(populationFitnesses.All(f => f > 0)); // All chromosomes have positive fitness
     }
 
     [Fact]
-    public void RunToCompletion_WithMixedPoliciesConfiguration_WorksCorrectly()
+    public async Task RunToCompletion_WithMixedPoliciesConfiguration_WorksCorrectly()
     {
         // Arrange - Test mixing different policies across operators
         var population = CreateDiversePopulation(15, 777);
@@ -880,14 +888,14 @@ public class DeterministicOpenGARunnerTests
             .Termination(t => t.MaximumEpochs(10));
 
         // Act
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
 
         // Assert
-        ValidateGAExecution(result, runner, 10);
+        await ValidateGAExecution(result, runner, 10);
     }
 
     [Fact]
-    public void RunToCompletion_WithBoltzmannVariationsConfiguration_WorksCorrectly()
+    public async Task RunToCompletion_WithBoltzmannVariationsConfiguration_WorksCorrectly()
     {
         // Arrange - Test both Boltzmann variations
         var population = CreateDiversePopulation(12, 888);
@@ -902,10 +910,10 @@ public class DeterministicOpenGARunnerTests
             .Termination(t => t.MaximumEpochs(8));
 
         // Act
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
 
         // Assert
-        ValidateGAExecution(result, runner, 8);
+        await ValidateGAExecution(result, runner, 8);
     }
 
     #endregion
@@ -913,7 +921,7 @@ public class DeterministicOpenGARunnerTests
     #region Edge Cases and Error Handling Tests
 
     [Fact]
-    public void RunToCompletion_WithMinimalPopulation_WorksCorrectly()
+    public async Task RunToCompletion_WithMinimalPopulation_WorksCorrectly()
     {
         // Arrange - Test with smallest possible population
         var population = CreateDiversePopulation(2, 999);
@@ -922,14 +930,14 @@ public class DeterministicOpenGARunnerTests
             .Termination(t => t.MaximumEpochs(3));
 
         // Act
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
 
         // Assert
-        ValidateGAExecution(result, runner, 3);
+        await ValidateGAExecution(result, runner, 3);
     }
 
     [Fact]
-    public void RunToCompletion_WithLargePopulation_PerformsWellWithinTimeLimit()
+    public async Task RunToCompletion_WithLargePopulation_PerformsWellWithinTimeLimit()
     {
         // Arrange - Test with larger population but short epochs to ensure reasonable runtime
         var population = CreateDiversePopulation(50, 222);
@@ -939,16 +947,16 @@ public class DeterministicOpenGARunnerTests
 
         // Act
         var start = DateTime.Now;
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
         var duration = DateTime.Now - start;
 
         // Assert
-        ValidateGAExecution(result, runner, 3);
+        await ValidateGAExecution(result, runner, 3);
         Assert.True(duration < TimeSpan.FromSeconds(5), "Large population test should complete within 5 seconds");
     }
 
     [Fact]
-    public void RunToCompletion_WithZeroMutationRate_StillProducesResults()
+    public async Task RunToCompletion_WithZeroMutationRate_StillProducesResults()
     {
         // Arrange
         var population = CreateDiversePopulation(8, 444);
@@ -958,14 +966,14 @@ public class DeterministicOpenGARunnerTests
             .Termination(t => t.MaximumEpochs(5));
 
         // Act
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
 
         // Assert
-        ValidateGAExecution(result, runner, 5);
+        await ValidateGAExecution(result, runner, 5);
     }
 
     [Fact]
-    public void RunToCompletion_WithMaximumMutationRate_StillProducesResults()
+    public async Task RunToCompletion_WithMaximumMutationRate_StillProducesResults()
     {
         // Arrange
         var population = CreateDiversePopulation(8, 666);
@@ -975,10 +983,10 @@ public class DeterministicOpenGARunnerTests
             .Termination(t => t.MaximumEpochs(5));
 
         // Act
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
 
         // Assert
-        ValidateGAExecution(result, runner, 5);
+        await ValidateGAExecution(result, runner, 5);
     }
 
     #endregion
@@ -986,7 +994,7 @@ public class DeterministicOpenGARunnerTests
     #region Random Seed Determinism Tests
 
     [Fact]
-    public void RunToCompletion_WithSameSeed_ProducesIdenticalResults()
+    public async Task RunToCompletion_WithSameSeed_ProducesIdenticalResults()
     {
         // Arrange
         const int seed = 12345;
@@ -1002,18 +1010,20 @@ public class DeterministicOpenGARunnerTests
             .Termination(t => t.MaximumEpochs(5));
 
         // Act
-        var result1 = runner1.RunToCompletion();
-        var result2 = runner2.RunToCompletion();
+        var result1 = await runner1.RunToCompletionAsync();
+        var result2 = await runner2.RunToCompletionAsync();
 
         // Assert
-        Assert.InRange(Math.Abs(result1.Fitness - result2.Fitness), 0, 10.0); // Allow variance for genetic algorithms
+        var result1Fitness = await result1.GetCachedFitnessAsync();
+        var result2Fitness = await result2.GetCachedFitnessAsync();
+        Assert.InRange(Math.Abs(result1Fitness - result2Fitness), 0, 10.0); // Allow variance for genetic algorithms
         Assert.Equal(result1.Genes.Count, result2.Genes.Count);
         // Allow some variance in epoch count due to GA termination conditions
         Assert.InRange(Math.Abs(runner1.CurrentEpoch - runner2.CurrentEpoch), 0, 5);
     }
 
     [Fact]
-    public void RunToCompletion_WithDifferentSeeds_ProducesDifferentResults()
+    public async Task RunToCompletion_WithDifferentSeeds_ProducesDifferentResults()
     {
         // Arrange
         var population1 = CreateDiversePopulation(10, 111);
@@ -1028,12 +1038,14 @@ public class DeterministicOpenGARunnerTests
             .Termination(t => t.MaximumEpochs(10));
 
         // Act
-        var result1 = runner1.RunToCompletion();
-        var result2 = runner2.RunToCompletion();
+        var result1 = await runner1.RunToCompletionAsync();
+        var result2 = await runner2.RunToCompletionAsync();
 
         // Assert - Results are very likely to be different with different seeds
         // (Though technically they could be the same by chance, it's extremely unlikely)
-        Assert.NotEqual(result1.Fitness, result2.Fitness);
+        var result1Fitness = await result1.GetCachedFitnessAsync();
+        var result2Fitness = await result2.GetCachedFitnessAsync();
+        Assert.NotEqual(result1Fitness, result2Fitness);
     }
 
     #endregion
@@ -1041,7 +1053,7 @@ public class DeterministicOpenGARunnerTests
     #region Integration with Default Strategies Tests
 
     [Fact]
-    public void RunToCompletion_WithNoStrategiesConfigured_UsesAllDefaults()
+    public async Task RunToCompletion_WithNoStrategiesConfigured_UsesAllDefaults()
     {
         // Arrange - Only configure termination, let everything else use defaults
         var population = CreateDiversePopulation(8, 999);
@@ -1050,14 +1062,14 @@ public class DeterministicOpenGARunnerTests
             .Termination(t => t.MaximumEpochs(5));
 
         // Act
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
 
         // Assert
-        ValidateGAExecution(result, runner, 5);
+        await ValidateGAExecution(result, runner, 5);
     }
 
     [Fact]
-    public void RunToCompletion_WithPartialConfiguration_UsesDefaultsForMissing()
+    public async Task RunToCompletion_WithPartialConfiguration_UsesDefaultsForMissing()
     {
         // Arrange - Configure only some strategies
         var population = CreateDiversePopulation(10, 777);
@@ -1069,10 +1081,10 @@ public class DeterministicOpenGARunnerTests
             .Termination(t => t.MaximumEpochs(6));
 
         // Act
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
 
         // Assert
-        ValidateGAExecution(result, runner, 6);
+        await ValidateGAExecution(result, runner, 6);
     }
 
     #endregion

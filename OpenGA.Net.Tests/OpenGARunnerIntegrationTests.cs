@@ -163,8 +163,7 @@ public class OpenGARunnerIntegrationTests
                 .SurvivorSelection(config => {
                     config.RegisterSingle(s => s.Elitist());
                     config.OverrideOffspringGenerationRate(invalidRate);
-                })
-                .RunToCompletion());
+                }));
     }
 
     #endregion
@@ -172,7 +171,7 @@ public class OpenGARunnerIntegrationTests
     #region Missing Strategy Configuration Tests
 
     [Fact]
-    public void RunToCompletion_WithoutParentSelector_UsesDefaultTournamentSelector()
+    public async Task RunToCompletion_WithoutParentSelector_UsesDefaultTournamentSelector()
     {
         // Arrange
         var population = CreateDiversePopulation(5);
@@ -181,12 +180,12 @@ public class OpenGARunnerIntegrationTests
             .Termination(config => config.MaximumEpochs(5));
 
         // Act & Assert - Should not throw, should use default Tournament reproduction selector
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
         Assert.NotNull(result);
     }
 
     [Fact]
-    public void RunToCompletion_WithoutSurvivorSelectionStrategy_UsesDefaultElitistStrategy()
+    public async Task RunToCompletion_WithoutSurvivorSelectionStrategy_UsesDefaultElitistStrategy()
     {
         // Arrange
         var population = CreateDiversePopulation(5);
@@ -195,12 +194,12 @@ public class OpenGARunnerIntegrationTests
             .Termination(config => config.MaximumEpochs(5));
 
         // Act & Assert - Should not throw, should use default Elitist survivor selection strategy
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
         Assert.NotNull(result);
     }
 
     [Fact]
-    public void RunToCompletion_WithoutCrossoverStrategy_UsesDefault()
+    public async Task RunToCompletion_WithoutCrossoverStrategy_UsesDefault()
     {
         // Arrange
         var population = CreateDiversePopulation(5);
@@ -210,12 +209,12 @@ public class OpenGARunnerIntegrationTests
             .Termination(config => config.MaximumEpochs(3));
 
         // Act & Assert - Should not throw, should use default OnePoint crossover
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
         Assert.NotNull(result);
     }
 
     [Fact]
-    public void RunToCompletion_WithoutTerminationStrategy_UsesDefaultMaxEpochs()
+    public async Task RunToCompletion_WithoutTerminationStrategy_UsesDefaultMaxEpochs()
     {
         // Arrange
         var population = CreateDiversePopulation(5);
@@ -230,7 +229,7 @@ public class OpenGARunnerIntegrationTests
 
         // Act - Should use default 100 epochs but we need to ensure it doesn't run too long
         var startTime = DateTime.UtcNow;
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
         var duration = DateTime.UtcNow - startTime;
 
         // Assert
@@ -247,11 +246,11 @@ public class OpenGARunnerIntegrationTests
     [InlineData(5)]
     [InlineData(10)]
     [InlineData(20)]
-    public void RunToCompletion_WithRandomParentSelector_ProducesValidResult(int populationSize)
+    public async Task RunToCompletion_WithRandomParentSelector_ProducesValidResult(int populationSize)
     {
         // Arrange
         var population = CreateDiversePopulation(populationSize);
-        var initialBestFitness = population.Max(c => c.Fitness);
+        var initialBestFitness = (await Task.WhenAll(population.Select(c => c.GetCachedFitnessAsync()))).Max();
         
         var runner = OpenGARunner<int>.Initialize(population)
             .ParentSelection(config => config.RegisterSingle(s => s.Random()))
@@ -261,22 +260,24 @@ public class OpenGARunnerIntegrationTests
             .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.WithCrossoverRate(0.8f); });
 
         // Act
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
 
         // Assert
         Assert.NotNull(result);
-        Assert.True(result.Fitness >= initialBestFitness * 0.8, 
+        var resultFitness = await result.GetCachedFitnessAsync();
+        Assert.True(resultFitness >= initialBestFitness * 0.8, 
             "Final fitness should be reasonably close to or better than initial best");
         Assert.True(result.Genes.Count > 0, "Result should have genes");
     }
 
     [Fact]
-    public void RunToCompletion_WithFitnessWeightedSelector_TendsTowardHigherFitness()
+    public async Task RunToCompletion_WithFitnessWeightedSelector_TendsTowardHigherFitness()
     {
         // Arrange
         var population = CreateDiversePopulation(15);
-        var initialBestFitness = population.Max(c => c.Fitness);
-        var initialAverageFitness = population.Average(c => c.Fitness);
+        var populationFitnesses = await Task.WhenAll(population.Select(c => c.GetCachedFitnessAsync()));
+        var initialBestFitness = populationFitnesses.Max();
+        var initialAverageFitness = populationFitnesses.Average();
         
         var runner = OpenGARunner<int>.Initialize(population)
             .ParentSelection(config => config.RegisterSingle(s => s.RouletteWheel()))
@@ -286,21 +287,22 @@ public class OpenGARunnerIntegrationTests
             .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.WithCrossoverRate(0.9f); });
 
         // Act
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
 
         // Assert
         Assert.NotNull(result);
         // With fitness-weighted selection, we expect better results than random
-        Assert.True(result.Fitness >= initialAverageFitness, 
+        var resultFitness = await result.GetCachedFitnessAsync();
+        Assert.True(resultFitness >= initialAverageFitness, 
             "Fitness-weighted selection should produce results at least as good as initial average");
     }
 
     [Fact]
-    public void RunToCompletion_WithElitistParentSelector_PreservesGoodGenes()
+    public async Task RunToCompletion_WithElitistParentSelector_PreservesGoodGenes()
     {
         // Arrange
         var population = CreateDiversePopulation(20);
-        var initialBestFitness = population.Max(c => c.Fitness);
+        var initialBestFitness = (await Task.WhenAll(population.Select(c => c.GetCachedFitnessAsync()))).Max();
         
         var runner = OpenGARunner<int>.Initialize(population)
             .ParentSelection(config => config.RegisterSingle(s => s.Elitist(0.3f, 0.1f, true)))
@@ -310,17 +312,18 @@ public class OpenGARunnerIntegrationTests
             .Crossover(s => s.RegisterSingle(c => c.OnePointCrossover()).WithCrossoverRate(0.8f));
 
         // Act
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
 
         // Assert
         Assert.NotNull(result);
         // Elitist selection should maintain or improve fitness
-        Assert.True(result.Fitness >= initialBestFitness * 0.9, 
+        var resultFitness = await result.GetCachedFitnessAsync();
+        Assert.True(resultFitness >= initialBestFitness * 0.9, 
             "Elitist selection should preserve good fitness");
     }
 
     [Fact]
-    public void RunToCompletion_WithTournamentParentSelector_WorksCorrectly()
+    public async Task RunToCompletion_WithTournamentParentSelector_WorksCorrectly()
     {
         // Arrange
         var population = CreateDiversePopulation(12);
@@ -333,12 +336,12 @@ public class OpenGARunnerIntegrationTests
             .Crossover(s => s.RegisterSingle(c => c.OnePointCrossover()).WithCrossoverRate(0.7f));
 
         // Act
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
 
         // Assert
         Assert.NotNull(result);
         Assert.True(result.Genes.Count > 0);
-        Assert.True(result.Fitness > 0);
+        Assert.True(await result.GetCachedFitnessAsync() > 0);
     }
 
     #endregion
@@ -346,7 +349,7 @@ public class OpenGARunnerIntegrationTests
     #region Survivor Selection Strategy Integration Tests
 
     [Fact]
-    public void RunToCompletion_WithGenerationalSurvivorSelection_ReplacesEntirePopulation()
+    public async Task RunToCompletion_WithGenerationalSurvivorSelection_ReplacesEntirePopulation()
     {
         // Arrange
         var population = CreateDiversePopulation(8);
@@ -359,20 +362,20 @@ public class OpenGARunnerIntegrationTests
             .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.WithCrossoverRate(0.8f); });
 
         // Act
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
 
         // Assert
         Assert.NotNull(result);
         // With generational survivor selection, we still get a valid result
-        Assert.True(result.Fitness >= 0);
+        Assert.True(await result.GetCachedFitnessAsync() >= 0);
     }
 
     [Fact]
-    public void RunToCompletion_WithElitistSurvivorSelection_MaintainsBestIndividuals()
+    public async Task RunToCompletion_WithElitistSurvivorSelection_MaintainsBestIndividuals()
     {
         // Arrange
         var population = CreateDiversePopulation(15);
-        var initialBestFitness = population.Max(c => c.Fitness);
+        var initialBestFitness = (await Task.WhenAll(population.Select(c => c.GetCachedFitnessAsync()))).Max();
         
         var runner = OpenGARunner<int>.Initialize(population)
             .ParentSelection(config => config.RegisterSingle(s => s.RouletteWheel()))
@@ -382,17 +385,17 @@ public class OpenGARunnerIntegrationTests
             .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.WithCrossoverRate(0.9f); });
 
         // Act
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
 
         // Assert
         Assert.NotNull(result);
         // Elitist survivor selection should preserve the best fitness
-        Assert.True(result.Fitness >= initialBestFitness, 
+        Assert.True(await result.GetCachedFitnessAsync() >= initialBestFitness, 
             "Elitist survivor selection should preserve best individuals");
     }
 
     [Fact]
-    public void RunToCompletion_WithTournamentSurvivorSelection_WorksCorrectly()
+    public async Task RunToCompletion_WithTournamentSurvivorSelection_WorksCorrectly()
     {
         // Arrange
         var population = CreateDiversePopulation(12);
@@ -405,15 +408,15 @@ public class OpenGARunnerIntegrationTests
             .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.WithCrossoverRate(0.7f); });
 
         // Act
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
 
         // Assert
         Assert.NotNull(result);
-        Assert.True(result.Fitness > 0);
+        Assert.True(await result.GetCachedFitnessAsync() > 0);
     }
 
     [Fact]
-    public void RunToCompletion_WithAgeBasedSurvivorSelection_WorksCorrectly()
+    public async Task RunToCompletion_WithAgeBasedSurvivorSelection_WorksCorrectly()
     {
         // Arrange
         var population = CreateDiversePopulation(10);
@@ -426,11 +429,11 @@ public class OpenGARunnerIntegrationTests
             .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.WithCrossoverRate(0.8f); });
 
         // Act
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
 
         // Assert
         Assert.NotNull(result);
-        Assert.True(result.Fitness > 0);
+        Assert.True(await result.GetCachedFitnessAsync() > 0);
     }
 
     #endregion
@@ -438,7 +441,7 @@ public class OpenGARunnerIntegrationTests
     #region Termination Strategy Integration Tests
 
     [Fact]
-    public void RunToCompletion_WithMaxEpochsTermination_RespectsEpochLimit()
+    public async Task RunToCompletion_WithMaxEpochsTermination_RespectsEpochLimit()
     {
         // Arrange
         var population = CreateDiversePopulation(10);
@@ -453,7 +456,7 @@ public class OpenGARunnerIntegrationTests
 
         // Act
         var startTime = DateTime.UtcNow;
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
         var duration = DateTime.UtcNow - startTime;
 
         // Assert
@@ -464,7 +467,7 @@ public class OpenGARunnerIntegrationTests
     }
 
     [Fact]
-    public void RunToCompletion_WithMaxDurationTermination_RespectsTimeLimit()
+    public async Task RunToCompletion_WithMaxDurationTermination_RespectsTimeLimit()
     {
         // Arrange
         var population = CreateDiversePopulation(10);
@@ -479,7 +482,7 @@ public class OpenGARunnerIntegrationTests
 
         // Act
         var startTime = DateTime.UtcNow;
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
         var actualDuration = DateTime.UtcNow - startTime;
 
         // Assert
@@ -490,7 +493,7 @@ public class OpenGARunnerIntegrationTests
     }
 
     [Fact]
-    public void RunToCompletion_WithTargetStandardDeviationTermination_ConvergesCorrectly()
+    public async Task RunToCompletion_WithTargetStandardDeviationTermination_ConvergesCorrectly()
     {
         // Arrange - Use a converged population that should trigger the termination condition
         var population = CreateConvergedPopulation(10);
@@ -504,7 +507,7 @@ public class OpenGARunnerIntegrationTests
 
         // Act
         var startTime = DateTime.UtcNow;
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
         var duration = DateTime.UtcNow - startTime;
 
         // Assert
@@ -515,7 +518,7 @@ public class OpenGARunnerIntegrationTests
     }
 
     [Fact]
-    public void RunToCompletion_WithTargetFitnessTermination_StopsWhenFitnessReached()
+    public async Task RunToCompletion_WithTargetFitnessTermination_StopsWhenFitnessReached()
     {
         // Arrange - Create a population with diverse fitness levels
         var population = CreateDiversePopulation(10);
@@ -529,17 +532,17 @@ public class OpenGARunnerIntegrationTests
             .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.WithCrossoverRate(0.8f); });
 
         // Act
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
 
         // Assert
         Assert.NotNull(result);
         // The best chromosome should have reached or exceeded the target fitness
-        Assert.True(result.Fitness >= targetFitness, 
-            $"Expected fitness >= {targetFitness}, but got {result.Fitness}");
+        Assert.True(await result.GetCachedFitnessAsync() >= targetFitness, 
+            $"Expected fitness >= {targetFitness}, but got {await result.GetCachedFitnessAsync()}");
     }
 
     [Fact]
-    public void RunToCompletion_WithMultipleTerminationStrategies_RespectsFirstToTrigger()
+    public async Task RunToCompletion_WithMultipleTerminationStrategies_RespectsFirstToTrigger()
     {
         // Arrange
         var population = CreateDiversePopulation(8);
@@ -556,7 +559,7 @@ public class OpenGARunnerIntegrationTests
 
         // Act
         var startTime = DateTime.UtcNow;
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
         var duration = DateTime.UtcNow - startTime;
 
         // Assert
@@ -574,7 +577,7 @@ public class OpenGARunnerIntegrationTests
     [InlineData(5)]
     [InlineData(15)]
     [InlineData(25)]
-    public void RunToCompletion_WithVariousPopulationSizes_MaintainsPopulationSize(int populationSize)
+    public async Task RunToCompletion_WithVariousPopulationSizes_MaintainsPopulationSize(int populationSize)
     {
         // Arrange
         var population = CreateDiversePopulation(populationSize);
@@ -587,7 +590,7 @@ public class OpenGARunnerIntegrationTests
             .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.WithCrossoverRate(0.8f); });
 
         // Act
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
 
         // Assert
         Assert.NotNull(result);
@@ -598,7 +601,7 @@ public class OpenGARunnerIntegrationTests
     [InlineData(0.5f)]
     [InlineData(1.0f)]
     [InlineData(0.8f)]
-    public void RunToCompletion_WithCustomOffspringGenerationRate_WorksCorrectly(float generationRate)
+    public async Task RunToCompletion_WithCustomOffspringGenerationRate_WorksCorrectly(float generationRate)
     {
         // Arrange
         var population = CreateDiversePopulation(10);
@@ -614,15 +617,15 @@ public class OpenGARunnerIntegrationTests
             .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.WithCrossoverRate(0.8f); });
 
         // Act
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
 
         // Assert
         Assert.NotNull(result);
-        Assert.True(result.Fitness >= 0);
+        Assert.True(await result.GetCachedFitnessAsync() >= 0);
     }
 
     [Fact]
-    public void RunToCompletion_WithMaxPopulationSize_RespectsLimit()
+    public async Task RunToCompletion_WithMaxPopulationSize_RespectsLimit()
     {
         // Arrange
         var population = CreateDiversePopulation(10);
@@ -635,7 +638,7 @@ public class OpenGARunnerIntegrationTests
             .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.WithCrossoverRate(0.9f); });
 
         // Act
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
 
         // Assert
         Assert.NotNull(result);
@@ -647,7 +650,7 @@ public class OpenGARunnerIntegrationTests
     #region Crossover Strategy Integration Tests
 
     [Fact]
-    public void RunToCompletion_WithOnePointCrossover_WorksCorrectly()
+    public async Task RunToCompletion_WithOnePointCrossover_WorksCorrectly()
     {
         // Arrange
         var population = CreateDiversePopulation(10);
@@ -663,7 +666,7 @@ public class OpenGARunnerIntegrationTests
             .MutationRate(0.2f);
 
         // Act
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
 
         // Assert
         Assert.NotNull(result);
@@ -671,7 +674,7 @@ public class OpenGARunnerIntegrationTests
     }
 
     [Fact]
-    public void RunToCompletion_WithUniformCrossover_WorksCorrectly()
+    public async Task RunToCompletion_WithUniformCrossover_WorksCorrectly()
     {
         // Arrange
         var population = CreateDiversePopulation(10);
@@ -687,7 +690,7 @@ public class OpenGARunnerIntegrationTests
             .MutationRate(0.2f);
 
         // Act
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
 
         // Assert
         Assert.NotNull(result);
@@ -695,7 +698,7 @@ public class OpenGARunnerIntegrationTests
     }
 
     [Fact]
-    public void RunToCompletion_WithKPointCrossover_WorksCorrectly()
+    public async Task RunToCompletion_WithKPointCrossover_WorksCorrectly()
     {
         // Arrange
         var population = CreateDiversePopulation(10);
@@ -711,7 +714,7 @@ public class OpenGARunnerIntegrationTests
             .MutationRate(0.2f);
 
         // Act
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
 
         // Assert
         Assert.NotNull(result);
@@ -723,11 +726,11 @@ public class OpenGARunnerIntegrationTests
     #region Comprehensive Integration Tests
 
     [Fact]
-    public void RunToCompletion_ComplexConfiguration_WorksCorrectly()
+    public async Task RunToCompletion_ComplexConfiguration_WorksCorrectly()
     {
         // Arrange - Test a complex configuration with multiple strategies
         var population = CreateDiversePopulation(20);
-        var initialBestFitness = population.Max(c => c.Fitness);
+        var initialBestFitness = (await Task.WhenAll(population.Select(c => c.GetCachedFitnessAsync()))).Max();
         
         var runner = OpenGARunner<int>.Initialize(population, 0.5f, 1.25f)
             .MutationRate(0.15f)
@@ -744,23 +747,23 @@ public class OpenGARunnerIntegrationTests
 
         // Act
         var startTime = DateTime.UtcNow;
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
         var duration = DateTime.UtcNow - startTime;
 
         // Assert
         Assert.NotNull(result);
-        Assert.True(result.Fitness > 0, "Result should have positive fitness");
+        Assert.True(await result.GetCachedFitnessAsync() > 0, "Result should have positive fitness");
         Assert.True(result.Genes.Count > 0, "Result should have genes");
         Assert.True(duration < TimeSpan.FromSeconds(15), 
             $"Complex configuration should complete within reasonable time, took {duration}");
         
         // With elitist strategies, we expect to maintain or improve fitness
-        Assert.True(result.Fitness >= initialBestFitness * 0.8, 
+        Assert.True(await result.GetCachedFitnessAsync() >= initialBestFitness * 0.8, 
             "Complex elitist configuration should maintain reasonable fitness");
     }
 
     [Fact]
-    public void RunToCompletion_LowMutationHighCrossover_ProducesStableResults()
+    public async Task RunToCompletion_LowMutationHighCrossover_ProducesStableResults()
     {
         // Arrange
         var population = CreateDiversePopulation(12);
@@ -773,16 +776,16 @@ public class OpenGARunnerIntegrationTests
             .Termination(config => config.MaximumEpochs(10));
 
         // Act
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
 
         // Assert
         Assert.NotNull(result);
-        Assert.True(result.Fitness > 0);
+        Assert.True(await result.GetCachedFitnessAsync() > 0);
         Assert.True(result.Genes.Count > 0);
     }
 
     [Fact]
-    public void RunToCompletion_HighMutationLowCrossover_ProducesValidResults()
+    public async Task RunToCompletion_HighMutationLowCrossover_ProducesValidResults()
     {
         // Arrange
         var population = CreateDiversePopulation(12);
@@ -795,16 +798,16 @@ public class OpenGARunnerIntegrationTests
             .Termination(config => config.MaximumEpochs(8));
 
         // Act
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
 
         // Assert
         Assert.NotNull(result);
-        Assert.True(result.Fitness > 0);
+        Assert.True(await result.GetCachedFitnessAsync() > 0);
         Assert.True(result.Genes.Count > 0);
     }
 
     [Fact]
-    public void RunToCompletion_MultipleRuns_ProduceValidResults()
+    public async Task RunToCompletion_MultipleRuns_ProduceValidResults()
     {
         // Arrange - Test that multiple runs work correctly (non-deterministic but valid)
         var population = CreateDiversePopulation(10);
@@ -820,18 +823,18 @@ public class OpenGARunnerIntegrationTests
                 .MutationRate(0.2f)
                 .Crossover(s => s.RegisterSingle(c => c.OnePointCrossover()).WithCrossoverRate(0.8f));
 
-            var result = runner.RunToCompletion();
+            var result = await runner.RunToCompletionAsync();
             results.Add(result);
         }
 
         // Assert
         Assert.Equal(3, results.Count);
-        Assert.All(results, result =>
+        foreach (var result in results)
         {
             Assert.NotNull(result);
-            Assert.True(result.Fitness > 0);
+            Assert.True(await result.GetCachedFitnessAsync() > 0);
             Assert.True(result.Genes.Count > 0);
-        });
+        }
     }
 
     #endregion
@@ -839,7 +842,7 @@ public class OpenGARunnerIntegrationTests
     #region Edge Case Tests
 
     [Fact]
-    public void RunToCompletion_WithTwoChromosomePopulation_WorksCorrectly()
+    public async Task RunToCompletion_WithTwoChromosomePopulation_WorksCorrectly()
     {
         // Arrange
         var population = CreateDiversePopulation(2);
@@ -852,15 +855,15 @@ public class OpenGARunnerIntegrationTests
             .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.WithCrossoverRate(0.8f); });
 
         // Act
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
 
         // Assert
         Assert.NotNull(result);
-        Assert.True(result.Fitness > 0);
+        Assert.True(await result.GetCachedFitnessAsync() > 0);
     }
 
     [Fact]
-    public void RunToCompletion_WithSingleChromosome_HandlesGracefully()
+    public async Task RunToCompletion_WithSingleChromosome_HandlesGracefully()
     {
         // Arrange
         var population = new[] { CreateTargetFitnessChromosome(50) };
@@ -873,11 +876,11 @@ public class OpenGARunnerIntegrationTests
             .Crossover(s => { s.RegisterSingle(c => c.OnePointCrossover()); s.WithCrossoverRate(0.8f); });
 
         // Act
-        var result = runner.RunToCompletion();
+        var result = await runner.RunToCompletionAsync();
 
         // Assert
         Assert.NotNull(result);
-        Assert.True(result.Fitness > 0);
+        Assert.True(await result.GetCachedFitnessAsync() > 0);
     }
 
     #endregion
