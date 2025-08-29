@@ -31,15 +31,8 @@ A **Chromosome** in OpenGA.Net represents a potential solution to your optimizat
 using OpenGA.Net;
 
 // A chromosome for the Traveling Salesman Problem. Each chromosome represents a route through cities (genes = city sequence)
-public class TspChromosome : Chromosome<int>
+public class TspChromosome(IList<int> cities, double[,] distanceMatrix) : Chromosome<int>(cities)
 {
-    private readonly double[,] _distanceMatrix;
-    
-    public TspChromosome(IList<int> cities, double[,] distanceMatrix) : base(cities)
-    {
-        _distanceMatrix = distanceMatrix;
-    }
-    
     // Calculate how "good" this route is (shorter distance = higher fitness)
     public override async Task<double> CalculateFitnessAsync()
     {
@@ -54,32 +47,16 @@ public class TspChromosome : Chromosome<int>
         int index1 = random.Next(Genes.Count);
         int index2 = random.Next(Genes.Count);
         (Genes[index1], Genes[index2]) = (Genes[index2], Genes[index1]);
-        
-        InvalidateFitness(); // Important: invalidate cached fitness after mutation
     }
     
-    // Create an identical copy of this chromosome
     public override async Task<Chromosome<int>> DeepCopyAsync()
     {
-        return new TspChromosome(new List<int>(Genes), _distanceMatrix);
+        return new TspChromosome(new List<int>(Genes), distanceMatrix);
     }
     
-    // Ensure each city appears exactly once (fix any duplicates)
     public override async Task GeneticRepairAsync()
     {
-        // Implementation would ensure no duplicate cities exist
-        // For example: remove duplicates and fill missing cities
-    }
-    
-    private double CalculateTotalDistance()
-    {
-        double distance = 0;
-        for (int i = 0; i < Genes.Count - 1; i++)
-        {
-            distance += _distanceMatrix[Genes[i], Genes[i + 1]];
-        }
-        distance += _distanceMatrix[Genes[^1], Genes[0]]; // Return to start
-        return distance;
+        // Ensure each city appears exactly once (fix any duplicates)
     }
 }
 ```
