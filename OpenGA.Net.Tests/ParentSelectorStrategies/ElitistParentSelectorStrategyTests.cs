@@ -2,7 +2,7 @@ using OpenGA.Net.ParentSelectorStrategies;
 
 namespace OpenGA.Net.Tests.ParentSelectorStrategies;
 
-public class ElitistParentSelectorTests
+public class ElitistParentSelectorStrategyTests
 {
     [Theory]
     [InlineData(100, 0.2, 20, 100, 100)]

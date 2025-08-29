@@ -2,7 +2,7 @@ using OpenGA.Net.ParentSelectorStrategies;
 
 namespace OpenGA.Net.Tests.ParentSelectorStrategies;
 
-public class BoltzmannParentSelectorTests
+public class BoltzmannParentSelectorStrategyTests
 {
     [Fact]
     public void Constructor_WithValidDecayRate_ShouldCreateInstance()

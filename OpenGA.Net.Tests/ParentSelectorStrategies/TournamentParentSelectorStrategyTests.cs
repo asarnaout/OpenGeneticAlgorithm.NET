@@ -2,7 +2,7 @@ using OpenGA.Net.ParentSelectorStrategies;
 
 namespace OpenGA.Net.Tests.ParentSelectorStrategies;
 
-public class TournamentParentSelectorTests
+public class TournamentParentSelectorStrategyTests
 {
     [Fact]
     public void WillFailIfThereThereIsLessThanTwoIndividuals()

@@ -2,7 +2,7 @@ using OpenGA.Net.ParentSelectorStrategies;
 
 namespace OpenGA.Net.Tests.ParentSelectorStrategies;
 
-public class RandomParentSelectorTests
+public class RandomParentSelectorStrategyTests
 {
     [Fact]
     public void WillFailIfThereThereIsLessThanTwoIndividuals()
