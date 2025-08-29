@@ -235,7 +235,8 @@ public class BinPackingChromosome : Chromosome<int>
         var bins = GetBinContents();
         var binLoads = GetBinLoads(bins);
         
-        int binsUsed = binLoads.Length;
+    // Use actual number of populated bins, not max index + 1 (which may include gaps)
+    int binsUsed = bins.Count;
         bool isValid = binLoads.All(load => load <= _binCapacity);
         
         double totalUsed = binLoads.Sum();
@@ -257,7 +258,7 @@ public class BinPackingChromosome : Chromosome<int>
     {
         var bins = GetBinContents();
         var binLoads = GetBinLoads(bins);
-        var result = $"Solution uses {binLoads.Length} bins:\n";
+    var result = $"Solution uses {bins.Count} bins:\n";
         
         foreach (var kvp in bins.OrderBy(x => x.Key))
         {

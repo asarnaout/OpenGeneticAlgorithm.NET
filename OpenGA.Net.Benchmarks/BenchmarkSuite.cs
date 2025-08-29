@@ -2,7 +2,6 @@ using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Order;
 using OpenGA.Net;
 using OpenGA.Net.Benchmarks.Problems;
-using System.Text.Json;
 
 namespace OpenGA.Net.Benchmarks;
 
@@ -211,26 +210,24 @@ public class GeneticAlgorithmBenchmarks
 
     private TspChromosome[] CloneTspPopulation(TspChromosome[] original)
     {
-        return original.Select(async chromosome => await chromosome.DeepCopyAsync())
-                      .Select(task => task.Result)
-                      .Cast<TspChromosome>()
-                      .ToArray();
+        // Synchronous deep copy to avoid async LINQ/Task.Result footguns
+        return original
+            .Select(chromosome => (TspChromosome)chromosome.DeepCopyAsync().GetAwaiter().GetResult())
+            .ToArray();
     }
 
     private KnapsackChromosome[] CloneKnapsackPopulation(KnapsackChromosome[] original)
     {
-        return original.Select(async chromosome => await chromosome.DeepCopyAsync())
-                      .Select(task => task.Result)
-                      .Cast<KnapsackChromosome>()
-                      .ToArray();
+        return original
+            .Select(chromosome => (KnapsackChromosome)chromosome.DeepCopyAsync().GetAwaiter().GetResult())
+            .ToArray();
     }
 
     private BinPackingChromosome[] CloneBinPackingPopulation(BinPackingChromosome[] original)
     {
-        return original.Select(async chromosome => await chromosome.DeepCopyAsync())
-                      .Select(task => task.Result)
-                      .Cast<BinPackingChromosome>()
-                      .ToArray();
+        return original
+            .Select(chromosome => (BinPackingChromosome)chromosome.DeepCopyAsync().GetAwaiter().GetResult())
+            .ToArray();
     }
 
     #endregion
@@ -327,10 +324,10 @@ public static class BenchmarkAnalyzer
         Console.WriteLine("-".PadRight(50, '-'));
         
         // Knapsack 50 items analysis
-        var (values50, weights50, capacity50) = KnapsackInstanceGenerator.GenerateRandomInstance(50, 42);
-        var population50 = KnapsackInstanceGenerator.GenerateInitialPopulation(100, values50, weights50, capacity50, 42);
-        var greedyBaseline50 = KnapsackInstanceGenerator.CalculateGreedyBaseline(values50, weights50, capacity50);
-        var upperBound50 = KnapsackInstanceGenerator.CalculateUpperBound(values50, weights50, capacity50);
+    var (weights50, values50, capacity50) = KnapsackInstanceGenerator.GenerateRandomInstance(50, 42);
+    var population50 = KnapsackInstanceGenerator.GenerateInitialPopulation(100, weights50, values50, capacity50, 42);
+    var (greedyValue50, greedyWeight50, greedyItems50) = KnapsackInstanceGenerator.CalculateGreedyBaseline(weights50, values50, capacity50);
+    var upperBound50 = KnapsackInstanceGenerator.CalculateUpperBound(weights50, values50, capacity50);
         
         var bestKnapsack50 = await OpenGARunner<bool>
             .Initialize(population50)
@@ -349,19 +346,19 @@ public static class BenchmarkAnalyzer
         var fitness50 = await knapsackResult50.CalculateFitnessAsync();
         var efficiency50 = totalValue50 / upperBound50;
         
-        Console.WriteLine($"Knapsack 50 Items:");
-        Console.WriteLine($"  Total Value: {totalValue50:F2} (Greedy: {greedyBaseline50:F2}, Upper Bound: {upperBound50:F2})");
-        Console.WriteLine($"  Total Weight: {totalWeight50:F2}/{capacity50:F2} ({totalWeight50/capacity50:P2})");
+    Console.WriteLine($"Knapsack 50 Items:");
+    Console.WriteLine($"  Total Value: {totalValue50:F2} (Greedy: {greedyValue50:F2}, Upper Bound: {upperBound50:F2})");
+    Console.WriteLine($"  Total Weight: {totalWeight50:F2}/{capacity50:F2} ({totalWeight50/capacity50:P2})");
         Console.WriteLine($"  Valid Solution: {isValid50}");
         Console.WriteLine($"  Efficiency: {efficiency50:P2}");
         Console.WriteLine($"  Fitness: {fitness50:F6}");
         Console.WriteLine();
         
         // Knapsack 100 items analysis
-        var (values100, weights100, capacity100) = KnapsackInstanceGenerator.GenerateRandomInstance(100, 42);
-        var population100 = KnapsackInstanceGenerator.GenerateInitialPopulation(100, values100, weights100, capacity100, 42);
-        var greedyBaseline100 = KnapsackInstanceGenerator.CalculateGreedyBaseline(values100, weights100, capacity100);
-        var upperBound100 = KnapsackInstanceGenerator.CalculateUpperBound(values100, weights100, capacity100);
+    var (weights100, values100, capacity100) = KnapsackInstanceGenerator.GenerateRandomInstance(100, 42);
+    var population100 = KnapsackInstanceGenerator.GenerateInitialPopulation(100, weights100, values100, capacity100, 42);
+    var (greedyValue100, greedyWeight100, greedyItems100) = KnapsackInstanceGenerator.CalculateGreedyBaseline(weights100, values100, capacity100);
+    var upperBound100 = KnapsackInstanceGenerator.CalculateUpperBound(weights100, values100, capacity100);
         
         var bestKnapsack100 = await OpenGARunner<bool>
             .Initialize(population100)
@@ -380,9 +377,9 @@ public static class BenchmarkAnalyzer
         var fitness100 = await knapsackResult100.CalculateFitnessAsync();
         var efficiency100 = totalValue100 / upperBound100;
         
-        Console.WriteLine($"Knapsack 100 Items:");
-        Console.WriteLine($"  Total Value: {totalValue100:F2} (Greedy: {greedyBaseline100:F2}, Upper Bound: {upperBound100:F2})");
-        Console.WriteLine($"  Total Weight: {totalWeight100:F2}/{capacity100:F2} ({totalWeight100/capacity100:P2})");
+    Console.WriteLine($"Knapsack 100 Items:");
+    Console.WriteLine($"  Total Value: {totalValue100:F2} (Greedy: {greedyValue100:F2}, Upper Bound: {upperBound100:F2})");
+    Console.WriteLine($"  Total Weight: {totalWeight100:F2}/{capacity100:F2} ({totalWeight100/capacity100:P2})");
         Console.WriteLine($"  Valid Solution: {isValid100}");
         Console.WriteLine($"  Efficiency: {efficiency100:P2}");
         Console.WriteLine($"  Fitness: {fitness100:F6}");
