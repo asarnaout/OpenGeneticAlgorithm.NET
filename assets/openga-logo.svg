@@ -15,41 +15,32 @@
     </filter>
   </defs>
 
-  <!-- Icon block (shifted down by 32 to equalize top/bottom whitespace) -->
+  <!-- Icon block (single emblem, shifted down by 32 to equalize top/bottom whitespace) -->
   <g transform="translate(40,60)">
-    <!-- DNA Helix -->
+    <!-- Circular badge -->
     <g filter="url(#softShadow)">
-      <path d="M20 10 C 60 60, 60 120, 20 170" stroke="url(#gradBlue)" stroke-width="10" fill="none"/>
-      <path d="M80 10 C 40 60, 40 120, 80 170" stroke="url(#gradGreen)" stroke-width="10" fill="none"/>
-      <!-- Rungs -->
-      <g stroke="#CBD5E1" stroke-width="4">
-        <line x1="32" y1="30" x2="68" y2="30"/>
-        <line x1="36" y1="58" x2="64" y2="58"/>
-        <line x1="40" y1="86" x2="60" y2="86"/>
-        <line x1="36" y1="114" x2="64" y2="114"/>
-        <line x1="32" y1="142" x2="68" y2="142"/>
-      </g>
+      <circle cx="90" cy="90" r="84" fill="#FFFFFF" fill-opacity="0.95" stroke="#E2E8F0" stroke-width="2"/>
     </g>
 
-    <!-- GA Node Graph overlay -->
-    <g transform="translate(120,28)">
-      <circle cx="30" cy="30" r="10" fill="url(#gradBlue)"/>
-      <circle cx="90" cy="24" r="10" fill="url(#gradGreen)"/>
-      <circle cx="54" cy="78" r="10" fill="#F59E0B"/>
-      <circle cx="112" cy="90" r="10" fill="#EF4444"/>
-      <circle cx="10" cy="100" r="10" fill="#8B5CF6"/>
-      <g stroke="#64748B" stroke-width="3" opacity="0.9">
-        <line x1="30" y1="30" x2="90" y2="24"/>
-        <line x1="30" y1="30" x2="54" y2="78"/>
-        <line x1="54" y1="78" x2="112" y2="90"/>
-        <line x1="10" y1="100" x2="54" y2="78"/>
-        <line x1="10" y1="100" x2="30" y2="30"/>
+    <!-- Refined DNA Helix inside badge -->
+    <g filter="url(#softShadow)" stroke-linecap="round" stroke-linejoin="round">
+      <!-- Strands -->
+      <path d="M50 30 C 90 70, 90 110, 50 150" stroke="url(#gradBlue)" stroke-width="10" fill="none"/>
+      <path d="M130 30 C 90 70, 90 110, 130 150" stroke="url(#gradGreen)" stroke-width="10" fill="none"/>
+
+      <!-- Rungs -->
+      <g stroke="#CBD5E1" stroke-width="4">
+        <line x1="64" y1="48" x2="116" y2="48"/>
+        <line x1="68" y1="70" x2="112" y2="70"/>
+        <line x1="72" y1="92" x2="108" y2="92"/>
+        <line x1="68" y1="114" x2="112" y2="114"/>
+        <line x1="64" y1="136" x2="116" y2="136"/>
       </g>
     </g>
   </g>
 
-  <!-- Wordmark (also shifted down by 32) -->
-  <g transform="translate(360,102)">
+  <!-- Wordmark (moved closer to emblem, still shifted down by ~32) -->
+  <g transform="translate(260,102)">
     <text x="0" y="80" font-family="'Inter','Segoe UI',system-ui,-apple-system,sans-serif" font-size="92" font-weight="800" fill="#0F172A">
       Open<tspan font-weight="900" fill="url(#gradBlue)">GA</tspan><tspan font-weight="800" fill="#0F172A">.Net</tspan>
     </text>
