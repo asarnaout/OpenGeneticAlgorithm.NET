@@ -223,33 +223,34 @@ var result = await OpenGARunner<int>
     .Initialize(initialPopulation, minPopulationPercentage: 0.4f, maxPopulationPercentage: 2.5f)
     .WithRandomSeed(42)
     .MutationRate(0.15f)
-    
+
     // Multi-strategy parent selection with adaptive learning
     .ParentSelection(p => p.RegisterMulti(m => m
-        .Tournament(stochasticTournament: true, customWeight: 0.4f)
-        .RouletteWheel(customWeight: 0.3f)
+        .Tournament(stochasticTournament: true)
+        .RouletteWheel()
         .Rank(customWeight: 0.2f)
-        .Boltzmann(temperatureDecayRate: 0.05, initialTemperature: 1.0, customWeight: 0.1f)
+        .Boltzmann(temperatureDecayRate: 0.05, initialTemperature: 1.0)
         .WithPolicy(policy => policy.AdaptivePursuit(
             learningRate: 0.12,
             minimumProbability: 0.05,
             rewardWindowSize: 15
         ))
     ))
-    
-    // Single high-performance crossover for exploitation
-    .Crossover(c => c.RegisterSingle(s => s.KPointCrossover(3))
-        .WithCrossoverRate(0.85f))
-    
-    // Multi-strategy survivor selection for dynamic population management
+
+    // Round Robin crossover for exploration
+    .Crossover(c => c.RegisterMulti(s => s
+        .KPointCrossover(3)
+        .UniformCrossover()
+        .WithPolicy(policy => policy.RoundRobin())
+    ).WithCrossoverRate(0.85f))
+
+    // Multi-strategy survivor selection for dynamic population management.
+    // Each strategy is assigned a custom probability weight.
     .SurvivorSelection(s => s.RegisterMulti(m => m
         .Elitist(elitePercentage: 0.12f, customWeight: 0.6f)
         .Tournament(tournamentSize: 4, stochasticTournament: true, customWeight: 0.3f)
         .AgeBased(customWeight: 0.1f)
-        .WithPolicy(policy => policy.AdaptivePursuit(
-            learningRate: 0.08,
-            diversityWeight: 0.15
-        ))
+        .WithPolicy(policy => policy.CustomWeights())
     ).OverrideOffspringGenerationRate(1.3f))
     
     // Multi-condition termination
