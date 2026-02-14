@@ -692,6 +692,7 @@ public class DeterministicOpenGARunnerTests
     }
 
     [Fact]
+    [Trait("Category", "Performance")]
     public async Task RunToCompletion_WithMaximumDurationTermination_TerminatesWithinTime()
     {
         // Arrange

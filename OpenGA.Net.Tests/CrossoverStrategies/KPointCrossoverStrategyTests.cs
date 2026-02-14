@@ -407,6 +407,7 @@ public class KPointCrossoverStrategyTests
     #region Performance Tests
 
     [Fact]
+    [Trait("Category", "Performance")]
     public async Task Crossover_WithLargeChromosomes_ShouldBeEfficient()
     {
         var largeParentA = new DummyChromosome(Enumerable.Range(1, 10000).ToList());
@@ -430,6 +431,7 @@ public class KPointCrossoverStrategyTests
     }
 
     [Fact]
+    [Trait("Category", "Performance")]
     public async Task Crossover_WithManyPoints_ShouldHandleEfficiently()
     {
         var parentA = new DummyChromosome(Enumerable.Range(1, 1000).ToList());

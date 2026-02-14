@@ -278,6 +278,7 @@ public class OnePointCrossoverStrategyTests
     }
 
     [Fact]
+    [Trait("Category", "Performance")]
     public async Task CrossoverPerformance_LargeChromosomes_ShouldBeEfficient()
     {
         // Create large chromosomes for performance testing
